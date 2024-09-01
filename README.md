@@ -7,8 +7,42 @@ This is a tutorial on how to annotate a newly sequenced mammalian genome. This t
 3. Combining and filtering gene models
 4. Predicting gene function by annotating gene symbols
 
-We recommend tools and best practices for each step, providing code to help the user execute each task. It is up to the user to install the tools that we recommend for this pipeline, however we make note of challenging installation processes that we have encountered with certain tools.
+We recommend tools and best practices for each step, providing code to help the user execute each task. It is up to the user to install the tools that we recommend for this pipeline, however we make note of challenging installation processes that we have encountered with certain tools and how we overcame these challenges.
+
+Generally, genome annotation does not have a comparable ground truth, so we use different sources of evidence to annotate the most likely gene models. These gene models are considered hypotheses for where the genes are located on the genome, but false positives and false negatives will always exist. This pipeline uses existing tools and quality-checking software to try to minimise both of these error rates to create a high-quality annotation.
+
+### Notes on computational requirements
+
+We expect the user to be familiar with installing and running command-line tools, as genome annotation relies on such tools. Additional familiarity with R may be helpful for some more advanced tasks. Many tools can be run on a desktop, but some are very computationally intensive and require the use of a high-performance compute cluster (e.g. Compute Canada). The speed of many tools will improve if they have access to multiple threads and can therefore run tasks in parallel. To check how many threads you can specify when running tools, check the documentation of your compute cluster or run `nproc` on your local desktop.
+
+Because genome annotation relies on a number of different command-line tools, we recommend creating or using unique environments for each tool on your machine, if possible. One tool may rely on one version of a piece of software, while another tool may rely on a more recent or older version; if tools share the same environment, such conflicts may prevent each tool from running properly. Virtual environments can be used or created with tools like Docker, Conda, or Python.
+
+
 
 ## Repeat masking
 
-Repeat masking can be done with [Earl Grey](https://github.com/TobyBaril/EarlGrey).
+The first step in genome annotation is to identify and mask repetitive regions. These can make up over half of a mammalian genome, and can cause trouble when generating genome annotations. For instance, repeat regions may interfere with sequence alignment, as they create an intractable number of alignment matches; repeats may also contain open reading frames (ORFs), and annotation software may mistake these ORFs as genes (therefore increasing the false positive rate when gene models are generated). Therefore it is important that a genome sequence is masked so that annotation software doesn't attempt to place gene models in these regions. Genomes can be soft-masked (repeat regions turned from uppercase letters to lowercase letters in the FASTA file) or hard-masked (repeat regions converted into strings of capital Ns). Soft-masking is generally recommended, and more leniant as it allows for gene-models initiated in non-repeat regions to extend into repeat regions.
+
+Before repeat masking, it's best to check if your genome came with repeats already masked. You can do this by peaking into your genome file using `less genome.fa`, and check if you can see any Ns or lowercase letters.
+
+Repeat masking can be done with [Earl Grey](https://github.com/TobyBaril/EarlGrey). Earl Grey integrates multiple common repeat masking tools such as RepeatMasker, which maps repetitive elements from a database, and RepeatModeler, which identifies repeats de novo.  It also uses multiple tools such as cd-hit-est, LTR_finder, rcMergeRepeats, and custom scripts to identify, annotate, filter, and aggregate repeat regions genome wide. Earl Grey is a command-line tool that can be run with a single line of code in a Unix environment, and produces figure-quality summaries of a genome’s transposable element landscape in conjunction with repeats annotated in general feature format (GFF) which are required for downstream analysis. Earl Grey relies on databases of repeat elements, such as DFam, that are used to identify repeats in your genome. The user can specify what clade of species they are working with, which indicates which repeat database Earl Grey should use.
+
+Input to Earl Grey is the FASTA file from your species, the name of your species, and the output directory. It is also helpful to specify the search term used for RepeatMasker with `-r`, which indicates which set of repeats to look for (e.g. “eukarya”). `-d` is a flag that indicates whether or not you would like soft-masking. If you put "yes", Earl Grey will output a soft-masked genome that you can use directly for subsequent annotation steps. The output is stored in multiple folders, with the most important information located in `summaryFiles`. 
+
+```
+earlGrey \
+ -g your_genome.fasta \
+ -s your_species_name \
+ -o ./output_directory \
+ -r repeat_clade \
+ -d yes \
+ -t number_of_threads
+```
+### Earl Grey: installing/running/troubleshooting
+
+- We have had success running Earl Grey on a desktop and high performance compute cluster
+- Earl Grey can easily be installed using conda (e.g. `conda create -n earlgrey -c conda-forge -c bioconda earlgrey=4.4.0`); an error causing Earl Grey to crash mid-run required an update to Numpy (`pip install numpy --upgrade`)
+- Earl Grey takes multiple days to run (be prepared for up to a week)
+- Earl Grey does not like spaces in any directory names
+
+
