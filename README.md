@@ -79,3 +79,31 @@ liftoff \
  -copies \
  -p number_of_threads
 ```
+
+#### LiftOff: installing/running/troubleshooting
+
+- Some Docker containers exist and work well for LiftOff (e.g. `docker run staphb/liftoff liftoff`)
+- LiftOff also works well with a Conda environment (e.g. `conda create -n liftoff -c bioconda liftoff python=3`)
+
+#### The Tool to infer Orthologs from Genome Alignments (TOGA)
+
+TOGA accurately annotated genes across vertebrates with higher rates of divergence. TOGA relies on a chain file connecting the reference and target species, which is a file that indicates which sections of the reference genome align to which sections of the target genome. This allows TOGA to use synteny to inform its annotation liftover, which improves accuracy considering groups of genes are often conserved across species. Chain files are developed by post-processing whole genome alignments between two species, typically using executable binary scripts developed to improve the compatibility between genomic data types and [the UCSC genome browser](https://github.com/ucscGenomeBrowser/kent). We recommend using the [CACTUS alignment tool](https://github.com/ComparativeGenomicsToolkit/cactus) when generating the initial alignments between two distantly related species. Preparing the data for TOGA and running TOGA is a multistep process:
+
+1. Align genomes with CACTUS
+
+   Cactus takes a text configuration file as input, which is a two-species phylogenetic tree of the reference and target species. A template of such a file is as follows, replacing “target” and “ref” with the species names and files:
+   ```
+   (target:1.0,ref:1.0);
+   target       /path-to-target/target.soft.fa
+   mouse      /path-to-reference/reference.soft.fa
+   ```
+   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply by `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
+
+   ```
+   cactus $SCRATCH/tmp \
+   two_species_cactus_config.txt \
+    target_ref.hal \
+    --binariesMode local
+   ```
+
+2. Convert .hal file to chain file
