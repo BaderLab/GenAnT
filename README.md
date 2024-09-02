@@ -25,6 +25,8 @@ The first step in genome annotation is to identify and mask repetitive regions. 
 
 Before repeat masking, it's best to check if your genome came with repeats already masked. You can do this by peaking into your genome file using `less genome.fa`, and check if you can see any Ns or lowercase letters.
 
+#### Earl Grey
+
 Repeat masking can be done with [Earl Grey](https://github.com/TobyBaril/EarlGrey). Earl Grey integrates multiple common repeat masking tools such as RepeatMasker, which maps repetitive elements from a database, and RepeatModeler, which identifies repeats de novo.  It also uses multiple tools such as cd-hit-est, LTR_finder, rcMergeRepeats, and custom scripts to identify, annotate, filter, and aggregate repeat regions genome wide. Earl Grey is a command-line tool that can be run with a single line of code in a Unix environment, and produces figure-quality summaries of a genome’s transposable element landscape in conjunction with repeats annotated in general feature format (GFF) which are required for downstream analysis. Earl Grey relies on databases of repeat elements, such as DFam, that are used to identify repeats in your genome. The user can specify what clade of species they are working with, which indicates which repeat database Earl Grey should use.
 
 Input to Earl Grey is the FASTA file from your species, the name of your species, and the output directory. It is also helpful to specify the search term used for RepeatMasker with `-r`, which indicates which set of repeats to look for (e.g. “eukarya”). `-d` is a flag that indicates whether or not you would like soft-masking. If you put "yes", Earl Grey will output a soft-masked genome that you can use directly for subsequent annotation steps. The output is stored in multiple folders, with the most important information located in `summaryFiles`. 
@@ -38,11 +40,42 @@ earlGrey \
  -d yes \
  -t number_of_threads
 ```
-### Earl Grey: installing/running/troubleshooting
+#### Earl Grey: installing/running/troubleshooting
 
 - We have had success running Earl Grey on a desktop and high performance compute cluster
 - Earl Grey can easily be installed using conda (e.g. `conda create -n earlgrey -c conda-forge -c bioconda earlgrey=4.4.0`); an error causing Earl Grey to crash mid-run required an update to Numpy (`pip install numpy --upgrade`)
 - Earl Grey takes multiple days to run (be prepared for up to a week)
 - Earl Grey does not like spaces in any directory names
 
+## Generating gene models
 
+Gene models are hypotheses about the locations of genes and their corresponding features (e.g. mRNA, exons, introns) on the genome. These hypotheses are supported by a variety of evidence, including RNA-alignment information, the presence of ORFs, protein sequence conservation, gene structure and order along the sequence. As gene models are hypotheses to the locations and structures of real genes, annotations may contain both false positives (e.g. a random ORF-like sequence) and false negatives (e.g. a real gene that was missed in the annotation process). To reduce these errors, it is important to use high quality evidence for the existence of genes, and good annotation tools that perform well.
+
+We thoroughly describe two complementary approaches to generate high-quality gene models: homology-based annotation and RNA-and-protein-alignment-based annotation (Figure 1). Broadly, homology-based annotations assume that thousands of gene models will be shared between a reference species (e.g. mouse) and a target species (e.g. woodchuck), at the level of DNA sequence similarity and gene structure (e.g., number of exons). In contrast, transcript assembly through functional annotation assumes that the location of uniquely mapping paired end RNA-seq data represents an expressed region of the genome and a candidate for a gene model.
+
+It is important to note that resulting annotations vary depending on (1) the quality of the genome sequence being annotated, (2) the quality of the evidence provided to inform the annotation (e.g. RNA-seq, homology), and (3) the quality of the bioinformatic tool applied. Therefore, it is best to perform many different annotations, test each one for quality (described in box 1), and choose the best results that can be used in step three, which involves integrating gene models into a single, complete set. Although tools may change over time, homology- and alignment-based annotations should both be generated, tested, and combined.
+
+### Homology-based annotation
+
+Homology-based genome annotation is the derivation of gene models in your species from homologous gene models found in other species. Most gene structures and sequences are conserved across related species, making homologous alignments from a reference species with high-quality gene structures an accurate and computationally efficient method to annotate your species. Many tools are capable of performing homology-based annotation, but we have had the most luck with [LiftOff](https://github.com/agshumate/Liftoff) and [the Tool to infer Orthologs from Genome Alignments (TOGA)](https://github.com/hillerlab/TOGA).
+
+#### Finding annotations for liftover
+
+Before performing homology-based annotation, one needs to decide which genome to pull information from. The best homology-based annotations according to various quality metrics (e.g. BUSCO, GffCompare) occur when the reference genome is high-quality, with a high-quality annotation from a closely related species. To find such a genome, we recommend searching RefSeq or ENSEMBL for a few of the most closely related annotated species to yours, and trying liftover on those species. 
+
+High-quality genomes tend to have smaller contig or scaffold numbers (i.e. the genome sequence is divided into larger chunks), ideally close to the number of chromosomes found in the species, smaller L50s (the smallest number of contigs that make up half of the genome sequence), and larger N50s (the smallest contig length that half of the genome sequence is contained in, of the largest contigs). High-quality annotations can be assumed if the genome is annotated by RefSeq or ENSEMBL. RefSeq annotations are also evaluated for quality using BUSCO, where a curated set of single-copy orthologs is compared to the gene models identified in the annotation; a high quality annotation is indicated by a single-copy ortholog detection rate close to 100%, and missing or fragment orthologs close to 0%. We recommend the user searching these databases for a few of the most closely-related species, comparing these genome statistics, and selecting the assembly and annotation (or multiple) with the most favorable statistics.
+
+#### LiftOff
+
+LiftOff is a gene liftover tool that aligns gene sequences from the reference genome to the target genome using a single line of Unix code, making it quick and easy to use. It uses minimap2 to align the genes to the genome with high accuracy and with relatively low computational resources, so the tool can be run on a desktop computer. LiftOff is a command-line tool that takes a FASTA file and GFF/GTF file from a reference species, and the FASTA file from the target species, and creates a GFF/GTF output file for your species based on the reference annotations. It also provides the user with a list of unmapped genes ("unmapped_features.txt"), which may indicate alignment challenges. The "-copies" flag indicates that LiftOff will look for additional gene copies in the new genome. Because LiftOff is so quick and easy to use, the user can easily use LiftOff to generate annotations from multiple reference species and compare the resulting annotation quality.
+
+```
+liftoff \
+ -g annotation_of_related_species.gff \
+ your_genome.fasta \
+ genome_of_related_species.fasta \
+ -o output_annotation.gff \
+ -u unmapped_features.txt \
+ -copies \
+ -p number_of_threads
+```
