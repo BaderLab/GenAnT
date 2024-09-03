@@ -89,7 +89,7 @@ liftoff \
 
 TOGA accurately annotated genes across vertebrates with higher rates of divergence. TOGA relies on a chain file connecting the reference and target species, which is a file that indicates which sections of the reference genome align to which sections of the target genome. This allows TOGA to use synteny to inform its annotation liftover, which improves accuracy considering groups of genes are often conserved across species. Chain files are developed by post-processing whole genome alignments between two species, typically using executable binary scripts developed to improve the compatibility between genomic data types and [the UCSC genome browser](https://github.com/ucscGenomeBrowser/kent). We recommend using the [CACTUS alignment tool](https://github.com/ComparativeGenomicsToolkit/cactus) when generating the initial alignments between two distantly related species. Preparing the data for TOGA and running TOGA is a multistep process:
 
-1. Align genomes with CACTUS
+1. Align genomes with Cactus
 
    Cactus takes a text configuration file as input, which is a two-species phylogenetic tree of the reference and target species. A template of such a file is as follows, replacing “target” and “ref” with the species names and files:
    ```
@@ -97,7 +97,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    target       /path-to-target/target.soft.fa
    mouse      /path-to-reference/reference.soft.fa
    ```
-   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply by `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
+   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. Cactus outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where Cactus stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run Cactus. On a local desktop, a temporary directory may simply by `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. Cactus can then be run as follows:
 
    ```
    cactus $SCRATCH/tmp \
@@ -106,4 +106,42 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
     --binariesMode local
    ```
 
-2. Convert .hal file to chain file
+2. Convert HAL file to chain file
+
+   This is a multistep process also described by the ComparativeGenomicsToolkit [here](https://github.com/ComparativeGenomicsToolkit/hal/blob/chaining-doc/doc/chaining-mapping.md). The first step involves converting both the reference and target FASTA files to a compressed 2bit format. This can be done using additional tools that are accessible in the [Cactus Github repository](https://github.com/ComparativeGenomicsToolkit/cactus) in this directory: `/path-to-cactus/external/cactus-bin-v2.2.3/bin`. We can set this as a variable to make the tools easier to access.
+
+   `cactusbin=/path-to-cactus/external/cactus-bin-v2.2.3/bin`
+
+   Each FASTA file can be converted to 2bit with the following two commands below. Each `hal2fasta` command requires the HAL file output by CACTUS as input as well as the reference or target FASTA file. The output is directly piped into `faToTwoBit` ("stdin" indicates that `faToTwoBit` takes the piped input) which outputs a compressed 2bit file.
+
+   ```
+   $cactusbin/hal2fasta target_ref.hal name_of_reference | faToTwoBit stdin reference.2bit
+   $cactusbin/hal2fasta target_ref.hal name_of_target | faToTwoBit stdin target.2bit
+   ```
+
+   Convert the alignments stored in the HAL file to a BED file using the `halStats` command.
+
+   ```
+   $cactusbin/halStats --bedSequences name_of_reference target_ref.hal > reference.bed
+   $cactusbin/halStats --bedSequences name_of_target target_ref.hal > target.bed
+   ```
+
+   Next, create pairwise alignments, which are stored in a resulting PSL file. This can be done using `halLiftover`. The `--outPSL` flag indicates that the output will be a PSL file; the command takes the HAL file, the name of the target species, the target BED file (created in the previous step), and the name of the reference species as input. The output is specified as `/dev/stdout` which means the output will be printed to the screen. This output is piped into the `pslPosTarget` command which forces the alignments to the positive strand, and outputs the results into a PSL file.
+
+   ```
+   $cactusbin/halLiftover --outPSL target_ref.hal name_of_target \
+      target.bed name_of_reference /dev/stdout | \
+      $cactusbin/pslPosTarget stdin reference-to-target.psl
+   ```
+   
+   Finally, the PSL file can be converted to a chain file using the `axtchain` command from [ucscGenomeBrowser](https://github.com/ucscGenomeBrowser/kent) (sometimes referred to as KentUtils). This bins the alignments at various depths, generalizing the alignment so that instead of storing alignments at specific base pairs, they are stored as blocks of homologous regions. `axtChain` takes the flag `-psl` to indicate PSL input, the recommended parameter setting `-linearGaps=loose`, the PSL file, and both 2bit files as input. The output is the chain alignment file that can now be used for TOGA.
+
+   ```
+   axtChain -psl -linearGap=loose reference-to-target.psl reference.2bit target.2bit reference-to-target.chain
+   ```
+   
+3. Perform homology-based annotation with TOGA
+
+   Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species. TOGA also requires an "isoform key" from the reference species. 
+   
+
