@@ -112,7 +112,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
 
    `cactusbin=/path-to-cactus/external/cactus-bin-v2.2.3/bin`
 
-   Each FASTA file can be converted to 2bit with the following two commands below. Each `hal2fasta` command requires the HAL file output by CACTUS as input as well as the reference or target FASTA file. The output is directly piped into `faToTwoBit` ("stdin" indicates that `faToTwoBit` takes the piped input) which outputs a compressed 2bit file.
+   Each FASTA file can be converted to 2bit with the following two commands below. Each `hal2fasta` command requires the HAL file output by CACTUS as input as well as the reference or target FASTA file. The output is directly piped into `faToTwoBit` ("stdin" indicates that `faToTwoBit` takes the piped input) which outputs a compressed [2bit file](https://genome.ucsc.edu/FAQ/FAQformat.html#format7).
 
    ```
    $cactusbin/hal2fasta target_ref.hal name_of_reference | faToTwoBit stdin reference.2bit
@@ -142,6 +142,25 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    
 3. Perform homology-based annotation with TOGA
 
-   Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species. TOGA also requires an "isoform key" from the reference species. 
+   Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species in [BED12](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format. Isoform data from the reference species is highly recommended when running TOGA. These data are provided in a two-column TSV file with a header. The left column is the gene ID and the right column is the transcript ID; a single gene can be associated with multiple transcripts. This can be created directly from the BED or GFF annotation file of the reference species (we have provided a script XXX that can create this). 
+   
+   ```
+   toga.py \
+   reference-to-target.chain \
+   reference_annotation.bed \
+   reference.2bit target.2bit \
+   --project_name ref_to_target \
+   --isoforms isoforms.tsv
+   ```
+
+   The output of TOGA...
+
+#### TOGA and associated tools: installing/running/troubleshooting
+
+- TOGA takes a lot of work to install and run, but its results are worth it! Benchmarks have shown that TOGA performs very well compared to other methods and its preservation of gene symbols can be quite useful.
+- TOGA may not work if run on a desktop; most genomes are large enough that they require a high performance compute cluster
+- Cactus and TOGA can easily be installed with Conda
+
+   
    
 
