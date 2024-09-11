@@ -142,7 +142,9 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    
 3. Perform homology-based annotation with TOGA
 
-   Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species in [BED12](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format. Isoform data from the reference species is highly recommended when running TOGA. These data are provided in a two-column TSV file with a header. The left column is the gene ID and the right column is the transcript ID; a single gene can be associated with multiple transcripts. This can be created directly from the BED or GFF annotation file of the reference species (we have provided a script XXX that can create this). 
+   Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species in [BED12](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format. GTF files can be converted to BED12 files using tools available from [ucscGenomeBrowser](https://github.com/ucscGenomeBrowser/kent). This is a two step process: First, convert the GTF file to a genePred file by performing `gtfToGenePred annotation.gtf annotation.genePred`. Then, convert the genePred file to a BED12 file with `genePredToBed annotation.genePred annotation.bed`.
+
+   Isoform data from the reference species is highly recommended when running TOGA. These data are provided in a two-column TSV file with a header. The left column is the gene ID and the right column is the transcript ID; a single gene can be associated with multiple transcripts. This can be created directly from the BED or GFF annotation file of the reference species (we have provided a script XXX that can create this). 
    
    ```
    toga.py \
