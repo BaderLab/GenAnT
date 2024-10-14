@@ -17,7 +17,7 @@ We expect the user to be familiar with installing and running command-line tools
 
 Because genome annotation relies on a number of different command-line tools, we recommend creating or using unique environments for each tool on your machine, if possible. One tool may rely on one version of a piece of software, while another tool may rely on a more recent or older version; if tools share the same environment, such conflicts may prevent each tool from running properly. Virtual environments can be used or created with tools like Docker, Conda, or Python.
 
-
+Docker containers exist for certain tools, and typically mean that a tool is packaged with all of its requirements and is ready for you to use; you can check for them by running `docker search name_of_tool`. If a Docker container is listed, you can typically use it by running `docker run -v "$(pwd)":/tmp name_of_container command`. `docker run` means that you are running the container, `-v` indicates where you are mounting the volume, which essentially gives Docker a temporary space on your machine to store data (here just given the placeholder `/tmp`), `name_of_container` is replaced by the name of whatever container you want to try, and `command` indicates the command of the tool you want to use. 
 
 ## Repeat masking
 
