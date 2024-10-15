@@ -6,8 +6,8 @@ Instance installs all the required tools and programs to easily run the [mikado 
 * [Samtools](https://github.com/samtools/samtools/releases/tag/1.11)
 * [SQLite3](https://docs.python.org/3/library/sqlite3.html)
 
-To run the full pipeline you also need to use the [blast docker]()
-and the [portucullis docker]()
+To run the full pipeline you also need to use the [blast docker](https://hub.docker.com/r/ncbi/blast)
+and the [Prodigal docker](https://registry.hub.docker.com/r/metashot/prodigal)
 
 Uses Ubuntu 22 with Mikado v2.3.2
 
