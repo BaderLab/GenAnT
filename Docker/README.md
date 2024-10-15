@@ -7,12 +7,22 @@ Instance installs all the required tools and programs to easily run the [mikado 
 * [SQLite3](https://docs.python.org/3/library/sqlite3.html)
 
 To run the full pipeline you also need to use the [blast docker]()
+and the [portucullis docker]()
 
 Uses Ubuntu 22 with Mikado v2.3.2
+
+To build the docker run (from inside the directory with the mikado Dockerfile):
+```
+docker build -t baderlab/mikado .
+```
 
 Primary function of instance is to run mikado.  To use this instance to run mikado run the following:
 ```
 docker run -it -v  "$(pwd)":/global baderlab/mikado:ubuntu22_mikado2.3.2 mikado configure [...]
 ```
+
+for example of how to run the mikado pipeline see the script (using the blast and portucullis docker images) - [example script](https://github.com/BaderLab/GenomeAnnotationTutorial/blob/main/Docker/Mikado/test_ubuntu22_data/final_commands.sh) 
+
+example data was downloaded from [mikado example data](https://github.com/EI-CoreBioinformatics/mikado/tree/master/sample_data).
 
 For detailed instructions running mikado see - [mikado documentation](https://mikado.readthedocs.io/en/stable/Tutorial/)}
