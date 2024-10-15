@@ -25,7 +25,7 @@ In this tutorial, we talk in depth on what process and tools we recommend depend
 8. If you do not have access to high-quality RNA-seq data, perform annotation with [BRAKER3](https://github.com/Gaius-Augustus/BRAKER)
 9. Convert output of BRAKER3 to protein sequences and check score with BUSCO (cannot use BUSCO to check StringTie output as StringTie does not predict CDS)
 10. Use Mikado to combine any annotations generated in steps 3-8
-11. Run BUSCO on Mikado output; score should be higher than any inputs
+11. Run BUSCO on Mikado output; score should be higher than any inputs (if not, modify Mikado settings and rerun)
 12. Predict gene symbols using [OrthoFinder](https://github.com/davidemms/OrthoFinder) script or by intersecting gene liftover results with [BedTools](https://bedtools.readthedocs.io/en/latest/)
 
 Note that we recommend prioritizing annotation liftover with LiftOff over TOGA, and RNA-seq alignment-based annotation with StringTie over BRAKER3. Both tools we recommend are easier and faster to run, and tend to produce better annotations (according to BUSCO scores) if high-quality inputs are provided. If input quality suffers, TOGA and BRAKER3 may be more robust and provide better annotations but are harder to run.
@@ -93,6 +93,10 @@ Homology-based genome annotation is the derivation of gene models in your specie
 Before performing homology-based annotation, one needs to decide which genome to pull information from. The best homology-based annotations according to various quality metrics (e.g. BUSCO, GffCompare) occur when the reference genome is high-quality, with a high-quality annotation from a closely related species. To find such a genome, we recommend searching RefSeq or ENSEMBL for a few of the most closely related annotated species to yours, and trying liftover on those species. 
 
 High-quality genomes tend to have smaller contig or scaffold numbers (i.e. the genome sequence is divided into larger chunks), ideally close to the number of chromosomes found in the species, smaller L50s (the smallest number of contigs that make up half of the genome sequence), and larger N50s (the smallest contig length that half of the genome sequence is contained in, of the largest contigs). High-quality annotations can be assumed if the genome is annotated by RefSeq or ENSEMBL. RefSeq annotations are also evaluated for quality using BUSCO, where a curated set of single-copy orthologs is compared to the gene models identified in the annotation; a high quality annotation is indicated by a single-copy ortholog detection rate close to 100%, and missing or fragment orthologs close to 0%. We recommend the user searching these databases for a few of the most closely-related species, comparing these genome statistics, and selecting the assembly and annotation (or multiple) with the most favorable statistics.
+
+As an example, a user can search for RefSeq genomes here: https://www.ncbi.nlm.nih.gov/datasets/genome/. Once you find a genome that you are interested in that also has an item in the "RefSeq" column, click on the link to the assembly (e.g. mouse assembly: https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001635.27/). On the assembly page, there is a link to the FTP page where the genome sequencing and annotation files can be found (e.g. mouse FTP: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/).
+
+Genomes can be downloaded directly from the command line using the command `wget`. The command to download the mouse genome FASTA file would be: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz`, and the command to get the annotation in GFF format is: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz`. Typically the FASTA and GFF files are all that are required for genome liftover.
 
 #### LiftOff
 
@@ -191,6 +195,23 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
 - TOGA may not work if run on a desktop; most genomes are large enough that they require a high performance compute cluster
 - Cactus and TOGA can easily be installed with Conda
 
-   
-   
+### Transcript assembly using RNA-sequencing data
+
+RNA- and/or protein-sequence alignment data can be used to inform gene models. Alignment-based methods work by aligning RNA or protein sequences to the genome to determine the location of transcribed and/or protein-coding genes. The specific tools used to perform alignment-based annotation depend on the sequencing data available to the user. If the user has access to high-quality RNA-seq data (e.g. 2 x 100bp paired-end sequencing ideally from as many tissues as possible), [HISAT2](https://daehwankimlab.github.io/hisat2/) and [StringTie2](https://github.com/skovaka/stringtie2) can be used to create an annotation or "transcript assembly" directly from these data. Otherwise, [BRAKER3](https://github.com/Gaius-Augustus/BRAKER) can be used with shorter, lower-quality, or no RNA-seq reads and a database of protein sequences to create an annotation.
+
+#### Finding publicly available RNA-seq data
+
+If you can't generate your own RNA-seq data, there may be publically available data you can use. One place where you can search for RNA-seq data is the [Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra). In the SRA search bar, type `"species name" AND "rna seq"` to find RNA-seq for your species (e.g. `"mus musculus" AND "rna seq"`). If you see an RNA-seq dataset that fits your criteria and that you would like to download, find the experiment accession number that is listed two lines below the link to the data (often begins with "SRX"). SRA Toolkit (downloadable at https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit) can use that accession number to download the raw FASTQ files for that dataset.
+
+```
+prefetch accession_number
+# Creates folder with .sra file inside; folder and SRA file have the same name
+fasterq-dump --split-files file_name/file_name.sra
+```
+
+The resulting FASTQ files can then be used for HISAT2 + StringTie2 or BRAKER3.
+
+#### HISAT2 + StringTie2
+
+
 
