@@ -11,6 +11,25 @@ We recommend tools and best practices for each step, providing code to help the 
 
 Generally, genome annotation does not have a comparable ground truth, so we use different sources of evidence to annotate the most likely gene models. These gene models are considered hypotheses for where the genes are located on the genome, but false positives and false negatives will always exist. This pipeline uses existing tools and quality-checking software to try to minimise both of these error rates to create a high-quality annotation.
 
+### Our main recommendations in brief
+
+In this tutorial, we talk in depth on what process and tools we recommend depending on your data availability and quality. However, here is a brief overview of our recommendations:
+
+1. Soft-mask your genome using Earl Grey; use the soft-masked genome for all of the following steps
+2. Find two or three closely related genomes on RefSeq (or Ensembl) by searching through their [genome database](https://www.ncbi.nlm.nih.gov/datasets/genome/)
+3. Lift over the annotations using [LiftOff](https://github.com/agshumate/Liftoff)
+4. Translate the output GFF files to protein sequences using [GFFRead](https://github.com/gpertea/gffread)
+5. Run [BUSCO](https://busco.ezlab.org/) on the protein sequences and check to see if the single-copy ortholog score is over 90%
+6. If the BUSCO score is lower than 90%, use [TOGA](https://github.com/hillerlab/TOGA) to perform the liftover and run BUSCO on the output
+7. If you have access to high-quality RNA-seq data (2x100bp or longer), align RNA-seq with [HISAT2](https://daehwankimlab.github.io/hisat2/) and perform annotation with [StringTie2](https://github.com/skovaka/stringtie2); do this for as many tissues as possible
+8. If you do not have access to high-quality RNA-seq data, perform annotation with [BRAKER3](https://github.com/Gaius-Augustus/BRAKER)
+9. Convert output of BRAKER3 to protein sequences and check score with BUSCO (cannot use BUSCO to check StringTie output as StringTie does not predict CDS)
+10. Use Mikado to combine any annotations generated in steps 3-8
+11. Run BUSCO on Mikado output; score should be higher than any inputs
+12. Predict gene symbols using [OrthoFinder](https://github.com/davidemms/OrthoFinder) script or by intersecting gene liftover results with [BedTools](https://bedtools.readthedocs.io/en/latest/)
+
+Note that we recommend prioritizing annotation liftover with LiftOff over TOGA, and RNA-seq alignment-based annotation with StringTie over BRAKER3. Both tools we recommend are easier and faster to run, and tend to produce better annotations (according to BUSCO scores) if high-quality inputs are provided. If input quality suffers, TOGA and BRAKER3 may be more robust and provide better annotations but are harder to run.
+
 ### Notes on computational requirements
 
 We expect the user to be familiar with installing and running command-line tools, as genome annotation relies on such tools. Additional familiarity with R may be helpful for some more advanced tasks. Many tools can be run on a desktop, but some are very computationally intensive and require the use of a high-performance compute cluster (e.g. Compute Canada). The speed of many tools will improve if they have access to multiple threads and can therefore run tasks in parallel. To check how many threads you can specify when running tools, check the documentation of your compute cluster or run `nproc` on your local desktop.
@@ -169,7 +188,6 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
 
 #### TOGA and associated tools: installing/running/troubleshooting
 
-- TOGA takes a lot of work to install and run, but its results are worth it! Benchmarks have shown that TOGA performs very well compared to other methods and its preservation of gene symbols can be quite useful.
 - TOGA may not work if run on a desktop; most genomes are large enough that they require a high performance compute cluster
 - Cactus and TOGA can easily be installed with Conda
 
