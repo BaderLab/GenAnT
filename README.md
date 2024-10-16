@@ -30,6 +30,8 @@ In this tutorial, we talk in depth on what process and tools we recommend depend
 
 Note that we recommend prioritizing annotation liftover with LiftOff over TOGA, and RNA-seq alignment-based annotation with StringTie over BRAKER3. Both tools we recommend are easier and faster to run, and tend to produce better annotations (according to BUSCO scores) if high-quality inputs are provided. If input quality suffers, TOGA and BRAKER3 may be more robust and provide better annotations but are harder to run.
 
+### List of tools
+
 ### Notes on computational requirements
 
 We expect the user to be familiar with installing and running command-line tools, as genome annotation relies on such tools. Additional familiarity with R may be helpful for some more advanced tasks. Many tools can be run on a desktop, but some are very computationally intensive and require the use of a high-performance compute cluster (e.g. Compute Canada). The speed of many tools will improve if they have access to multiple threads and can therefore run tasks in parallel. To check how many threads you can specify when running tools, check the documentation of your compute cluster or run `nproc` on your local desktop.
@@ -96,7 +98,7 @@ High-quality genomes tend to have smaller contig or scaffold numbers (i.e. the g
 
 As an example, a user can search for RefSeq genomes here: https://www.ncbi.nlm.nih.gov/datasets/genome/. Once you find a genome that you are interested in that also has an item in the "RefSeq" column, click on the link to the assembly (e.g. mouse assembly: https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001635.27/). On the assembly page, there is a link to the FTP page where the genome sequencing and annotation files can be found (e.g. mouse FTP: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/).
 
-Genomes can be downloaded directly from the command line using the command `wget`. The command to download the mouse genome FASTA file would be: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz`, and the command to get the annotation in GFF format is: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz`. Typically the FASTA and GFF files are all that are required for genome liftover.
+Genomes can be downloaded directly from the command line using the command `wget`. The command to download the mouse genome FASTA file would be: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz`, and the command to get the annotation in GFF format is: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz`. Typically the FASTA and GFF files are all that are required for genome liftover. `.gz` files can be unzipped with `gunzip name_of_file.gz`.
 
 #### LiftOff
 
@@ -201,7 +203,7 @@ RNA- and/or protein-sequence alignment data can be used to inform gene models. A
 
 #### Finding publicly available RNA-seq data
 
-If you can't generate your own RNA-seq data, there may be publically available data you can use. One place where you can search for RNA-seq data is the [Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra). In the SRA search bar, type `"species name" AND "rna seq"` to find RNA-seq for your species (e.g. `"mus musculus" AND "rna seq"`). If you see an RNA-seq dataset that fits your criteria and that you would like to download, find the experiment accession number that is listed two lines below the link to the data (often begins with "SRX"). SRA Toolkit (downloadable at https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit) can use that accession number to download the raw FASTQ files for that dataset.
+If you can't generate your own RNA-seq data, there may be publically available data for your species you can use. One place where you can search for RNA-seq data is the [Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra). In the SRA search bar, type `"species name" AND "rna seq"` to find RNA-seq for your species (e.g. `"mus musculus" AND "rna seq"` if you were annotating the mouse genome). If you see an RNA-seq dataset that fits your criteria and that you would like to download, find the experiment accession number that is listed two lines below the link to the data (often begins with "SRX"). SRA Toolkit (downloadable at https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit) can use that accession number to download the raw FASTQ files for that dataset.
 
 ```
 prefetch accession_number
@@ -209,9 +211,18 @@ prefetch accession_number
 fasterq-dump --split-files file_name/file_name.sra
 ```
 
-The resulting FASTQ files can then be used for HISAT2 + StringTie2 or BRAKER3.
+The output are the FASTQ files that were submitted for that experiment. For paired-end RNA-seq data, this often means that the output will be two FASTQ files, representing each end of the paired-end reads. Such paired files should be processed together downstream, for instance when being aligned to the genome. These FASTQ files can then be used for HISAT2 + StringTie2 or BRAKER3.
 
 #### HISAT2 + StringTie2
+
+To generate gene models directly from RNA-seq alignment, the RNA-seq reads first need to be aligned to your genome sequence. This can be done with the genome aligner HISAT2. In order to align the reads, an index needs to be generated for the genome you are annotating with HISAT2. The input is your genome FASTA sequence and the number of threads you would like to use to parallelize the process. HISAT2 outputs multiple files that either end in `.ht2` or `.ht2l` depending on the size of your genome.
+
+```
+hisat2-build \
+ -p number_of_threads \
+ your_genome.fasta \
+ base_name_of_genome_index
+```
 
 
 
