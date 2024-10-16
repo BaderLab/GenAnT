@@ -224,5 +224,47 @@ hisat2-build \
  base_name_of_genome_index
 ```
 
+Now you can Run HISAT2 to align the RNA-seq reads to the genome you are annotating. The input required is the genome index created by `hisat2-build` and the input RNA-seq files in FASTQ format (or FASTA format if specified with `-f`). The `--dta` flag reports alignments tailored for transcript assemblers (as in this case). The `-1` and `-2` indicate the mates for paired-end RNA-seq. HISAT2 outputs a SAM alignment file.
+
+```
+hisat2-align \
+ -p number_of_threads \
+ --dta \
+ -x base_name_of_genome_index \
+ -1 first_mate.fastq \
+ -2 second_mate.fastq \
+ -S name_of_sam_alignment.sam
+```
+
+Now that the reads are aligned, StringTie2 can be used to generate gene models (this language is used for simplicity - StringTie2 finds "transcripts" rather than "genes" since it is based on aligning RNA-seq to the genome, but the concept is similar to gene model generation). However, StringTie2 takes BAM files as input, which are a binary version of SAM files. Therefore you must first convert your SAM file(s) to BAM file(s) with [SAMtools](http://www.htslib.org/). The only input is the SAM file created with HISAT2. `-S` specifies SAM input, `-h` includes the header in the SAM output, `-u` indicates uncompressed BAM output (saves time when converting SAM to BAM).
+
+```
+samtools view \
+ -@ number_of_threads \
+ -Shu \
+ -o name_of_sam_alignment.bam \
+ name_of_bam_alignment.sam
+```
+
+StringTie2 also requires the BAM files to be sorted by reference position. This can also be done with SAMtools. 
+
+```
+samtools sort \
+ -@ number_of_threads \
+ -o name_of_sorted_bam_alignment.bam \
+ name_of_bam_alignment.bam
+```
+
+Now the sorted BAM file can be used to predict gene models with StringTie2. The output is a GTF file.
+
+```
+stringtie \
+ name_of_sorted_bam_alignment.bam \
+ -o stringtie_output.gtf \
+ -p number_of_threads
+```
+
+The only gene models in the output GTF file are transcripts and exons, with no prediction of coding sequences (typically indicated by "CDS" in the third column of the GTF file). Because of this, the output cannot be easily converted into a protein sequence and tested with BUSCO. Although this is not ideal, testing the quality and completeness of a genome annotation with BUSCO is not necessary if it will be combined with additional annotation sets and filtered using [Mikado](https://mikado.readthedocs.io/en/stable/) (explained later). If you used poor-quality or very short RNA-seq data, however (not recommended), there is a risk of generating short, fragmented, monoexonic transcripts. You can check to see if your annotation has many short, monoexonic transcripts using a summary statistics calculator provided by Mikado, `mikado util stats annotation.gff output_summary.tsv`, where `annotation.gff` is replaced by whatever annotation you want the summary statistics for, and `output_summary.tsv` is whatever you name the output summary statistics file. You can compare your summary statistics to that of another mammalian genome annotated by RefSeq or Ensembl. If the statistics are similar, this indicates an annotation that is likely of higher quality. However, if you notice that the average number of exons per transcript is very low and the number of monoexonic transcripts is very high in the genome you are annotating, this indicates that many of the gene models may be short or fragmented, and should potentially be excluded from the final annotation set or run through a pass of very stringent filtering with Mikado (tool explained later, noisy RNA-seq e.g. https://mikado.readthedocs.io/en/stable/Tutorial/Adapting/#case-study-2-noisy-rna-seq-data).
+
 
 
