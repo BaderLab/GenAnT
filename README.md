@@ -266,8 +266,22 @@ The only features in the output GTF file are transcripts and exons, with no pred
 
 If you don't have access to RNA-seq data or your RNA-seq reads are short (single-end short reads or paired-end reads shorter than 2x100bp), [BRAKER3](https://github.com/Gaius-Augustus/BRAKER) can be used to generate an annotation. BRAKER3 integrates RNA-seq alignment information with protein data and *ab initio* gene prediction. *Ab initio* gene predictors are mathematical models that are fed existing gene models to train their algorithms (i.e. the algorithms learn which aspects of genome structure are associated with different gene model features), so that they can then discover new gene models in genome sequences. The RNA sequences come from the species being annotated, whereas the protein sequences are typically from an online database of homologous sequences, like [OrthoDB](https://www.orthodb.org/). Internally, BRAKER3 uses HISAT2 to align the short RNA-seq reads to the genome, StringTie2 to create candidate gene models from these alignments, and [ProtHint](https://github.com/gatech-genemark/ProtHint) to predict CDS regions using these protein alignments. These data are then used as “hints” i.e. (estimations of CDS region and intron placements) when generating *ab initio* gene models with [GeneMark-ETP](https://github.com/gatech-genemark/GeneMark-ETP) and [Augustus](https://github.com/Gaius-Augustus/Augustus). Finally, BRAKER3 can also identify tRNAs, snoRNAs, and UTRs.
 
-The input to BRAKER3 is the soft-masked genome you wish to annotate, and the RNA and protein sequences. If you generated the previous annotation using HISAT2 + StringTie, you would have already aligned RNA-seq to the genome which would otherwise be done internally by BRAKER3. 
+The input to BRAKER3 is the soft-masked genome you wish to annotate (`your_genome.fa`), the RNA sequences you wish to align, and protein sequence database (`orthodb.fa`). If you generated the previous annotation using HISAT2 + StringTie, you would have already aligned RNA-seq to the genome which would otherwise be done internally by BRAKER3. Therefore, the sorted BAM file(s) that you used as input to StringTie2 can also be used as input for BRAKER3 (e.g. `rna1.bam,rna2.bam` with more comma-separated files listed if you have additional BAM files). `name_of_your_species` is whatever name you want to call you species to distinguish the output; `--etpmode` indicates that you are using both RNA and protein data; `number_of_cores` is the same as the number of threads used for other tools (they are slightly different ways to describe essentially the same thing); and `--gff3` indicates that the desired output is a GFF3 file.
+
+```
+singularity exec braker3.sif braker.pl \
+ --cores=number_of_cores \
+ --etpmode \
+ --species=name_of_your_species \
+ --genome=your_genome.fa \
+ --bam=rna1.bam,rna2.bam \
+ --prot_seq=orthodb.fa \
+ --gff3
+```
+
+If you do not have RNA-seq data and wish to run BRAKER3 in "protein mode", change the `--etpmode` flag to...
 
 #### BRAKER3: installing/running/troubleshooting
 
 - In our experience, BRAKER is most easily installed and implemented using the Singularity container that the BRAKER authors maintain: `singularity build braker3.sif docker://teambraker/braker3:latest`
+- We have found that the GFF file output by BRAKER3 has some formatting issues that can be fixed by running GFFRead, e.g. `gffread braker.gtf --keep-genes -o braker.gffread.gff`
