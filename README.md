@@ -284,4 +284,19 @@ If you do not have RNA-seq data and wish to run BRAKER3 in "protein mode", chang
 #### BRAKER3: installing/running/troubleshooting
 
 - In our experience, BRAKER is most easily installed and implemented using the Singularity container that the BRAKER authors maintain: `singularity build braker3.sif docker://teambraker/braker3:latest`
+- If installing Braker through other methods (e.g. a conda environment) then the `singularity exec braker3.sif` in the command is unnecessary
 - We have found that the GFF file output by BRAKER3 has some formatting issues that can be fixed by running GFFRead, e.g. `gffread braker.gtf --keep-genes -o braker.gffread.gff`
+
+### How to evaluate annotation quality
+
+Genome annotation quality across species is constantly improving, and no genome annotation is perfect. For each annotation generated, it is useful to perform a quality assessment to determine how well certain annotation tools worked for your data.
+
+The most common way to assess the completeness and quality of the annotation, is to use [BUSCO](https://busco.ezlab.org/) to compare the gene models found in your genome to a curated set of single-copy orthologs for all domains of life stored in the OrthoDB database. To do this, a GFF file and FASTA file can be translated into a FASTA file of protein sequences (e.g. by using GFFRead). The inputs to GFFRead are the genome FASTA file and annotation GFF file of the annotation that you wish to translate into protein sequences, and `output_protein_sequences.faa` is whatever you decide to name the output.
+
+```
+gffread -y output_protein_sequences.faa -g genome.fa annotation.gff
+```
+
+BUSCO can be run on this FASTA file in protein mode, which functionally scans the protein sequence file for thousands of conserved genes. BUSCO requires the user to pick a pre-existing lineage sequence database to be used for its comparison (e.g. “Glires”); one should specify an available lineage closest to your species of interest. BUSCO returns statistics indicating if the expected protein sequences are found, fragmented, or missing. BUSCO scores can be compared across annotations as a judge of quality, with higher BUSCO scores indicating higher quality genomes.
+
+
