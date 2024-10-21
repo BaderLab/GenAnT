@@ -291,12 +291,26 @@ If you do not have RNA-seq data and wish to run BRAKER3 in "protein mode", chang
 
 Genome annotation quality across species is constantly improving, and no genome annotation is perfect. For each annotation generated, it is useful to perform a quality assessment to determine how well certain annotation tools worked for your data.
 
-The most common way to assess the completeness and quality of the annotation, is to use [BUSCO](https://busco.ezlab.org/) to compare the gene models found in your genome to a curated set of single-copy orthologs for all domains of life stored in the OrthoDB database. To do this, a GFF file and FASTA file can be translated into a FASTA file of protein sequences (e.g. by using GFFRead). The inputs to GFFRead are the genome FASTA file and annotation GFF file of the annotation that you wish to translate into protein sequences, and `output_protein_sequences.faa` is whatever you decide to name the output.
+The most common way to assess the completeness and quality of the annotation, is to use [BUSCO](https://busco.ezlab.org/) to compare the gene models found in your genome to a curated set of single-copy orthologs for all domains of life stored in the OrthoDB database. To do this, a GFF file and FASTA file can be translated into a FASTA file of protein sequences (e.g. by using GFFRead). The inputs to GFFRead are the genome FASTA file and annotation GFF file of the annotation that you wish to translate into protein sequences, and `protein_sequences.faa` is whatever you decide to name the output.
 
 ```
-gffread -y output_protein_sequences.faa -g genome.fa annotation.gff
+gffread -y protein_sequences.faa -g genome.fa annotation.gff
 ```
 
-BUSCO can be run on this FASTA file in protein mode, which functionally scans the protein sequence file for thousands of conserved genes. BUSCO requires the user to pick a pre-existing lineage sequence database to be used for its comparison (e.g. “Glires”); one should specify an available lineage closest to your species of interest. BUSCO returns statistics indicating if the expected protein sequences are found, fragmented, or missing. BUSCO scores can be compared across annotations as a judge of quality, with higher BUSCO scores indicating higher quality genomes.
+BUSCO can be run on this FASTA file in protein mode, which functionally scans the protein sequence file for thousands of conserved genes. BUSCO requires the user to pick a pre-existing lineage sequence database to be used for its comparison (e.g. “Glires”); one should specify an available lineage closest to your species of interest. You can see what lineages are available by running:
 
+```
+busco --list-datasets
+```
+
+BUSCO returns statistics indicating if the expected protein sequences are found, fragmented, or missing. BUSCO scores can be compared across annotations as a judge of quality, with higher BUSCO scores indicating higher quality genomes. BUSCO can be run as follows, requiring the protein sequences created from the GFF file as input, as well as the lineage (e.g. `glires` or the more general `mammalia`), `-m prot` indicating that we are looking at protein sequences, and `-c` indicating the number of threads to speed up the process.
+
+```
+busco -i protein_sequences.faa \
+ -l lineage \
+ -m prot \
+ -c number_of_threads
+```
+
+BUSCO outputs a directory of results, the most important of which are the percentage of single-copy orthologs that were captured; this statistic is also output to the screen. It's important to note, that the maximum BUSCO score (i.e. the maximum percentage of single-copy orthologs) an annotation can have is equal to the percentage that have been captured in the genome sequence that you are annotating.
 
