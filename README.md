@@ -347,6 +347,42 @@ Genomes contain collinear regions called syntenic blocks that are conserved acro
 
 #### Functional genomics alignment
 
-Aligning functional genomics data to your assembly and viewing these data with your genome annotation on a genome browser is a crucial sanity check in determining whether genome annotations were correctly performed. Such data can be the RNA-seq reads that have been aligned to the genome with HISAT2 earlier in the pipeline. The genome FASTA file, BAM alignment files, and the genome annotation GFF file can all be loaded into a genome browser at the same time, and junctions revealed by the BAM files will often align well with exons indicated by the annotation. If clear junctions exist but appropriate gene models are missing, this may indicate a mistake in the annotation. Common annotation tools include...
+Aligning functional genomics data to your assembly and viewing these data with your genome annotation on a genome browser is a crucial sanity check in determining whether genome annotations were correctly performed. Such data can be the RNA-seq reads that have been aligned to the genome with HISAT2 earlier in the pipeline. The genome FASTA file, BAM alignment files, and the genome annotation GFF file can all be loaded into a genome browser at the same time, and junctions revealed by the BAM files will often align well with exons indicated by the annotation. If clear junctions exist but appropriate gene models are missing, this may indicate a mistake in the annotation. Common genome browsers include...
+
+## Combining and filtering gene models
+
+Completing the previous steps yields gene models from multiple homology-based annotations and transcript-assembly-based annotations. Most gene models will be identified across annotations, however some gene models will be method-specific.
+
+#### Mikado
+
+[Mikado](https://github.com/EI-CoreBioinformatics/mikado) is a tool designed to evaluate, combine, and filter gene models across multiple annotations in a way that mimics manual assembly curation. Mikado takes different GFF files as input, and outputs a filtered GFF file that is more accurate than any of the input annotation or evidence files on their own.
+
+Mikado is directed by configuration and scoring files that can be customized to your annotation project. The four steps Mikado follows are:
+1. Configure (Creates configuration files that guide Mikado)
+2. Prepare (Prepares input GFF files for analysis)
+3. Serialise (Creates database used for “Pick”)
+4. Pick (Picks best transcripts for resulting annotation)
+
+Mikado has a thorough user manual that includes a tutorial walking through how to use it: https://mikado.readthedocs.io/en/stable/Tutorial/. Before running the command to create the configuration file, it is best to organize your input GFF files that you would like to combine. The names of these files should be listed in a tab-delimited file, with one file described per row.
+
+First column: the name of the file
+Second column: short, unique identifier for the input file
+Third column: True or False indicating whether or not the annotation is strand-specific
+OPTIONAL COLUMNS:
+Fourth column: Assignment of positive or negative weightings (e.g. if you think a particular input file is high quality, you can, say, put a 3 in that colum; a poor-quality dataset may have a -0.5)
+Fifth column: True or False indicating if the annotation is a reference (important if updating an exising annotation, another function of mikado)
+
+The easiest way to run everything is if you have all of these input files should be stored in a working directory that you are using to run Mikado, including the list of inputs. Here is an example of the tab-delimited file indicating the different input GFF files (note if items are separated by spaces instead of tabs, an error will be thrown):
+
+```
+braker.gff braker True 0 False
+stringtie.gff stringtie True 0 False
+liftoff.gff liftoff True 0 False
+toga.gff toga True 0 False
+```
+
+To create the configuration file that runs Mikado, one must type `mikado configure` on the command line, pointing to the genome you are annotating, specifying the name of the configuration file, and pointing towards the TSV file of input files that you just created. Mikado provides a selection of scoring files you can use to cater your genome annotation to your species, which you can indicate with the `--scoring` argument. An additional `--copy-scoring` flag can be used to copy a scoring file to your working directory (e.g. `mikado configure --list list_of_inputs.tsv --reference name_of_genome.fasta -y conf.yaml --scoring mammalian.yaml --copy-scoring`). The scoring file is what Mikado will eventually use to selectively filter the input transcripts, and may need to be modified depending on what type of data or species you are working with (we’ll touch on this later). The configuration file that gets generated will need to be modified in order to run the rest of the Mikado commands; the user can do this by either modifying their `mikado configure` command, or by modifying the resulting configuration file directly (e.g. using `nano conf.yaml`).
+
+
 
 
