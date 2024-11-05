@@ -381,8 +381,93 @@ liftoff.gff liftoff True 0 False
 toga.gff toga True 0 False
 ```
 
-To create the configuration file that runs Mikado, one must type `mikado configure` on the command line, pointing to the genome you are annotating, specifying the name of the configuration file, and pointing towards the TSV file of input files that you just created. Mikado provides a selection of scoring files you can use to cater your genome annotation to your species, which you can indicate with the `--scoring` argument. An additional `--copy-scoring` flag can be used to copy a scoring file to your working directory (e.g. `mikado configure --list list_of_inputs.tsv --reference name_of_genome.fasta -y conf.yaml --scoring mammalian.yaml --copy-scoring`). The scoring file is what Mikado will eventually use to selectively filter the input transcripts, and may need to be modified depending on what type of data or species you are working with (we’ll touch on this later). The configuration file that gets generated will need to be modified in order to run the rest of the Mikado commands; the user can do this by either modifying their `mikado configure` command, or by modifying the resulting configuration file directly (e.g. using `nano conf.yaml`).
+To create the configuration file that runs Mikado, one must type `mikado configure` on the command line, pointing to the genome you are annotating, specifying the name of the configuration file, and pointing towards the TSV file of input files that you just created. Mikado provides a selection of scoring files you can use to cater your genome annotation to your species, which you can indicate with the `--scoring` argument - mammals will use built-in `mammalian.yaml`. An additional `--copy-scoring` flag can be used to copy a scoring file to your working directory so that you can customize it for your species. The scoring file is what Mikado will eventually use to selectively filter the input transcripts, and may need to be modified depending on what type of data or species you are working with (we’ll touch on this later). The configuration file that gets generated can also easily be modified if needed; the user can do this by either modifying their `mikado configure` command and rerunning it, or by modifying the resulting configuration file directly (e.g. using `nano conf.yaml`).
 
+Below is an example command, with `-y` preceding the name of the configuration file, and `--reference` pointing to the soft-masked FASTA file of the genome that you're annotating.
 
+```
+mikado configure \
+ --list list_of_inputs.tsv \
+ --reference name_of_genome.fasta \
+ -y conf.yaml \
+ --scoring mammalian.yaml \
+ --copy-scoring
+```
+
+The next step is running `mikado prepare`, which requires any input GFF files you wish to combine. Since you have already created the configuration file and pointed Mikado to your list of input files, all you have to do is run `mikado prepare --json-conf conf.yaml`. This creates a GTF file containing non-redundant transcripts (`mikado_prepared.gtf`) and a corresponding FASTA file (`mikado_prepared.fasta`), as well as a log file. This step can be sped up by increasing the number of threads using the `-p` argument, and Mikado recommends adding the option `start-method spawn` when using parallelization.
+
+```
+mikado prepare \
+ --json-conf conf.yaml
+ --start-method spawn \
+ -p number_of_threads
+```
+
+Before running `mikado serialise`, additional work should be done to provide Mikado with more information about the transcripts now stored in the `mikado_prepared` files. The steps are as follows, and are especially important when working with RNA-seq-derived gene models:
+1. Validate splice junctions with [Portcullis](https://github.com/EI-CoreBioinformatics/portcullis)
+2. Determine sequence similarity with [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi)
+3. Identify open reading frames (ORFs) with [TransDecoder](https://github.com/TransDecoder/TransDecoder/wiki)
+
+#### Portcullis
+
+Validating splice junctions can be done with [Portcullis](https://github.com/EI-CoreBioinformatics/portcullis), which filters out false positive intron/exon boundaries which are often found in the outputs of RNA-seq alignment tools. Portcullis can be run on a merged BAM file of all of your aligned RNA-seq reads. So if you had aligned RNA-seq datasets with RNA-seq alignment tools, you would have ended up with a BAM file for each alignment performed. All of these BAM files must first be merged with [SAMtools](https://www.htslib.org/). Three are given as an example, but any number of BAM files can be merged.
+
+```
+samtools merge \
+ -@ number_of_threads \
+ merged_bams.bam \
+ bam_file_1.bam \
+ bam_file_2.bam \
+ bam_file_3.bam
+```
+
+Portcullis can now be run on the output, `merged_bams.bam`; this tool analyses all of the splice junctions in the BAM file and filters out the junctions that are not likely to be genuine. Portcullis has three steps: `prep`, which prepares the data for junction analysis; `junc`, which calculates junction metrics; and `filt`, which separates valid and invalid splice junctions. The easiest way to run the tool, however, is to run `portcullis full` which combines all three steps and produces a BED file of junctions that can be used as input for `mikado serialise` (`portcullis.pass.junctions.bed`).
+
+```
+portcullis full \
+ -t number_of_threads \
+ name_of_genome.fasta \
+ merged_bams.bam
+```
+
+#### BLAST
+
+[BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi) can now be used to identify sequence similarity to known proteins. Different protein databases exist against which the predicted transcript sequences output by `mikado prepare` can be compared; we used the high-quality curated protein database, SwissProt. This database can be downloaded from [uniprot.org](https://www.uniprot.org/).
+
+`wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz`
+
+Once the database is downloaded, you can use BLAST to index it which is required to perform a BLAST search. `-dbtype` indicates that this is a protein database. `uniprot_sprot` is the base name of the FASTA file and the resulting BLAST database.
+
+```
+makeblastdb \
+ -in uniprot_sprot.fasta \
+ -dbtype prot \
+ -out uniprot_sprot
+```
+
+BLAST the transcript sequences from `mikado prepare` against the SwissProt database using `blastx`, which is the command required to compare translated nucleotide sequences to protein sequences. BLAST needs to be run requesting the following output format: `-outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop"`. This creates a TSV results file that Mikado uses to filter or score transcripts based on their homology to existing protein-coding sequences. `-max_target_seqs` indicates to keep a maximum of this number of hits (we used 5, as seen on the Mikado tutorial). `-query` is the transcript file BLASTed against the protein database. `-outfmt` specifies the format required by the next step of Mikado. `-db` is the SwissProt database. `-evalue` is a minimum measure of significance to consider a protein sequence in the SwissProt database a hit against the query.
+
+```
+blastx \
+ -max_target_seqs num_of_seqs \
+ -num_threads number_of_threads \
+ -query mikado_prepared.fasta \
+ -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop" \
+ -db uniprot_sprot \
+ -evalue 0.000001 \
+ -out blast_results.tsv
+```
+
+The output is a TSV file of BLAST+ results called `blast_results.tsv`. Note that BLAST takes a very long time (maybe a day or so), also depending on the number of sequences output by `mikado prepare`. This time will increase significantly if a larger protein database is used. [Diamond](https://github.com/bbuchfink/diamond) is a much faster alternative than BLAST, but it finds fewer hits even in ultra-sensitive mode.
+
+#### TransDecoder
+
+Open reading frames (ORFs) can be determined with [TransDecoder](https://github.com/TransDecoder/TransDecoder/wiki), a tool that scans transcripts for potential coding regions. A single transcript can produce multiple ORFs, and the user can set a minimum amino acid count using the `-m` flag (we set this to 30). The input to TransDecoder is the FASTA file generated by `mikado prepare`; `TransDecoder.LongOrfs` identifies the ORFs.
+
+```
+TransDecoder.LongOrfs \
+ -t mikado_prepared.fasta \
+ -m number_of_bases
+```
 
 
