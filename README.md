@@ -381,6 +381,8 @@ liftoff.gff liftoff True 0 False
 toga.gff toga True 0 False
 ```
 
+#### 1. Mikado configure
+
 To create the configuration file that runs Mikado, one must type `mikado configure` on the command line, pointing to the genome you are annotating, specifying the name of the configuration file, and pointing towards the TSV file of input files that you just created. Mikado provides a selection of scoring files you can use to cater your genome annotation to your species, which you can indicate with the `--scoring` argument - mammals will use built-in `mammalian.yaml`. An additional `--copy-scoring` flag can be used to copy a scoring file to your working directory so that you can customize it for your species. The scoring file is what Mikado will eventually use to selectively filter the input transcripts, and may need to be modified depending on what type of data or species you are working with (we’ll touch on this later). The configuration file that gets generated can also easily be modified if needed; the user can do this by either modifying their `mikado configure` command and rerunning it, or by modifying the resulting configuration file directly (e.g. using `nano conf.yaml`).
 
 Below is an example command, with `-y` preceding the name of the configuration file, and `--reference` pointing to the soft-masked FASTA file of the genome that you're annotating.
@@ -393,6 +395,8 @@ mikado configure \
  --scoring mammalian.yaml \
  --copy-scoring
 ```
+
+#### 2. Mikado prepare
 
 The next step is running `mikado prepare`, which requires any input GFF files you wish to combine. Since you have already created the configuration file and pointed Mikado to your list of input files, all you have to do is run `mikado prepare --json-conf conf.yaml`. This creates a GTF file containing non-redundant transcripts (`mikado_prepared.gtf`) and a corresponding FASTA file (`mikado_prepared.fasta`), as well as a log file. This step can be sped up by increasing the number of threads using the `-p` argument, and Mikado recommends adding the option `start-method spawn` when using parallelization.
 
@@ -478,5 +482,66 @@ TransDecoder.Predict \
  --retain_long_orfs_length number_of_bases
 ```
 
-If there is an error in the second step, it may be fixed by adding the flag `--no_refine_starts`. 
+If there is an error in the second step, it may be fixed by adding the flag `--no_refine_starts`. This prevents the identification of potential start codons for 5' partial ORFs using a position weight matrix; this process may fail if there are not enough sequences to model the start site. Further, TransDecoder may fail if there are spaces in any of the file paths you are using.
 
+TransDecoder outputs valid ORFs in a BED file (e.g. `mikado_prepared.fasta.transdecoder.bed`) that can now be used for Mikado serialise.
+
+#### 3. Mikado serialise
+
+Now that you have run Portcullis (if possible), BLAST+, and TransDecoder, it is possible to combine all of this information with Mikado serialise. Mikado serialise takes many different inputs that you point it at and creates an SQL database. Some of the different files and parameters that should be provided to Mikado include:
+1. The FASTA output of `mikado prepare` (`mikado_prepared.fasta)
+2. The configuration file (`conf.yaml`)
+3. The genome index file (`name_of_genome.fai`)
+4. The output of Portcullis (`portcullis.pass.junctions.bed`)
+5. The output of BLAST (`blast_results.tsv`)
+6. The FASTA file used for the BLAST search (`uniprot_sprot.fasta`)
+7. The maximum number of discrete hits that can be assigned to a single sequence (we set this to 5)
+8. The output of TransDecoder (`mikado_prepared.fasta.transdecoder.bed`)
+9. The name of the log file to be produced by `mikado serliase` (`mikado_serialise.log`)
+
+Here is an example of a Mikado serialise command:
+
+```
+mikado serialise \
+ -p number_of_threads --start-method spawn \
+ --transcripts mikado_prepared.fasta \
+ --json-conf conf.yaml \
+ --genome_fai name_of_genome.fai \
+ --junctions portcullis.pass.junctions.bed \
+ --tsv blast_results.tsv \
+ --blast-targets uniprot_sprot.fasta \
+ --max-target-seqs number_of_targets \
+ --orfs mikado_prepared.fasta.transdecoder.bed \
+ --log mikado_serialise.log
+```
+
+This creates a database called `mikado.db`. Note that if one of your input sources changes and you want to rerun `mikado serliase`, you have to manually delete `mikado.db` or else an error will be thrown.
+
+#### 4. Mikado pick
+
+The final step of the Mikado pipeline, `mikado pick`, takes this file as input and selects what it determines to be the best gene models. In order to perform this `pick` command, Mikado relies on a scoring file (e.g. `mammalian.yaml`) that guides the algorithm on what parameters create the best gene models. For instance, the best transcripts may long sequences with more than two exons, and introns less than 2000bp long (more parameters are considered, that was just an example). These parameters are described in the scoring file which may be customized by the user. Instructions on how to do this can be found in the [Mikado guidelines](https://mikado.readthedocs.io/en/stable/Tutorial/Scoring_tutorial/#configure-scoring-tutorial). Mikado has a flag `--no-purge` which can be used to prevent Mikado from throwing out gene models that fail specific requirements in the scoring and configuration files, but where there is no competing gene model. This dramatically increases the number of gene models in the final annotation, and we have found that it yields higher BUSCO scores (at the risk of including more false positives).
+
+This is also where the user has to decide how they want to treat the chimeras in their gene models. Mikado has five different options that can be chosen by the user which range in stringency: nosplit, stringent, lenient, permissive, split. “nosplit” never splits any gene models, whereas “split” always splits multi-ORF transcripts. The other options land somewhere in between and really on homology results from BLAST hits (e.g. only splitting if consecutive ORFs have BLAST hits against two different targets).
+
+```
+mikado pick \
+ --json-conf conf.yaml \
+ -db mikado.db \
+ --mode lenient \
+ mikado_prepared.gtf \
+ --scoring mammalian.yaml
+ --loci-out name_of_final_annotation.gff \
+ --log mikado_pick.log \
+ --no-purge
+```
+
+The output of `mikado pick` is a GFF file containing the gene models selected based on the parameters in the scoring file and the information in `mikado_serialise.db`. At this point, the gene models can be analysed and visualised (if desired) for quality purposes. `mikado pick` is fairly quick to run, so it may be a good idea to run it a few times using different stringency levels on when to split chimeras, to see which setting results in the most expected gene model statistics (e.g. the highest BUSCO scores).
+
+#### Mikado and associated tools: installing/running/troubleshooting
+
+- Mikado has been challenging to install as it has a lot of dependencies. Therefore, we created a Docker image that can be run as follows: `docker run -v "$(pwd)":/tmp risserlin/mikado:ubuntu22_mikado2.3.2 mikado --help`
+- Mikado has many steps but should not take more than two days to run; the slowest steps are BLAST+ and TransDecoder, followed by `mikado serialise`
+- TransDecoder and Portcullis can be installed with Conda
+- TransDecoder and creating a blast database do not work with spaces in the file paths
+- `mikado_prepared.fasta.fai` and `mikado.db` need to be manually deleted if rerunning the whole Mikado pipeline in the same directory as the files will not be overwritten and confusing errors will be thrown
+- Make sure that the input list of samples is a TSV separated file; spaces separating each column will throw an error
