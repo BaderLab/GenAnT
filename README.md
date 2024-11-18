@@ -552,9 +552,9 @@ Non-coding RNAs do not contain highly conserved exons and protein domains typica
 
 Non-coding annotations can be generated using [the RNA family (Rfam) database](https://rfam.org/), an open-access, and maintained database of non-coding RNAs. The primary tool used in non-coding gene annotation and classification is [INFERence of RNA ALignment (Infernal)](http://eddylab.org/infernal/). Briefly, Infernal builds covariance models of RNA molecules, to incorporate sequence homology and predicted RNA secondary structure in the annotation and classification on non-coding molecules in the genome. To reduce the runtime and memory requirement of this process, researchers typically pre-select sequences (seed) based on sequence homology to a non-coding database, RNA-seq alignments, and regions identified as “non-coding” in GFF post processing algorithms (e.g. Mikado).
 
-#### Seeding
+#### Seeding by BLASTing against Rfam
 
-To perform seeding (i.e. identifying genomic regions likely to contain non-coding RNA molecules), you can first BLAST your unmasked genome FASTA file against the Rfam database of non-coding RNAs. The step-by-step process is explained [here](https://docs.rfam.org/en/latest/sequence-extraction.html), but we've also outlined our process. Start by downloading and unzipping the Rfam database:
+To perform one round of seeding (i.e. identifying genomic regions likely to contain non-coding RNA molecules), you can first BLAST your unmasked genome FASTA file against the Rfam database of non-coding RNAs. The step-by-step process is explained [here](https://docs.rfam.org/en/latest/sequence-extraction.html), but we've also outlined our process. Start by downloading and unzipping the Rfam database:
 
 ```
 wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/Rfam.fa.gz
@@ -578,7 +578,7 @@ makeblastdb -in Rfam_rmdup.fa \
 -out Rfam_ncRNA
 ```
 
-Next, BLAST your unmasked genome FASTA file against the Rfam BLAST database. `-db Rfam_ncRNA` points to the base name of the BLAST database; `-query genome.fasta` points to your genome sequence; `-evalue 1e-6
+Next, BLAST your unmasked genome FASTA file against the Rfam BLAST database. `-db Rfam_ncRNA` points to the base name of the BLAST database; `-query genome.fasta` points to your genome sequence; `-evalue 1e-6` describes the number of hits expected by chance; `-max_hsps 6` indicates a maximum of 6 alignments for any query-subject pair; `-max_target_seqs 6` indicates that a maximum of 6 aligned sequences are to be kept; `-outfmt 6` specifies the type of output from BLAST; `-out assembly.rfam.blastn` is the name of the output file. This command outputs all of the BLAST alignments found in the search that match all of the given criteria.
 
 ```
 blastn -db Rfam_ncRNA \ 
@@ -586,6 +586,66 @@ blastn -db Rfam_ncRNA \
 -evalue 1e-6 -max_hsps 6 -max_target_seqs 6 -outfmt 6 \
 -num_threads number_of_threads \
 -out assembly.rfam.blastn
+```
+
+After this, convert the BLAST output to a BED file by extracting the chromosome, start coordinate, end coordinate, and name columns (columns 1, 7, 8,and 2 of a blastn output tsv):
+
+```
+awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\t" $2}' assembly.rfam.blastn > assembly.rfam.bed
+```
+
+#### Seeding with previously identified non-coding RNA gene models
+
+GFF files processed with Mikado and RNA-seq data (and GFF files annotated from other approaches) will have “biotype” information already stored (e.g. indicating if the gene encodes ncRNA). These regions can be extracted from a GFF file and saved as a BED file with the same chromosome, start coodinate, end coordinate, and name columns. These coordinates will proceed to be added to `assembly.rfam.bed`. Here is a way to isolate these regions from a GFF file in R using the library [rtracklayer](https://bioconductor.org/packages/release/bioc/html/rtracklayer.html).
+
+```
+library(rtracklayer)
+
+# Read in the GFF/GTF file
+gtf <- rtracklayer::readGFF("mikado_annotation.gtf")
+
+# Ensembl annotates biotypes. Mikado will simply return “non-coding”
+# Isolate all features with the following biotypes from the GTF file
+gtf_nonCoding <- gtf[ (gtf$gene_biotype %in% c("lncRNA","miRNA","rRNA","scaRNA","snoRNA",
+                                  "snRNA")),]
+
+# Only keep the transcripts that these biotypes encode
+gtf_nonCoding_transcript <- gtf_nonCoding[gtf_nonCoding$type == "transcript",]
+
+# Save new GFF file that only has non-coding transcripts
+rtracklayer::export.gff3(gtf_nonCoding_transcript,"mikado_annotation_transcripts.gff3")
+
+# Only isolate the specific columns that are needed for the BED file
+gtf_nonCoding_transcript <- gtf_nonCoding_transcript[,c("seqid","start","end","transcript_id")]
+
+# Create a BED file by exporting the object created above as a table
+write.table(gtf_nonCoding_transcript, file = "mikado_annotation_noncoding.bed",quote=F,row.names = F,col.names = F,sep="\t")
+```
+
+#### Combine different seeding results
+
+Combine candidate noncoding RNA containing genome coordinates (seeds) from each method into a master-list using concatenate:
+
+```
+cat assembly.rfam.bed mikado_annotation_noncoding.bed > assembly_ncRNA_seed.bed
+```
+
+Sort the full BED file:
+
+```
+bedtools sort -i assembly_ncRNA_seed.bed > assembly_ncRNA_seed.s.bed
+```
+
+If not done yet, index the unmasked genome FASTA file using SAMtools:
+
+```
+samtools faidx genome.fasta
+```
+
+Isolate DNA from the unmasked FASTA file that matches the genomic coordinates of the non-coding RNA seeds using `bedtools getfasta`. `-fi genome.fasta` specifies the input genome; `-bed assembly_ncRNA_seed.s.bed` are the bed coordinates that are used to specify the regions from the FASTA file to extract the sequences from; `-fo assembly_ncRNA_seed.fasta` is the name of the output FASTA file.
+
+```
+bedtools getfasta -fi genome.fasta -bed assembly_ncRNA_seed.s.bed -fo assembly_ncRNA_seed.fasta
 ```
 
 
