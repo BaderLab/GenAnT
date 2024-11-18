@@ -266,14 +266,14 @@ The only features in the output GTF file are transcripts and exons, with no pred
 
 If you don't have access to RNA-seq data or your RNA-seq reads are short (single-end short reads or paired-end reads shorter than 2x100bp), [BRAKER3](https://github.com/Gaius-Augustus/BRAKER) can be used to generate an annotation. BRAKER3 integrates RNA-seq alignment information with protein data and *ab initio* gene prediction. *Ab initio* gene predictors are mathematical models that are fed existing gene models to train their algorithms (i.e. the algorithms learn which aspects of genome structure are associated with different gene model features), so that they can then discover new gene models in genome sequences. The RNA sequences come from the species being annotated, whereas the protein sequences are typically from an online database of homologous sequences, like [OrthoDB](https://www.orthodb.org/). Internally, BRAKER3 uses HISAT2 to align the short RNA-seq reads to the genome, StringTie2 to create candidate gene models from these alignments, and [ProtHint](https://github.com/gatech-genemark/ProtHint) to predict CDS regions using these protein alignments. These data are then used as “hints” i.e. (estimations of CDS region and intron placements) when generating *ab initio* gene models with [GeneMark-ETP](https://github.com/gatech-genemark/GeneMark-ETP) and [Augustus](https://github.com/Gaius-Augustus/Augustus). Finally, BRAKER3 can also identify tRNAs, snoRNAs, and UTRs.
 
-The input to BRAKER3 is the soft-masked genome you wish to annotate (`your_genome.fa`), the RNA sequences you wish to align, and protein sequence database (`orthodb.fa`). If you generated the previous annotation using HISAT2 + StringTie, you would have already aligned RNA-seq to the genome which would otherwise be done internally by BRAKER3. Therefore, the sorted BAM file(s) that you used as input to StringTie2 can also be used as input for BRAKER3 (e.g. `rna1.bam,rna2.bam` with more comma-separated files listed if you have additional BAM files). `name_of_your_species` is whatever name you want to call you species to distinguish the output; `--etpmode` indicates that you are using both RNA and protein data; `number_of_cores` is the same as the number of threads used for other tools (they are slightly different ways to describe essentially the same thing); and `--gff3` indicates that the desired output is a GFF3 file.
+The input to BRAKER3 is the soft-masked genome you wish to annotate (`your_genome.fasta`), the RNA sequences you wish to align, and protein sequence database (`orthodb.fa`). If you generated the previous annotation using HISAT2 + StringTie, you would have already aligned RNA-seq to the genome which would otherwise be done internally by BRAKER3. Therefore, the sorted BAM file(s) that you used as input to StringTie2 can also be used as input for BRAKER3 (e.g. `rna1.bam,rna2.bam` with more comma-separated files listed if you have additional BAM files). `name_of_your_species` is whatever name you want to call you species to distinguish the output; `--etpmode` indicates that you are using both RNA and protein data; `number_of_cores` is the same as the number of threads used for other tools (they are slightly different ways to describe essentially the same thing); and `--gff3` indicates that the desired output is a GFF3 file.
 
 ```
 singularity exec braker3.sif braker.pl \
  --cores=number_of_cores \
  --etpmode \
  --species=name_of_your_species \
- --genome=your_genome.fa \
+ --genome=your_genome.fasta \
  --bam=rna1.bam,rna2.bam \
  --prot_seq=orthodb.fa \
  --gff3
@@ -296,7 +296,7 @@ Genome annotation quality across species is constantly improving, and no genome 
 The most common way to assess the completeness and quality of the annotation, is to use [BUSCO](https://busco.ezlab.org/) to compare the gene models found in your genome to a curated set of single-copy orthologs for all domains of life stored in the OrthoDB database. To do this, a GFF file and FASTA file can be translated into a FASTA file of protein sequences (e.g. by using GFFRead). The inputs to GFFRead are the genome FASTA file and annotation GFF file of the annotation that you wish to translate into protein sequences, and `protein_sequences.faa` is whatever you decide to name the output.
 
 ```
-gffread -y protein_sequences.faa -g genome.fa annotation.gff
+gffread -y protein_sequences.faa -g genome.fasta annotation.gff
 ```
 
 BUSCO can be run on this FASTA file in protein mode, which functionally scans the protein sequence file for thousands of conserved genes. BUSCO requires the user to pick a pre-existing lineage sequence database to be used for its comparison (e.g. “Glires”); one should specify an available lineage closest to your species of interest. You can see what lineages are available by running:
@@ -317,7 +317,7 @@ busco -i protein_sequences.faa \
 BUSCO outputs a directory of results, the most important of which are the percentage of single-copy orthologs that were captured; this statistic is also output to the screen. It's important to note, that the maximum BUSCO score (i.e. the maximum percentage of single-copy orthologs) an annotation can have is equal to the percentage that have been captured in the genome sequence that you are annotating. For example, if your genome sequence only has a BUSCO score of 98% (meaning that the sequence itself is missing BUSCO genes), then the BUSCO score based on the annotation has to be less than 98%. Here is how you can find the genome sequence BUSCO score:
 
 ```
-busco -i genome.fa \
+busco -i genome.fasta \
  -l lineage \
  -m genome \
  -c nuumber_of_threads
@@ -545,3 +545,49 @@ The output of `mikado pick` is a GFF file containing the gene models selected ba
 - TransDecoder and creating a blast database do not work with spaces in the file paths
 - `mikado_prepared.fasta.fai` and `mikado.db` need to be manually deleted if rerunning the whole Mikado pipeline in the same directory as the files will not be overwritten and confusing errors will be thrown
 - Make sure that the input list of samples is a TSV separated file; spaces separating each column will throw an error
+
+### Annotating non-coding RNA genes
+
+Non-coding RNAs do not contain highly conserved exons and protein domains typically seen in mammalian protein-coding genes. Accordingly, identifying non-coding genes requires algorithms that do not rely on the same genomic features used in the gene-model identification algorithms described in steps 1-3 (e.g. ORF evaluation, intron-exon ratio etc.). Instead of the evaluation of ORFs to determine if the coding-gene model is functional, non-coding gene models are evaluated for their potential functionality based on whether the predicted secondary structure of that non-coding RNA matches a previously identified secondary structure.
+
+Non-coding annotations can be generated using [the RNA family (Rfam) database](https://rfam.org/), an open-access, and maintained database of non-coding RNAs. The primary tool used in non-coding gene annotation and classification is [INFERence of RNA ALignment (Infernal)](http://eddylab.org/infernal/). Briefly, Infernal builds covariance models of RNA molecules, to incorporate sequence homology and predicted RNA secondary structure in the annotation and classification on non-coding molecules in the genome. To reduce the runtime and memory requirement of this process, researchers typically pre-select sequences (seed) based on sequence homology to a non-coding database, RNA-seq alignments, and regions identified as “non-coding” in GFF post processing algorithms (e.g. Mikado).
+
+#### Seeding
+
+To perform seeding (i.e. identifying genomic regions likely to contain non-coding RNA molecules), you can first BLAST your unmasked genome FASTA file against the Rfam database of non-coding RNAs. The step-by-step process is explained [here](https://docs.rfam.org/en/latest/sequence-extraction.html), but we've also outlined our process. Start by downloading and unzipping the Rfam database:
+
+```
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/Rfam.fa.gz
+gunzip Rfam.fa.gz
+```
+
+Then filter duplicate non-coding RNAs stored within the database, as duplicates can interrupt generating the BLAST database that you'll need to build in order to BLAST against it. There are many ways of doing this; we used [seqtk](https://github.com/lh3/seqtk).
+
+```
+seqkit rmdup Rfam.fa > Rfam.rmdup.fa
+```
+
+After the duplicates are removed, you can now create a BLAST database which requires the deduplicated Rfam database as input. `-input_type fasta` specifies that the database is a FASTA file; `-dbtype nucl` indicates that the database is made of nucleotides; `-title Rfam_ncRNA` is a recognizable title for the database; `-parse_seqids` is required to keep the original sequence identifiers; `-out Rfam_ncRNA` is the output base name for the database, and is often the same as the title.
+
+```
+makeblastdb -in Rfam_rmdup.fa \
+-input_type fasta \
+-dbtype nucl \
+-title Rfam_ncRNA \
+-parse_seqids \
+-out Rfam_ncRNA
+```
+
+Next, BLAST your unmasked genome FASTA file against the Rfam BLAST database. `-db Rfam_ncRNA` points to the base name of the BLAST database; `-query genome.fasta` points to your genome sequence; `-evalue 1e-6
+
+```
+blastn -db Rfam_ncRNA \ 
+-query genome.fasta \
+-evalue 1e-6 -max_hsps 6 -max_target_seqs 6 -outfmt 6 \
+-num_threads number_of_threads \
+-out assembly.rfam.blastn
+```
+
+
+
+
