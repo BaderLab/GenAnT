@@ -642,12 +642,44 @@ If not done yet, index the unmasked genome FASTA file using SAMtools:
 samtools faidx genome.fasta
 ```
 
-Isolate DNA from the unmasked FASTA file that matches the genomic coordinates of the non-coding RNA seeds using `bedtools getfasta`. `-fi genome.fasta` specifies the input genome; `-bed assembly_ncRNA_seed.s.bed` are the bed coordinates that are used to specify the regions from the FASTA file to extract the sequences from; `-fo assembly_ncRNA_seed.fasta` is the name of the output FASTA file.
+Isolate DNA from the unmasked FASTA file that matches the genomic coordinates of the non-coding RNA seeds using `bedtools getfasta`. `-fi genome.fasta` specifies the input genome; `-bed assembly_ncRNA_seed.s.bed` are the bed coordinates that are used to specify the regions from the FASTA file to extract the sequences from; `-fo assembly_ncRNA_seed.fasta` is the name of the output FASTA file. The sequences in this FASTA file will be used by Infernal to determine ncRNA identities.
 
 ```
 bedtools getfasta -fi genome.fasta -bed assembly_ncRNA_seed.s.bed -fo assembly_ncRNA_seed.fasta
 ```
 
+#### Using Infernal to annotate non-coding genes
 
+Once the probably DNA sequences that encode ncRNAs have been found (now located in `assembly_ncRNA_seed.fasta`), these can be searched against a database of covariance models (i.e. statistical models of RNA secondary structure and sequence consensus). Searching against these covariance models will help determine the identity of the non-coding genes. First, download the database of covariance models from Rfam, and unzip the file:
+
+```
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
+gunzip Rfam.cm.gz
+```
+
+You will also need information from Rfam.clanin, which lists which models belong to the same "clan" (i.e. a group of homologous models, like LSU rRNA archaea and LSU rRNA bacteria). Download and compress this file.
+
+```
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
+cmpress Rfam.cm
+```
+
+Then, run Infernal using the cmscan function, which searches each sequence against the covariance model database:
+
+```
+cmscan --cpu 50 -Z 1 \
+ --cut_ga --rfam --nohmmonly \
+ --tblout assembly_genome.tblout \
+ -o assembly_genome.cmscan \
+ --verbose --fmt 2 \
+ --clanin Rfam.clanin \
+ Rfam.cm assembly_ncRNA_seed.fa
+```
+
+Finally, convert the output of infernal to a GFF file. The [perl script](https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl) to convert this output can be found in the Infernal documentation. 
+
+```
+perl infernal-tblout2gff.pl --fmt2 --cmscan assembly_ncRNA_seed.tblout > assembly_ncRNA.gff
+```
 
 
