@@ -664,10 +664,10 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
 cmpress Rfam.cm
 ```
 
-Then, run Infernal using the cmscan function, which searches each sequence against the covariance model database:
+Then, run Infernal using the cmscan function, which searches each sequence against the covariance model database. `-Z 1` indicates that the e-values are calculated as if the search space size is 1 megabase; `--cut_ga` is a flag to turn on using the GA (gathering) bit scores in the model to set inclusion thresholds, which are generally considered reliable for defining family membership; `--rfam` is a flag for using a strict filtering strategy for large databases (> 20 Gb) which accelerates the search at a potential cost to sensitivity; `--nohmmonly` specifies that the command must use the covariance models; `--tblout assembly_genome.tblout` is the output summary file of hits in tabular format; `-o assembly_genome.cmscan` is the main output file; `--verbose` indicates to include extra statistics in the main output; `--fmt 2` adds additional fields to the tabular output file, including information about overlapping hits; `--clanin Rfam.clanin` points to the clan information file; the final two positional arguments, `Rfam.cm` and `assembly_ncRNA_seed.fa`, point to the covariance model database and FASTA file of sequences respectively.
 
 ```
-cmscan --cpu 50 -Z 1 \
+cmscan --cpu number_of_threads -Z 1 \
  --cut_ga --rfam --nohmmonly \
  --tblout assembly_genome.tblout \
  -o assembly_genome.cmscan \
@@ -676,7 +676,7 @@ cmscan --cpu 50 -Z 1 \
  Rfam.cm assembly_ncRNA_seed.fa
 ```
 
-Finally, convert the output of infernal to a GFF file. The [perl script](https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl) to convert this output can be found in the Infernal documentation. 
+Finally, the tabular output of infernal can be converted to a GFF file. The [perl script](https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl) to convert this output can be found in the Infernal documentation. The script can be run as follows with `--fmt2` and `--cmscan` indicating that the output of Infernal was generated with the `--fmt 2` option by cmscan. `assembly_ncRNA_seed.tblout` is the output of cmscan and the results are stored in `assembly_ncRNA.gff`.
 
 ```
 perl infernal-tblout2gff.pl --fmt2 --cmscan assembly_ncRNA_seed.tblout > assembly_ncRNA.gff
