@@ -1,4 +1,4 @@
-## Repeat masking
+# 1. Repeat masking
 
 The first step in genome annotation is to identify and mask repetitive regions. These can make up over half of a mammalian genome, and can cause trouble when generating genome annotations. For instance, repeat regions may interfere with sequence alignment, as they create an intractable number of alignment matches; repeats may also contain open reading frames (ORFs), and annotation software may mistake these ORFs as genes (therefore increasing the false positive rate when gene models are generated). Therefore it is important that a genome sequence is masked so that annotation software doesn't attempt to place gene models in these regions. Genomes can be soft-masked (repeat regions turned from uppercase letters to lowercase letters in the FASTA file) or hard-masked (repeat regions converted into strings of capital Ns). Soft-masking is generally recommended, and more leniant as it allows for gene-models initiated in non-repeat regions to extend into repeat regions.
 
@@ -26,7 +26,7 @@ earlGrey \
 - Earl Grey takes multiple days to run (be prepared for up to a week)
 - Earl Grey does not like spaces in any directory names
 
-## Generating gene models
+# 2. Generating gene models
 
 Gene models are hypotheses about the locations of genes and their corresponding features (e.g. mRNA, exons, introns) on the genome. These hypotheses are supported by a variety of evidence, including RNA-alignment information, the presence of ORFs, protein sequence conservation, gene structure and order along the sequence. As gene models are hypotheses to the locations and structures of real genes, annotations may contain both false positives (e.g. a random ORF-like sequence) and false negatives (e.g. a real gene that was missed in the annotation process). To reduce these errors, it is important to use high quality evidence for the existence of genes, and good annotation tools that perform well.
 
@@ -301,7 +301,7 @@ Genomes contain collinear regions called syntenic blocks that are conserved acro
 
 Aligning functional genomics data to your assembly and viewing these data with your genome annotation on a genome browser is a crucial sanity check in determining whether genome annotations were correctly performed. Such data can be the RNA-seq reads that have been aligned to the genome with HISAT2 earlier in the pipeline. The genome FASTA file, BAM alignment files, and the genome annotation GFF file can all be loaded into a genome browser at the same time, and junctions revealed by the BAM files will often align well with exons indicated by the annotation. If clear junctions exist but appropriate gene models are missing, this may indicate a mistake in the annotation. Common genome browsers include...
 
-## Combining and filtering gene models
+# 3. Combining and filtering gene models
 
 Completing the previous steps yields gene models from multiple homology-based annotations and transcript-assembly-based annotations. Most gene models will be identified across annotations, however some gene models will be method-specific.
 
@@ -498,7 +498,7 @@ The output of `mikado pick` is a GFF file containing the gene models selected ba
 - `mikado_prepared.fasta.fai` and `mikado.db` need to be manually deleted if rerunning the whole Mikado pipeline in the same directory as the files will not be overwritten and confusing errors will be thrown
 - Make sure that the input list of samples is a TSV separated file; spaces separating each column will throw an error
 
-### Annotating non-coding RNA genes
+# 4. Annotating non-coding RNA genes
 
 Non-coding RNAs do not contain highly conserved exons and protein domains typically seen in mammalian protein-coding genes. Accordingly, identifying non-coding genes requires algorithms that do not rely on the same genomic features used in the gene-model identification algorithms described in steps 1-3 (e.g. ORF evaluation, intron-exon ratio etc.). Instead of the evaluation of ORFs to determine if the coding-gene model is functional, non-coding gene models are evaluated for their potential functionality based on whether the predicted secondary structure of that non-coding RNA matches a previously identified secondary structure.
 
