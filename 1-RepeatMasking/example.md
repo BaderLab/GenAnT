@@ -26,7 +26,7 @@ Run Earl Grey on the unmasked Naked Mole Rat chromosome found in `../example_dat
 
 ```
 nohup earlGrey \
- -g ../example_data/NMRchr28.fa
+ -g ../example_data/NMRchr28.fa \
  -s nmr_chr28 \
  -o ./example_results \
  -r eukarya \
