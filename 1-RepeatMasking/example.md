@@ -30,5 +30,5 @@ nohup earlGrey \
  -s nmr_chr28 \
  -o ./example_results \
  -r eukarya \
- -d yes
+ -d yes >& nohup.earlgrey.out
 ```
