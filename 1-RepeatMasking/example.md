@@ -22,7 +22,7 @@ earlGrey -h
 
 ## Running Earl Grey
 
-Run Earl Grey on the unmasked Naked Mole Rat chromosome found in `../example_data`
+Run Earl Grey on the unmasked Naked Mole Rat chromosome found in `../example_data` (takes ~55 hours with 1 thread)
 
 ```
 nohup earlGrey \
@@ -32,3 +32,5 @@ nohup earlGrey \
  -r eukarya \
  -d yes >& nohup.earlgrey.out
 ```
+
+Soft-masked genome is found at `./example_results/nmr_chr28_EarlGrey/nmr_chr28_summaryFiles/nmr_chr28.softmasked.fasta`.
