@@ -110,7 +110,21 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    --isoforms isoforms.tsv
    ```
 
-   The output of TOGA...
+The output of TOGA contains many informative files that describe the performance of the annotation, with the main output being query_annotations.bed. This is a BED12 formatted file that contains the annotations with their predicted orthologs. In order to continue with this file, it will have to be converted to GTF format. This can be done using tools from the [comparative genomics toolkit](https://github.com/ComparativeGenomicsToolkit). First, convert the BED file to a Gene Prediction or "GenePred" file, a table file format often used with the UCSC Genome Browser. This serves as a temporary format that can then be converted to a GTF file using another tool in the toolkit. The code is as follows:
+
+```
+bedToGenePred toga_output_directory/query_annotation.bed toga_output_directory/query_annotation.genePred
+
+genePredToGtf file toga_output_directory/query_annotation.genePred toga_output_directory/query_annotation.gtf
+```
+
+This gives you the output GTF from TOGA in the TOGA output directory. To make sure that the GTF file is formatted nicely in a way that will definitely work with other tools, you may wish to use GFFRead to quickly clean up the file, like so:
+
+```
+gffread query_annotation.gtf --keep-genes -o toga_query_annotation.gffread.gff
+```
+
+This gives you a GFF file that we have called toga_query_annotation.gffread.gff to help you keep track that this is your GFF file from TOGA.
 
 #### TOGA and associated tools: installing/running/troubleshooting
 
