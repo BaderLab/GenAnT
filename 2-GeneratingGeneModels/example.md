@@ -154,4 +154,11 @@ bash test2.sh
 bash test3.sh
 ```
 
+After looking at the log files (and any other outputs), move them to a directory to clean things up
+
+```
+mkdir braker3_tests
+mv test* braker3_tests
+```
+
 ## Download a reference genome
