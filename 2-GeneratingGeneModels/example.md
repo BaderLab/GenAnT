@@ -134,4 +134,24 @@ cd ..
 
 ### BRAKER3
 
+Pull BRAKER3 SIF file, list the files in `external` to see that it is there, and test that it's working
+
+```
+singularity build braker3.sif docker://teambraker/braker3:latest
+ls
+singularity exec braker3.sif braker.pl --help
+```
+
+Test BRAKER3 using their provided tests and open the log files to make sure they ran properly
+
+```
+singularity exec -B $PWD:$PWD braker3.sif cp /opt/BRAKER/example/singularity-tests/test1.sh .
+singularity exec -B $PWD:$PWD braker3.sif cp /opt/BRAKER/example/singularity-tests/test2.sh .
+singularity exec -B $PWD:$PWD braker3.sif cp /opt/BRAKER/example/singularity-tests/test3.sh .
+export BRAKER_SIF=./braker3.sif
+bash test1.sh
+bash test2.sh
+bash test3.sh
+```
+
 ## Download a reference genome
