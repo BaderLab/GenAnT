@@ -4,20 +4,20 @@
 
 ### LiftOff
 
-Pull a Docker container for LiftOff and test that the container is working
-
-```
-docker pull staphb/liftoff
-docker run -v "$(pwd)":/tmp staphb/liftoff liftoff -h
-```
-
-Alternatively, create a conda environment and check that liftoff is working (this version of LiftOff is specified to match the Docker container)
+Create a conda environment and check that liftoff is working
 
 ```
 conda create -n liftoff_env liftoff=1.6.3
 conda activate liftoff_env
 liftoff -h
 conda deactivate liftoff
+```
+
+Alternatively, there is a Docker available for this version of LiftOff, although we will assume you are using Conda. Here is how you can pull the Docker container:
+
+```
+docker pull staphb/liftoff
+docker run -v "$(pwd)":/tmp staphb/liftoff liftoff -h
 ```
 
 ### TOGA
@@ -162,3 +162,51 @@ mv test* braker3_tests
 ```
 
 ## Download a reference genome
+
+We're going to use the mouse genome as a reference for the gene liftover methods, LiftOff and TOGA. Download the mouse genome and its annotation from RefSeq
+
+```
+cd ../example_data
+mkdir mouse_reference
+cd mouse_reference
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz  
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz
+gunzip *.gz
+```
+
+Return to this directory
+
+```
+cd ../../2-GeneratingGeneModels
+```
+
+## Run LiftOff
+
+Make a directory to store the results and navigate to this directory
+
+```
+mkdir liftoff_example_results
+cd liftoff_example_results
+```
+
+Activate Conda environment
+
+```
+conda activate liftoff_env
+```
+
+Run LiftOff (started at 6:23pm Dec 28)
+
+```
+nohup liftoff \
+ ../../example_data/NMRchr28.fa \
+ ../../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.fna \
+ -g ../../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.gff \
+ -o nmr_chr28_liftoff.gff \
+ -copies -flank 0.5 >& nohup.liftoff.out
+```
+
+
+
+
+
