@@ -22,7 +22,7 @@ seqkit rmdup Rfam.fa > Rfam.rmdup.fa
 After the duplicates are removed, you can now create a BLAST database which requires the deduplicated Rfam database as input. `-input_type fasta` specifies that the database is a FASTA file; `-dbtype nucl` indicates that the database is made of nucleotides; `-title Rfam_ncRNA` is a recognizable title for the database; `-parse_seqids` is required to keep the original sequence identifiers; `-out Rfam_ncRNA` is the output base name for the database, and is often the same as the title.
 
 ```
-makeblastdb -in Rfam_rmdup.fa \
+makeblastdb -in Rfam.rmdup.fa \
 -input_type fasta \
 -dbtype nucl \
 -title Rfam_ncRNA \
