@@ -52,7 +52,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    target       /path-to-target/target.soft.fa
    mouse      /path-to-reference/reference.soft.fa
    ```
-   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply by `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
+   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply be `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
 
    ```
    cactus $SCRATCH/tmp \
