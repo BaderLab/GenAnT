@@ -52,7 +52,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    target       /path-to-target/target.soft.fa
    mouse      /path-to-reference/reference.soft.fa
    ```
-   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. Cactus outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where Cactus stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run Cactus. On a local desktop, a temporary directory may simply by `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. Cactus can then be run as follows:
+   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply by `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
 
    ```
    cactus $SCRATCH/tmp \
@@ -63,7 +63,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
 
 2. Convert HAL file to chain file
 
-   This is a multistep process also described by the ComparativeGenomicsToolkit [here](https://github.com/ComparativeGenomicsToolkit/hal/blob/chaining-doc/doc/chaining-mapping.md). The first step involves converting both the reference and target FASTA files to a compressed 2bit format. This can be done using additional tools that are accessible in the [Cactus Github repository](https://github.com/ComparativeGenomicsToolkit/cactus) in this directory: `/path-to-cactus/external/cactus-bin-v2.2.3/bin`. We can set this as a variable to make the tools easier to access.
+   This is a multistep process also described by the ComparativeGenomicsToolkit [here](https://github.com/ComparativeGenomicsToolkit/hal/blob/chaining-doc/doc/chaining-mapping.md). The first step involves converting both the reference and target FASTA files to a compressed 2bit format. This can be done using additional tools that are accessible in the [CACTUS Github repository](https://github.com/ComparativeGenomicsToolkit/cactus) in this directory: `/path-to-cactus/external/cactus-bin-v2.2.3/bin`. We can set this as a variable to make the tools easier to access.
 
    `cactusbin=/path-to-cactus/external/cactus-bin-v2.2.3/bin`
 
