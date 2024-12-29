@@ -66,6 +66,31 @@ wget https://github.com/ComparativeGenomicsToolkit/cactus/releases/download/v2.8
 tar -xzf cactus-bin-v2.8.4.tar.gz
 ```
 
+Enter the CACTUS directory, make some modifications to virtual environment and reactivate
+
+```
+cd cactus-bin-v2.8.4
+#
+printf "export PATH=$(pwd)/bin:\$PATH\nexport PYTHONPATH=$(pwd)/lib:\$PYTHONPATH\nexport LD_LIBRARY_PATH=$(pwd)/lib:\$LD_LIBRARY_PATH\n" >> ../toga_env_pip/bin/activate
+#
+source ../toga_env_pip/bin/activate
+```
+
+Install various tools with pip
+
+```
+python3 -m pip install -U setuptools pip wheel
+python3 -m pip install -U .
+python3 -m pip install -U -r ./toil-requirement.txt
+```
+
+Test CACTUS
+
+```
+cd bin
+cactus ./jobstore ./examples/evolverMammals.txt ./evolverMammals.hal --realTimeLogging
+```
+
 Install tools from the Comparative Genomics Toolkit (aka "Kent"). These are the binaries for generating chain files for TOGA:
 
 ```
@@ -195,7 +220,7 @@ Activate Conda environment
 conda activate liftoff_env
 ```
 
-Run LiftOff (started at 6:23pm Dec 28)
+Run LiftOff; this takes about one hour with one thread
 
 ```
 nohup liftoff \
@@ -206,7 +231,26 @@ nohup liftoff \
  -copies -flank 0.5 >& nohup.liftoff.out
 ```
 
+You can count the number of genes and other features like this
 
+```
+grep -c -P "\tgene\t" nmr_chr28_liftoff.gff
+```
+
+Get out of the LiftOff directory and deactivate the environment
+
+```
+cd ..
+conda deactivate
+```
+
+## Run TOGA
+
+First, look at the CACTUS configuration file provided in the `example_data` folder
+
+```
+less ../example_data/two_species_cactus_config.txt
+```
 
 
 
