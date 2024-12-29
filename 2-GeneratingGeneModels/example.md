@@ -84,11 +84,11 @@ python3 -m pip install -U .
 python3 -m pip install -U -r ./toil-requirement.txt
 ```
 
-Test CACTUS
+Exit directory and then test CACTUS
 
 ```
-cd bin
-cactus ./jobstore ./examples/evolverMammals.txt ./evolverMammals.hal --realTimeLogging
+cd ..
+cactus --help
 ```
 
 Install tools from the Comparative Genomics Toolkit (aka "Kent"). These are the binaries for generating chain files for TOGA:
@@ -246,11 +246,20 @@ conda deactivate
 
 ## Run TOGA
 
-First, look at the CACTUS configuration file provided in the `example_data` folder
+First, look at the CACTUS configuration file provided in the `example_data` folder. This points towards the NMR chr28 which was soft-masked by Earl Grey, and the mouse reference genome downloaded from RefSeq.
 
 ```
 less ../example_data/two_species_cactus_config.txt
 ```
 
+Align the two genome FASTA files with CACTUS, storing files in the directory `tmp1` (do not create this directory in advance or CACTUS will fail) (10:33am, Dec 29)
+
+```
+mkdir cactus_example_results
+nohup cactus ./tmp1 \
+ ../example_data/two_species_cactus_config.txt \
+ ./cactus_example_results/target_ref.hal \
+ --binariesMode local >& cactus_example_results/nohup.cactus.out
+```
 
 
