@@ -39,29 +39,11 @@ Create a virtual environment with python3 for installing of TOGA's requirements
 
 ```
 python3 -m venv toga_env_pip
-source toga_env_pip/bin/activate
 ```
 
-Download the binary for TOGA and install requirements
+Install the CACTUS aligner and unzip
 
 ```
-cd ../external
-git clone https://github.com/hillerlab/TOGA.git
-cd TOGA
-python3 -m pip install -r requirements.txt --user
-./configure.sh
-```
-
-Test that TOGA is working
-
-```
-./run_test.sh micro
-```
-
-Install the CACTUS aligner back in `external` and unzip
-
-```
-cd ..
 wget https://github.com/ComparativeGenomicsToolkit/cactus/releases/download/v2.8.4/cactus-bin-v2.8.4.tar.gz
 tar -xzf cactus-bin-v2.8.4.tar.gz
 ```
@@ -89,6 +71,22 @@ Exit directory and then test CACTUS
 ```
 cd ..
 cactus --help
+```
+
+Download the binary for TOGA and install requirements
+
+```
+git clone https://github.com/hillerlab/TOGA.git
+cd TOGA
+python3 -m pip install -r requirements.txt --user
+./configure.sh
+```
+
+Test that TOGA is working and exit directory
+
+```
+./run_test.sh micro
+cd ..
 ```
 
 Install tools from the Comparative Genomics Toolkit (aka "Kent"). These are the binaries for generating chain files for TOGA:
@@ -123,24 +121,25 @@ Deactivate virtual environments until using TOGA and get back to `external`
 ```
 deactivate # Deactivates Python3 environment
 conda deactivate # Deactivates Conda environment
+cd ..
 ```
 
 ### HISAT2 + StringTie
 
-Pull a Docker container for HISAT2 and test that it's working
-
-```
-docker pull nanozoo/hisat2
-docker run -v "$(pwd)":/tmp nanozoo/hisat2 hisat2 -h
-```
-
-Alternatively, create a Conda environment
+Create a Conda environment for HISAT2
 
 ```
 conda create -n hisat2_env hisat2=2.1.0
 conda activate hisat2_env
 hisat2 -h
 deactivate
+```
+
+Alternatively, pull a Docker container for HISAT2 and test that it's working
+
+```
+docker pull nanozoo/hisat2
+docker run -v "$(pwd)":/tmp nanozoo/hisat2 hisat2 -h
 ```
 
 Clone StringTie's Github
@@ -306,19 +305,36 @@ $kentbin/axtChain -psl -linearGap=loose \
  cactus_example_results/reference-to-target.chain
 ```
 
-Once all of this file conversion has finished, it's time to run TOGA. First, create a variable pointing to the TOGA installation
+There is one last step before running TOGA, which is to convert the reference (mouse) GFF file to a BED file. First, convert the GFF file to a GenePred file; takes less than a minute
+
+```
+$kentbin/gff3ToGenePred ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.gff \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred
+```
+
+Then, convert the GenePred file to a BED file
+
+```
+$kentbin/genePredToBed ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.bed
+```
+
+Once all of this file conversion has finished, it's time to run TOGA. First, create a variable pointing to the TOGA installation and a new output directory
 
 ```
 togabin=$(realpath ..)/external/TOGA
+mkdir toga_example_results
 ```
 
+Run TOGA 
+
 ```
-$togabin/toga.py \
-reference-to-target.chain \
-reference_annotation.bed \
-reference.2bit target.2bit \
---project_name ref_to_target \
---isoforms isoforms.tsv
+nohup $togabin/toga.py \
+ cactus_example_results/reference-to-target.chain \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.bed \
+ cactus_example_results/reference.2bit cactus_example_results/target.2bit \
+ --project_dir toga_example_results \
+ --project_name mouse_to_NMR_chr28 >& toga_example_results/nohup.toga.out
 ```
 
 
