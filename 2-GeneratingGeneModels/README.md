@@ -52,6 +52,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    target       /path-to-target/target.soft.fa
    mouse      /path-to-reference/reference.soft.fa
    ```
+   
    Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply be `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
 
    ```
@@ -67,11 +68,15 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
 
    `cactusbin=/path-to-cactus/external/cactus-bin-v2.2.3/bin`
 
+   We will also be using additional tools from the Comparitive Genomics Toolkit. In our installation guide, we have these installed in a directory called `kent`. It will also be helpful to set a variable pointing to this location.
+
+   `kentbin=/path-to-kent/`
+
    Each FASTA file can be converted to 2bit with the following two commands below. Each `hal2fasta` command requires the HAL file output by CACTUS as input as well as the reference or target FASTA file. The output is directly piped into `faToTwoBit` ("stdin" indicates that `faToTwoBit` takes the piped input) which outputs a compressed [2bit file](https://genome.ucsc.edu/FAQ/FAQformat.html#format7).
 
    ```
-   $cactusbin/hal2fasta target_ref.hal name_of_reference | faToTwoBit stdin reference.2bit
-   $cactusbin/hal2fasta target_ref.hal name_of_target | faToTwoBit stdin target.2bit
+   $cactusbin/hal2fasta target_ref.hal name_of_reference | $kentbin/faToTwoBit stdin reference.2bit
+   $cactusbin/hal2fasta target_ref.hal name_of_target | $kentbin/faToTwoBit stdin target.2bit
    ```
 
    Convert the alignments stored in the HAL file to a BED file using the `halStats` command.
@@ -95,7 +100,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    axtChain -psl -linearGap=loose reference-to-target.psl reference.2bit target.2bit reference-to-target.chain
    ```
    
-3. Perform homology-based annotation with TOGA
+4. Perform homology-based annotation with TOGA
 
    Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species in [BED12](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format. GTF files can be converted to BED12 files using tools available from [ucscGenomeBrowser](https://github.com/ucscGenomeBrowser/kent). This is a two step process: First, convert the GTF file to a genePred file by performing `gtfToGenePred annotation.gtf annotation.genePred`. Then, convert the genePred file to a BED12 file with `genePredToBed annotation.genePred annotation.bed`.
 
@@ -110,21 +115,21 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    --isoforms isoforms.tsv
    ```
 
-The output of TOGA contains many informative files that describe the performance of the annotation, with the main output being query_annotations.bed. This is a BED12 formatted file that contains the annotations with their predicted orthologs. In order to continue with this file, it will have to be converted to GTF format. This can be done using tools from the [comparative genomics toolkit](https://github.com/ComparativeGenomicsToolkit). First, convert the BED file to a Gene Prediction or "GenePred" file, a table file format often used with the UCSC Genome Browser. This serves as a temporary format that can then be converted to a GTF file using another tool in the toolkit. The code is as follows:
+   The output of TOGA contains many informative files that describe the performance of the annotation, with the main output being query_annotations.bed. This is a BED12 formatted file that contains the annotations with their predicted orthologs. In order to continue with this file, it will have to be converted to GTF format. This can be done using tools from the [comparative genomics toolkit](https://github.com/ComparativeGenomicsToolkit). First, convert the BED file to a Gene Prediction or "GenePred" file, a table file format often used with the UCSC Genome Browser. This serves as a temporary format that can then be converted to a GTF file using another tool in the toolkit. The code is as follows:
 
-```
-bedToGenePred toga_output_directory/query_annotation.bed toga_output_directory/query_annotation.genePred
+   ```
+   bedToGenePred toga_output_directory/query_annotation.bed toga_output_directory/query_annotation.genePred
 
-genePredToGtf file toga_output_directory/query_annotation.genePred toga_output_directory/query_annotation.gtf
-```
+   genePredToGtf file toga_output_directory/query_annotation.genePred toga_output_directory/query_annotation.gtf
+   ```
 
-This gives you the output GTF from TOGA in the TOGA output directory. To make sure that the GTF file is formatted nicely in a way that will definitely work with other tools, you may wish to use GFFRead to quickly clean up the file, like so:
+   This gives you the output GTF from TOGA in the TOGA output directory. To make sure that the GTF file is formatted nicely in a way that will definitely work with other tools, you may wish to use GFFRead to quickly clean up the file, like so:
 
-```
-gffread query_annotation.gtf --keep-genes -o toga_query_annotation.gffread.gff
-```
+   ```
+   gffread query_annotation.gtf --keep-genes -o toga_query_annotation.gffread.gff
+   ```
 
-This gives you a GFF file that we have called toga_query_annotation.gffread.gff to help you keep track that this is your GFF file from TOGA.
+   This gives you a GFF file that we have called toga_query_annotation.gffread.gff to help you keep track that this is your GFF file from TOGA.
 
 #### TOGA and associated tools: installing/running/troubleshooting
 
