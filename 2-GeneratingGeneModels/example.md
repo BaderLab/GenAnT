@@ -308,15 +308,25 @@ $kentbin/axtChain -psl -linearGap=loose \
 There is one last step before running TOGA, which is to convert the reference (mouse) GFF file to a BED file. First, convert the GFF file to a GenePred file; takes less than a minute
 
 ```
-$kentbin/gff3ToGenePred ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.gff \
- ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred
+$kentbin/gff3ToGenePred \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.gff \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred \
+ -refseqHacks
 ```
 
 Then, convert the GenePred file to a BED file
 
 ```
-$kentbin/genePredToBed ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred \
+$kentbin/genePredToBed \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred \
  ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.bed
+```
+
+Create isoforms file for TOGA
+
+```
+grep -P "\tmRNA\t" GCF_000001635.27_GRCm39_genomic.gff > isoforms.txt
+sed -i 's/.*ID=rna-\([^;]*\);Dbxref.*/\1/' isoforms.txt
 ```
 
 Once all of this file conversion has finished, it's time to run TOGA. First, create a variable pointing to the TOGA installation and a new output directory
