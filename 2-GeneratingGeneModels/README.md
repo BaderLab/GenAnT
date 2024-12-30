@@ -97,7 +97,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    Finally, the PSL file can be converted to a chain file using the `axtchain` command from [ucscGenomeBrowser](https://github.com/ucscGenomeBrowser/kent) (sometimes referred to as KentUtils). This bins the alignments at various depths, generalizing the alignment so that instead of storing alignments at specific base pairs, they are stored as blocks of homologous regions. `axtChain` takes the flag `-psl` to indicate PSL input, the recommended parameter setting `-linearGaps=loose`, the PSL file, and both 2bit files as input. The output is the chain alignment file that can now be used for TOGA.
 
    ```
-   axtChain -psl -linearGap=loose reference-to-target.psl reference.2bit target.2bit reference-to-target.chain
+   $kentbin/axtChain -psl -linearGap=loose reference-to-target.psl reference.2bit target.2bit reference-to-target.chain
    ```
    
 4. Perform homology-based annotation with TOGA
