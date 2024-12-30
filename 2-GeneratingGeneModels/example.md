@@ -188,7 +188,7 @@ mv test* braker3_tests
 
 ## Download a reference genome
 
-We're going to use the mouse genome as a reference for the gene liftover methods, LiftOff and TOGA. Download the mouse genome and its annotation from RefSeq
+We're going to use the mouse genome as a reference for the gene liftover methods, LiftOff and TOGA. Download the mouse genome and its annotation from RefSeq.
 
 ```
 cd ../example_data
@@ -231,7 +231,7 @@ nohup liftoff \
  -copies -flank 0.5 >& nohup.liftoff.out
 ```
 
-You can count the number of genes and other features like this
+You can count the number of genes and other features like this:
 
 ```
 grep -c -P "\tgene\t" nmr_chr28_liftoff.gff
@@ -246,13 +246,13 @@ conda deactivate
 
 ## Run TOGA
 
-First, look at the CACTUS configuration file provided in the `example_data` folder. This points towards the NMR chr28 which was soft-masked by Earl Grey, and the mouse reference genome downloaded from RefSeq.
+First, look at the CACTUS configuration file provided in the `example_data` folder. This points towards the NMR chr28 which was soft-masked by Earl Grey, and the mouse reference genome downloaded from RefSeq. Note that these are relative file paths from this current working directory.
 
 ```
 less ../example_data/two_species_cactus_config.txt
 ```
 
-Align the two genome FASTA files with CACTUS, storing files in the directory `tmp1` (do not create this directory in advance or CACTUS will fail) (10:33am, Dec 29)
+Align the two genome FASTA files with CACTUS, storing files in the directory `tmp1` (do not create this directory in advance or CACTUS will fail); this takes about 7 hours.
 
 ```
 mkdir cactus_example_results
@@ -260,6 +260,65 @@ nohup cactus ./tmp1 \
  ../example_data/two_species_cactus_config.txt \
  ./cactus_example_results/target_ref.hal \
  --binariesMode local >& cactus_example_results/nohup.cactus.out
+```
+
+The output is `./cactus_example_results/target_ref.hal`. Convert this to a HAL file using tools from the Comparative Genomics Toolkit. First, set your path to the CACTUS and Kent bins to make these tools easier to access.
+
+```
+cactusbin=$(realpath ..)/external/cactus-bin-v2.8.4/bin
+kentbin=$(realpath ..)/external/kent
+```
+
+Now make the 2bit file for the reference (mouse); takes less than a minute
+
+```
+$cactusbin/hal2fasta cactus_example_results/target_ref.hal mouse | $kentbin/faToTwoBit stdin cactus_example_results/reference.2bit
+```
+
+And the 2bit file for the target (naked mole rat chr28)
+
+```
+$cactusbin/hal2fasta cactus_example_results/target_ref.hal NMR_chr28 | $kentbin/faToTwoBit stdin cactus_example_results/target.2bit
+```
+
+Convert the HAL file to a BED file for both reference and target
+
+```
+$cactusbin/halStats --bedSequences mouse cactus_example_results/target_ref.hal > cactus_example_results/reference.bed
+$cactusbin/halStats --bedSequences NMR_chr28 cactus_example_results/target_ref.hal > cactus_example_results/target.bed
+```
+
+Turn the HAL and BED files into a PSL file; takes less than a minute
+
+```
+$cactusbin/halLiftover --outPSL cactus_example_results/target_ref.hal NMR_chr28 \
+ cactus_example_results/target.bed mouse /dev/stdout | \
+ $kentbin/pslPosTarget stdin cactus_example_results/reference-to-target.psl
+```
+
+Finally, convert the PSL file to a chain file which can be used for TOGA; takes less than a minute
+
+```
+$kentbin/axtChain -psl -linearGap=loose \
+ cactus_example_results/reference-to-target.psl \
+ cactus_example_results/reference.2bit \
+ cactus_example_results/target.2bit \
+ cactus_example_results/reference-to-target.chain
+```
+
+Once all of this file conversion has finished, it's time to run TOGA. First, create a variable pointing to the TOGA installation
+
+```
+togabin=$(realpath ..)/external/TOGA
+```
+
+```
+$togabin/toga.py \
+reference-to-target.chain \
+reference_annotation.bed \
+reference.2bit target.2bit \
+--project_name ref_to_target \
+--isoforms isoforms.tsv
 ```
 
 
