@@ -305,46 +305,56 @@ $kentbin/axtChain -psl -linearGap=loose \
  cactus_example_results/reference-to-target.chain
 ```
 
-There is one last step before running TOGA, which is to convert the reference (mouse) GFF file to a BED file. First, convert the GFF file to a GenePred file; takes less than a minute
+There is one last step before running TOGA, which is to convert the reference (mouse) GFF file to a BED file with only protein-coding genes
 
 ```
-$kentbin/gff3ToGenePred \
- ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.gff \
- ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred \
- -refseqHacks
+gffread ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.gff \
+ --keep-genes -C --no-pseudo --bed -o \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.coding.bed
 ```
 
-Then, convert the GenePred file to a BED file
+Only keep the first 12 columns to perfectly follow the BED12 format
 
 ```
-$kentbin/genePredToBed \
- ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.genePred \
- ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.bed
+cut -f1-12 ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.coding.bed > ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.coding.12.bed
 ```
 
-Create isoforms file for TOGA
+Now use the BED file output by GFFRead to create isoforms.txt by isolating gene and transcript IDs
 
 ```
-grep -P "\tmRNA\t" GCF_000001635.27_GRCm39_genomic.gff > isoforms.txt
-sed -i 's/.*ID=rna-\([^;]*\);Dbxref.*/\1/' isoforms.txt
+cut -f 13 GCF_000001635.27_GRCm39_genomic.coding.bed | sed 's/.*geneID=//;s/;gene_name.*//' > isoforms.txt
+paste isoforms.txt <(cut -f 4 GCF_000001635.27_GRCm39_genomic.coding.bed) | sponge isoforms.txt
 ```
 
-Once all of this file conversion has finished, it's time to run TOGA. First, create a variable pointing to the TOGA installation and a new output directory
+Create isoforms file for TOGA (these formatting steps specifically work with a RefSeq GFF file)
+
+```
+grep -P "\tmRNA\t" GCF_000001635.27_GRCm39_genomic.gff > ../example_data/mouse_reference/isoforms.txt
+sed -i 's/.*Parent=gene-//;s/;gbkey.*//' ../example_data/mouse_reference/isoforms.txt
+sed -i 's/;Dbxref[^;]*;Name=/\t/' ../example_data/mouse_reference/isoforms.txt
+```
+
+Once all of this file conversion has finished, it's time to run TOGA. First, create a variable pointing to the TOGA and CESAR installations and a new output directory
 
 ```
 togabin=$(realpath ..)/external/TOGA
+cesarbin=$(realpath ..)/external/TOGA/CESAR2.0/cesar
 mkdir toga_example_results
 ```
 
-Run TOGA 
+Run TOGA
 
 ```
 nohup $togabin/toga.py \
  cactus_example_results/reference-to-target.chain \
- ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.bed \
+ ../example_data/mouse_reference/GCF_000001635.27_GRCm39_genomic.coding.12.bed \
  cactus_example_results/reference.2bit cactus_example_results/target.2bit \
  --project_dir toga_example_results \
- --project_name mouse_to_NMR_chr28 >& toga_example_results/nohup.toga.out
+ --project_name mouse_to_NMR_chr28 \
+ --isoforms ../example_data/mouse_reference/isoforms.txt \
+ --cesar_binary $cesarbin \
+ --chain_jobs_num 20 \
+ --cesar_jobs_num 20 >& toga_example_results/nohup.toga.out
 ```
 
 
