@@ -353,8 +353,8 @@ nohup $togabin/toga.py \
  --project_name mouse_to_NMR_chr28 \
  --isoforms ../example_data/mouse_reference/isoforms.txt \
  --cesar_binary $cesarbin \
- --chain_jobs_num 20 \
- --cesar_jobs_num 20 >& toga_example_results/nohup.toga.out
+ --chain_jobs_num 1 \
+ --cesar_jobs_num 1 >& toga_example_results/nohup.toga.out
 ```
 
 
