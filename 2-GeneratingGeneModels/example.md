@@ -126,7 +126,7 @@ cd ..
 
 ### HISAT2 + StringTie
 
-Create a Conda environment for HISAT2
+Create a Conda environment for HISAT2. Install SAMTools in this environment, as well
 
 ```
 conda create -n hisat2_env hisat2=2.1.0
@@ -148,12 +148,13 @@ Clone StringTie's Github
  git clone https://github.com/gpertea/stringtie
 ```
 
-Navigate into their repository and run `make release`, then go back to `external`
+Navigate into their repository and run `make release`, then go back to `external` and test StringTie
 
 ```
 cd stringtie
 make release
 cd ..
+stringtie --help
 ```
 
 ### BRAKER3
@@ -352,9 +353,12 @@ nohup $togabin/toga.py \
  --project_dir toga_example_results \
  --project_name mouse_to_NMR_chr28 \
  --isoforms ../example_data/mouse_reference/isoforms.txt \
- --cesar_binary $cesarbin \
- --chain_jobs_num 1 \
- --cesar_jobs_num 1 >& toga_example_results/nohup.toga.out
+ --cesar_binary $cesarbin >& toga_example_results/nohup.toga.out
 ```
+
+## Run HISAT2 + StringTie
+
+We have provided BAM files with RNA-seq data from the naked mole-rat, tissues skin and thyroid. Since BAM files mean that the reads are already aligned to the genome, we will not need to run HISAT2 here. You can find a template of how to run HISAT2 in the README for this section. Instead we will just make sure that the BAM files are sorted, and then go right on to running StringTie.
+
 
 
