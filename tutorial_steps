@@ -1,0 +1,20 @@
+Tutorial Future Commits.
+
+LiftOff reference file:
+	- If LiftOff reference is a gff made from mikado, convert "ncRNA_gene" to "gene" so that lncRNA lift over
+	- R script to exctract ncRNA models from liftOff
+
+Final annotation:
+	- Add biotype column & convert "type" to the NCBI/ENSEMBL format?
+	- TCR/IGG genes
+	- lncRNA gene symbols
+
+Communication:
+  - IGV examples and mammalian regions to check
+
+ISO-seq:
+	- workflow for when --mixed, --long, and --short are all viable data options
+
+Future directions:
+	- multiple reference species
+	- add custom gtf & reference mode option
