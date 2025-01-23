@@ -1,5 +1,10 @@
 Tutorial Future Commits.
 
+Computational assumptions:
+- you already have singularity and virtualenv available on your system
+- you are using a computational cluster that can submit ~100 jobs simultaneously. They don't have to all run at the same time but can at least be scheduled at once.
+- Access to at least one node with >100Gb of ram that you can use for >150h runtime. This is needed for EarlGrey and Braker
+
 LiftOff reference file:
 	- If LiftOff reference is a gff made from mikado, convert "ncRNA_gene" to "gene" so that lncRNA lift over
 	- R script to exctract ncRNA models from liftOff
