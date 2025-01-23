@@ -20,6 +20,9 @@ Communication:
 ISO-seq:
 	- workflow for when --mixed, --long, and --short are all viable data options
 
+Pipeline flexibility
+- replace cactus binary + venv with singularity
+
 Future directions:
 	- multiple reference species
 	- add custom gtf & reference mode option
