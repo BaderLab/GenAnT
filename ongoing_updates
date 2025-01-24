@@ -26,3 +26,43 @@ Pipeline flexibility
 Future directions:
 	- multiple reference species
 	- add custom gtf & reference mode option
+TOGA installation:
+- Add to the readme that we need to update next flow instructions for different servers. The TOGA github highlights this too but TOGA won't run and won't have a clear error message if the config isnt fixed.
+- TOGA uses slurm by default.
+
+This is our labs (sge) with the addtional parameter that we need to submit the job origin `-P`
+
+You will probably need to see how nextflow works on your system.
+- extract_chain_features_config.nf
+process {
+    executor = "sge"
+    penv = "smp"
+    memory = '10G'
+    cpus = '1'
+    time = '10h'
+    clusterOptions = { "-V -l h_vmem=10G -V -P simpsonlab -l h_stack=32M -l h_rt=10:00:00" }
+}
+
+executor {
+    name = "sge"
+    queueSize = 1000
+    queueStatInterval = "10s"
+}
+
+- call_cesar_config_template.nf 
+process {
+    executor = "sge"
+    penv = "smp"
+    memory = "${_MEMORY_}G"
+    cpus = '1'
+    time = '24h'
+    clusterOptions = { "-V -l h_vmem=64G -V -P simpsonlab -l h_stack=32M -l h_rt=48:00:00" }
+}
+
+executor {
+    name = "sge"
+    queueSize = 1000
+    queueStatInterval = "10s"
+}
+
+
