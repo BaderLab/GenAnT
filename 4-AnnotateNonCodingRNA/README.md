@@ -48,30 +48,18 @@ awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\t" $2}' assembly.rfam.blastn > assembly
 
 #### Seeding with previously identified non-coding RNA gene models
 
-GFF files processed with Mikado and RNA-seq data (and GFF files annotated from other approaches) will have “biotype” information already stored (e.g. indicating if the gene encodes ncRNA). These regions can be extracted from a GFF file and saved as a BED file with the same chromosome, start coodinate, end coordinate, and name columns. These coordinates will proceed to be added to `assembly.rfam.bed`. Here is a way to isolate these regions from a GFF file in R using the library [rtracklayer](https://bioconductor.org/packages/release/bioc/html/rtracklayer.html).
+GFF files processed with Mikado will clearly indicate whether an RNA feature is non-coding. These features can be extracted from the GFF file and saved as a BED file with the same chromosome, start coodinate, end coordinate, and gene name columns. These coordinates will proceed to be added to `assembly.rfam.bed`.
+
+To do this, first extract the non-coding RNA from Mikado:
 
 ```
-library(rtracklayer)
+grep -P "\tncRNA\t" mikado_annotation.gff > mikado_annotation.ncRNA.gff
+```
 
-# Read in the GFF/GTF file
-gtf <- rtracklayer::readGFF("mikado_annotation.gtf")
+Then use GFFRead to convert the GFF file to a BED file, only keeping the first four columns:
 
-# Ensembl annotates biotypes. Mikado will simply return “non-coding”
-# Isolate all features with the following biotypes from the GTF file
-gtf_nonCoding <- gtf[ (gtf$gene_biotype %in% c("lncRNA","miRNA","rRNA","scaRNA","snoRNA",
-                                  "snRNA")),]
-
-# Only keep the transcripts that these biotypes encode
-gtf_nonCoding_transcript <- gtf_nonCoding[gtf_nonCoding$type == "transcript",]
-
-# Save new GFF file that only has non-coding transcripts
-rtracklayer::export.gff3(gtf_nonCoding_transcript,"mikado_annotation_transcripts.gff3")
-
-# Only isolate the specific columns that are needed for the BED file
-gtf_nonCoding_transcript <- gtf_nonCoding_transcript[,c("seqid","start","end","transcript_id")]
-
-# Create a BED file by exporting the object created above as a table
-write.table(gtf_nonCoding_transcript, file = "mikado_annotation_noncoding.bed",quote=F,row.names = F,col.names = F,sep="\t")
+```
+gffread mikado_annotation.ncRNA.gff --bed | cut -f1-4 > mikado_annotation.ncRNA.bed
 ```
 
 #### Combine different seeding results
