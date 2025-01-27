@@ -62,15 +62,42 @@ Then use GFFRead to convert the GFF file to a BED file, only keeping the first f
 gffread mikado_annotation.ncRNA.gff --bed | cut -f1-4 > mikado_annotation.ncRNA.bed
 ```
 
+Non-coding features can also be found from the output of LiftOff that may not have made it through Mikado's filtering steps (it doesn't matter if they did and there is overlap). Isolate non-coding features from the ouptut of LiftOff (in this case, we assume that the LiftOff output is derived from a RefSeq GFF file):
+
+```
+grep "gbkey=ncRNA" liftoff_annotation.gff | grep -P "RNA\t" > liftoff_annotation.ncRNA.gff
+```
+
+Again, use GFFRead to convert the GFF file to a four-column BED file:
+
+```
+gffread liftoff_annotation.ncRNA.gff --bed | cut -f1-4 > liftoff_annotation.ncRNA.bed
+```
+
+Finally, isolate non-coding features from StringTie that may not have been included in the Mikado output. Since StringTie doesn't specify which features are coding and which are non-coding, we are going to assume that any features that were not included in the final output of Mikado may be non-coding. To find these excluded features, we can use the BEDTools tool, `bedtools subtract`, to remove Mikado features from the StringTie features. The `-A` flag is included to remove the entirety of the feature in the StringTie output if any of it is found in the Mikado output. Only keep transcript features rather than both transcripts and exons (specified by the grep statement following the BEDTools command).
+
+```
+bedtools subtract -A -a stringtie_annotation.gtf -b mikado_annotation.gff | grep -P "\ttranscript\t" > stringtie_annotation.ncRNA.gtf
+```
+
+Convert to a four-column BED file with GFFRead:
+
+```
+gffread stringtie_annotation.ncRNA.gtf --bed | cut -f1-4 > stringtie_annotation.ncRNA.bed
+```
+
 #### Combine different seeding results
 
 Combine candidate noncoding RNA containing genome coordinates (seeds) from each method into a master-list using concatenate:
 
 ```
-cat assembly.rfam.bed mikado_annotation_noncoding.bed > assembly_ncRNA_seed.bed
+cat assembly.rfam.bed \
+ mikado_annotation.ncRNA.bed \
+ liftoff_annotation.ncRNA.bed \
+ stringtie_annotation.ncRNA.bed > assembly_ncRNA_seed.bed
 ```
 
-Sort the full BED file:
+Sort the full BED file by coordinate:
 
 ```
 bedtools sort -i assembly_ncRNA_seed.bed > assembly_ncRNA_seed.s.bed
