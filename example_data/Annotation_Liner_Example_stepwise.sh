@@ -58,12 +58,7 @@ export PATH="$condaDir/bin/":$PATH
 
 # Step 1: Repeat annotation and masking
 
-	# This example assumes earl grey is run to save >100 of hours of runtime
-	# the earl grey command is `earlGrey -g $assemblyFile -s heterocephalus_glaber -o . -t 50 -r rodentia -d yes
-	# This step would normally copy the masked fa and the filtered repeats to "assembly"
-
-cp $assemblyFile assembly/assembly.softmasked.fa
-cp $repeatBed assembly/assembly.filteredRepeats.bed
+bash run_earl_grey.sh
 
 # Step 2: Generating protein-coding gene models
 
