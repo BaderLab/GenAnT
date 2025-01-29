@@ -62,31 +62,31 @@ export PATH="$condaDir/bin/":$PATH
 	# the earl grey command is `earlGrey -g $assemblyFile -s heterocephalus_glaber -o . -t 50 -r rodentia -d yes
 	# This step would normally copy the masked fa and the filtered repeats to "assembly"
 
-# cp $assemblyFile assembly/assembly.softmasked.fa
-# cp $repeatBed assembly/assembly.filteredRepeats.bed
+cp $assemblyFile assembly/assembly.softmasked.fa
+cp $repeatBed assembly/assembly.filteredRepeats.bed
 
 # Step 2: Generating protein-coding gene models
 
 # liftoff, toga, and stringtie, can be run in parallel
-# bash $outDir/scripts/run_liftOff.sh
-# bash $outDir/scripts/toga_liner.sh
-# bash $outDir/scripts/run_braker.sh
+bash $outDir/scripts/run_liftOff.sh
+bash $outDir/scripts/toga_liner.sh
+bash $outDir/scripts/run_braker.sh
 
-# bash $outDir/scripts/run_stringtie.sh
-# bash $outDir/scripts/run_stringtie_merge.sh #after run_stringtie is complete
+bash $outDir/scripts/run_stringtie.sh
+bash $outDir/scripts/run_stringtie_merge.sh #after run_stringtie is complete
 
 # Step 3: Combining and filtering gene models
 
-# bash $outDir/scripts/get_gffread.sh
-# bash $outDir/scripts/12_mikado_configure_and_prepare.sh
+bash $outDir/scripts/get_gffread.sh
+bash $outDir/scripts/12_mikado_configure_and_prepare.sh
 
 # next three scripts can run in parallel
-# bash $outDir/scripts/sub_mikado_blast.sh # normally splits fa into 100 jobs
-# bash $outDir/scripts/run_porticullis.sh 
-# bash $outDir/scripts/run_transdecoder.sh
+bash $outDir/scripts/sub_mikado_blast.sh # normally splits fa into 100 jobs. 
+bash $outDir/scripts/run_porticullis.sh 
+bash $outDir/scripts/run_transdecoder.sh
 
 # once previous three scripts are finished.
-# bash $outDir/scripts/45_mikado_serialize_pick.sh
+bash $outDir/scripts/45_mikado_serialize_pick.sh
 
 # Step 4: Annotating non-coding RNA genes
 
