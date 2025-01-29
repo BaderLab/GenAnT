@@ -6,8 +6,18 @@ Computational assumptions:
 - Access to at least one node with >100Gb of ram that you can use for >150h runtime. This is needed for EarlGrey and Braker
 
 LiftOff reference file:
-	- If LiftOff reference is a gff made from mikado, convert "ncRNA_gene" to "gene" so that lncRNA lift over
-	- R script to exctract ncRNA models from liftOff
+- If LiftOff reference is a gff made from mikado, convert "ncRNA_gene" to "gene" so that lncRNA lift over
+- R script to exctract ncRNA models from liftOff
+- Add extra documentation for preparing a gtf file for liftoff. 
+	- LiftOff is able to transfer all gene models from a reference to a target (coding, noncoding, etc.)
+	- Our tutorial pulls the "biotype" column of the output of liftOff to seed additional ncRNA models.
+	- The "biotype" column will have different syntax depending on the reference gtf file, however we have accounted for RefSeq and NCBI indputs.
+	- Some custom gtf files (e.g., GRC39) in NCBI have enough syntax differences that liftoff can have trouble using it as a reference. For these model organisms, we reccomend using ENSEMBL annotations.
+	- If you are having trouble with your reference gtf file, we have a script to clean it while keeping biotype in /utils
+		1. extract biotype from reference.gff
+		2. run gffread on reference.gff
+		3. add biotype back into reference.gffread.gff
+
 
 Final annotation:
 	- Add biotype column & convert "type" to the NCBI/ENSEMBL format?
