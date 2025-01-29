@@ -85,6 +85,10 @@ bash $outDir/scripts/45_mikado_serialize_pick.sh
 
 # Step 4: Annotating non-coding RNA genes
 
+bash $outDir/scripts/blast_seed.sh
+bash $outDir/scripts/run_infernal.sh
+
+bash $outDir/scripts/run_mirmachine.sh
 
 
 # Step 5: Sequence-similarity-based transfer of gene symbols
