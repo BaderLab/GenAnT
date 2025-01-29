@@ -2,7 +2,9 @@
 
 Non-coding RNAs do not contain highly conserved exons and protein domains typically seen in mammalian protein-coding genes. Accordingly, identifying non-coding genes requires algorithms that do not rely on the same genomic features used in the gene-model identification algorithms described in steps 1-3 (e.g. ORF evaluation, intron-exon ratio etc.). Instead of the evaluation of ORFs to determine if the coding-gene model is functional, non-coding gene models are evaluated for their potential functionality based on whether the predicted secondary structure of that non-coding RNA matches a previously identified secondary structure.
 
-Non-coding annotations can be generated using [the RNA family (Rfam) database](https://rfam.org/), an open-access, and maintained database of non-coding RNAs. The primary tool used in non-coding gene annotation and classification is [INFERence of RNA ALignment (Infernal)](http://eddylab.org/infernal/). Briefly, Infernal builds covariance models of RNA molecules, to incorporate sequence homology and predicted RNA secondary structure in the annotation and classification on non-coding molecules in the genome. To reduce the runtime and memory requirement of this process, researchers typically pre-select sequences (seed) based on sequence homology to a non-coding database, RNA-seq alignments, and regions identified as “non-coding” in GFF post processing algorithms (e.g. Mikado).
+### Identifying short non-coding structures with Infernal
+
+Many non-coding annotations can be generated using [the RNA family (Rfam) database](https://rfam.org/), an open-access, and maintained database of non-coding RNAs. The primary tool used in non-coding gene annotation and classification is [INFERence of RNA ALignment (Infernal)](http://eddylab.org/infernal/). Briefly, Infernal builds covariance models of RNA molecules, to incorporate sequence homology and predicted RNA secondary structure in the annotation and classification on non-coding molecules in the genome. To reduce the runtime and memory requirement of this process, researchers typically pre-select sequences (seed) based on sequence homology to a non-coding database, RNA-seq alignments, and regions identified as “non-coding” in GFF post processing algorithms (e.g. Mikado).
 
 #### Seeding by BLASTing against Rfam
 
@@ -62,7 +64,7 @@ Then use GFFRead to convert the GFF file to a BED file, only keeping the first f
 gffread mikado_annotation.ncRNA.gff --bed | cut -f1-4 > mikado_annotation.ncRNA.bed
 ```
 
-Non-coding features can also be found from the output of LiftOff that may not have made it through Mikado's filtering steps (it doesn't matter if they did and there is overlap). Isolate non-coding features from the ouptut of LiftOff (in this case, we assume that the LiftOff output is derived from a RefSeq GFF file):
+Non-coding features can also be found from the output of LiftOff that may not have made it through Mikado's filtering steps (it doesn't matter if they did and there is overlap). Isolate non-coding features from the ouptut of LiftOff (in this case, we assume that the LiftOff output is derived from a RefSeq GFF file and can grab `gbkey=ncRNA` for all non-coding RNAs):
 
 ```
 grep "gbkey=ncRNA" liftoff_annotation.gff | grep -P "RNA\t" > liftoff_annotation.ncRNA.gff
@@ -103,6 +105,12 @@ Sort the full BED file by coordinate:
 bedtools sort -i assembly_ncRNA_seed.bed > assembly_ncRNA_seed.s.bed
 ```
 
+At this point, you should have a BED file with four columns containing many different genomic coordinates. The first column is the contig ID, the second column is the starting base pair position, the third column is the ending base pair position, and the fourth column is the feature ID from the source it was derived. To remove some redundancy, remove rows that share the exact same contig ID, and base pair coordinates:
+
+```
+awk -F'\t' '!seen[$1 FS $2 FS $3]++' assembly_ncRNA_seed.s.bed | sponge assembly_ncRNA_seed.s.bed
+```
+
 If not done yet, index the unmasked genome FASTA file using SAMtools:
 
 ```
@@ -131,7 +139,7 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
 cmpress Rfam.cm
 ```
 
-Then, run Infernal using the cmscan function, which searches each sequence against the covariance model database. `-Z 1` indicates that the e-values are calculated as if the search space size is 1 megabase; `--cut_ga` is a flag to turn on using the GA (gathering) bit scores in the model to set inclusion thresholds, which are generally considered reliable for defining family membership; `--rfam` is a flag for using a strict filtering strategy for large databases (> 20 Gb) which accelerates the search at a potential cost to sensitivity; `--nohmmonly` specifies that the command must use the covariance models; `--tblout assembly_genome.tblout` is the output summary file of hits in tabular format; `-o assembly_genome.cmscan` is the main output file; `--verbose` indicates to include extra statistics in the main output; `--fmt 2` adds additional fields to the tabular output file, including information about overlapping hits; `--clanin Rfam.clanin` points to the clan information file; the final two positional arguments, `Rfam.cm` and `assembly_ncRNA_seed.fa`, point to the covariance model database and FASTA file of sequences respectively.
+Then, run Infernal using the cmscan function, which searches each sequence against the covariance model database. `-Z 1` indicates that the e-values are calculated as if the search space size is 1 megabase; `--cut_ga` is a flag to turn on using the GA (gathering) bit scores in the model to set inclusion thresholds, which are generally considered reliable for defining family membership; `--rfam` is a flag for using a strict filtering strategy for large databases (> 20 Gb) which accelerates the search at a potential cost to sensitivity; `--nohmmonly` specifies that the command must use the covariance models; `--tblout assembly_genome.tblout` is the output summary file of hits in tabular format; `-o assembly_genome.cmscan` is the main output file; `--verbose` indicates to include extra statistics in the main output; `--fmt 2` adds additional fields to the tabular output file, including information about overlapping hits; `--clanin Rfam.clanin` points to the clan information file; the final two positional arguments, `Rfam.cm` and `assembly_ncRNA_seed.fasta`, point to the covariance model database and FASTA file of sequences respectively. This step will take quite a while.
 
 ```
 cmscan --cpu number_of_threads -Z 1 \
@@ -140,9 +148,21 @@ cmscan --cpu number_of_threads -Z 1 \
  -o assembly_genome.cmscan \
  --verbose --fmt 2 \
  --clanin Rfam.clanin \
- Rfam.cm assembly_ncRNA_seed.fa
+ Rfam.cm assembly_ncRNA_seed.fasta
 ```
 
-Finally, the tabular output of infernal can be converted to a GFF file. The [perl script](https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl) to convert this output can be found in the Infernal documentation. The script can be run as follows with `--fmt2` and `--cmscan` indicating that the output of Infernal was generated with the `--fmt 2` option by cmscan. `assembly_ncRNA_seed.tblout` is the output of cmscan and the results are stored in `assembly_ncRNA.gff`.
+Finally, the tabular output of infernal can be converted to a GFF file. The [perl script](https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl) to convert this output can be found in the Infernal documentation. The script can be run as follows with `--fmt2` and `--cmscan` indicating that the output of Infernal was generated with the `--fmt 2` option by cmscan. `assembly_ncRNA_seed.tblout` is the output of cmscan and the results are stored in `infernal.gff`.
 
 ```
+perl infernal-tblout2gff.pl --cmscan --fmt2 assembly_genome.tblout > infernal.gff
+```
+
+### Identifying miRNAs with MirMachine
+
+Micro RNAs (miRNAs) are not found with Infernal using the above steps, but can instead be identified using [MirMachine](https://github.com/sinanugur/MirMachine). MirMachine also relies on Infernal, but has clade-specific miRNA-specific secondary structures obtained from [MirGeneDB](https://mirgenedb.org/). To run, MirMachine needs to know the clade (`-n Mammalia`); the species name indicated by `-s`; and the softmasked genome FASTA sequence (`--genome`). We will also specify the model that MirMachine is using, which in this case is "deutero" (`-m deutero`) since mammals are within the group of deuterostome animals. Note that MirMachine is a snakemake pipeline, and if snakemake isn't installed, a cryptic error will be thrown.
+
+```
+MirMachine.py -n Mammalia -s name_of_species --genome genome.softmasked.fasta -m deutero --cpu number_of_threads
+```
+
+
