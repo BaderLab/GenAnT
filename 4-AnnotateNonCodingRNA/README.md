@@ -76,7 +76,7 @@ Again, use GFFRead to convert the GFF file to a four-column BED file:
 gffread liftoff_annotation.ncRNA.gff --bed | cut -f1-4 > liftoff_annotation.ncRNA.bed
 ```
 
-Finally, isolate non-coding features from StringTie that may not have been included in the Mikado output. Since StringTie doesn't specify which features are coding and which are non-coding, we are going to assume that any features that were not included in the final output of Mikado may be non-coding. To find these excluded features, we can use the BEDTools tool, `bedtools subtract`, to remove Mikado features from the StringTie features. The `-A` flag is included to remove the entirety of the feature in the StringTie output if any of it is found in the Mikado output. Only keep transcript features rather than both transcripts and exons (specified by the grep statement following the BEDTools command).
+Now, isolate non-coding features from StringTie that may not have been included in the Mikado output. Since StringTie doesn't specify which features are coding and which are non-coding, we are going to assume that any features that were not included in the final output of Mikado may be non-coding. To find these excluded features, we can use the BEDTools tool, `bedtools subtract`, to remove Mikado features from the StringTie features. The `-A` flag is included to remove the entirety of the feature in the StringTie output if any of it is found in the Mikado output. Only keep transcript features rather than both transcripts and exons (specified by the grep statement following the BEDTools command).
 
 ```
 bedtools subtract -A -a stringtie_annotation.gtf -b mikado_annotation.gff | grep -P "\ttranscript\t" > stringtie_annotation.ncRNA.gtf
@@ -88,6 +88,14 @@ Convert to a four-column BED file with GFFRead:
 gffread stringtie_annotation.ncRNA.gtf --bed | cut -f1-4 > stringtie_annotation.ncRNA.bed
 ```
 
+Finally grab a BED file of repeats from the output of Earl Grey, as these are also candidate non-coding regions for Infernal. Earl Grey already spits out a BED file that you can find in the "summaryFiles" directory (e.g. `earl_grey/species_EarlGrey/species_EarlGrey_summaryFiles/species.filteredRepeats.bed`). Isolate the first four columns of this file.
+
+```
+cut -f1-4 species.filteredRepeats.bed > earlGrey_annotation.ncRNA.bed
+```
+
+All of these BED files can now be combined.
+
 #### Combine different seeding results
 
 Combine candidate noncoding RNA containing genome coordinates (seeds) from each method into a master-list using concatenate:
@@ -96,7 +104,8 @@ Combine candidate noncoding RNA containing genome coordinates (seeds) from each 
 cat assembly.rfam.bed \
  mikado_annotation.ncRNA.bed \
  liftoff_annotation.ncRNA.bed \
- stringtie_annotation.ncRNA.bed > assembly_ncRNA_seed.bed
+ stringtie_annotation.ncRNA.bed \
+ earlGrey_annotation.ncRNA.bed > assembly_ncRNA_seed.bed
 ```
 
 Sort the full BED file by coordinate:
@@ -165,4 +174,5 @@ Micro RNAs (miRNAs) are not found with Infernal using the above steps, but can i
 MirMachine.py -n Mammalia -s name_of_species --genome genome.softmasked.fasta -m deutero --cpu number_of_threads
 ```
 
+MirMachine outputs a GFF file with high confidence results found in `results/predictions/filtered_gff/name_of_species.PRE.gff`.
 
