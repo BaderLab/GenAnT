@@ -14,7 +14,7 @@ stringtieDir=$outDir/stringtie_mergeonly
 brakerDir=$outDir/braker
 ASMPATH=$outDir/assembly/assembly.softmasked.fa
 
-gffread $brakerDir/braker.gtf --keep-genes -o braker.gffread.gff
+gffread $brakerDir/braker.fix.gtf --keep-genes -o braker.gffread.gff
 gffread -y braker.faa -g $ASMPATH braker.gffread.gff
 
 gffread $liftOffDir/liftoff.gff --keep-genes -o liftoff.gffread.gff
