@@ -166,6 +166,8 @@ Finally, the tabular output of infernal can be converted to a GFF file. The [per
 perl infernal-tblout2gff.pl --cmscan --fmt2 assembly_genome.tblout > infernal.gff
 ```
 
+Looking at `infernal.gff`, you will see that the type of ncRNA that Infernal has identified in column three. tRNAs are easily recognizable, but all other ncRNAs are labeled with a more cryptic RFam identifier, like "SSU_rRNA_bacteria", "U6", etc. 
+
 ### Identifying miRNAs with MirMachine
 
 Micro RNAs (miRNAs) are not found with Infernal using the above steps, but can instead be identified using [MirMachine](https://github.com/sinanugur/MirMachine). MirMachine also relies on Infernal, but has clade-specific miRNA-specific secondary structures obtained from [MirGeneDB](https://mirgenedb.org/). To run, MirMachine needs to know the clade (`-n Mammalia`); the species name indicated by `-s`; and the softmasked genome FASTA sequence (`--genome`). We will also specify the model that MirMachine is using, which in this case is "deutero" (`-m deutero`) since mammals are within the group of deuterostome animals. Note that MirMachine is a snakemake pipeline, and if snakemake isn't installed, a cryptic error will be thrown.
