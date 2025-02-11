@@ -185,3 +185,39 @@ MirMachine.py -n Mammalia -s name_of_species --genome genome.softmasked.fasta -m
 
 MirMachine outputs a GFF file with high confidence results found in `results/predictions/filtered_gff/name_of_species.PRE.gff`.
 
+The GFF file that MirMachine is a little funky, as it has `gene_id=` instead of `ID=` which is expected for GFF3 files. We can use sed to replace `gene_id` with `ID`.
+
+```
+cd results/predictions/filtered_gff/
+sed 's/gene_id/ID/g' name_of_species.PRE.gff > name_of_species.PRE.id.gff
+```
+
+Now to clearly have these features labeled as ncRNAs when they are combined into the full GFF with protein-coding gene models, let's reformat the file with GFFRead and then add `gbkey=ncRNA` onto the end of each line. We can actually use this value to replace everything including and after `sequence_with_30nt` which is currently at the end of each line and is quite verbose. We can just use `sed -i` to make the edits in place.
+
+```
+sed -i 's/sequence_with_30nt.*/gbkey=ncRNA/g' name_of_species.PRE.id.gff
+```
+
+### Combining ncRNA gene models
+
+At this point, we now have three different sources of ncRNA from Mikado, MirMachine, and Infernal. Many of these gene models will likely be overlapping, so we will have to determine which we would like to keep. We can do that by prioritizing certain gene models over others. Let's deal with lncRNAs first. Infernal found a bunch of lncRNAs which we labeled as such. Most of Mikado's ncRNA gene models are likely lncRNAs; Mikado may also have short mRNA transcripts that have been mistakenly assigned a coding region but are actually lncRNAs. One tricky thing is that Infernal doesn't find whole lncRNA transcripts, just exons, whereas Mikado can find multiexonic transcripts. So Infernal will have labeled multiple exons of a lncRNA separately without joining them together whereas Mikado may have found the whole transcript. We therefore want to add the lncRNAs from Infernal to Mikado, and if there is any overlap in the location of the gene models, we want to keep Mikado's gene model but Infernal's ncRNA label.
+
+First, let's isolate the lncRNA features from the Infernal output using `grep`. The `-P` flag indicates that we're using the perl language to specify that we want to use the `\t` symbol to represent tabs. We name the output `infernal.types.lncRNA.gff`.
+
+```
+grep -P '\tlncRNA\t' infernal.types.gff > infernal.types.lncRNA.gff
+```
+
+Then use `bedtools intersect` to find any lncRNAs from Infernal that don't have any overlap at all with Mikado's gene models (referred to as `mikado.gff`.
+
+```
+bedtools intersect -v -a infernal.types.lncRNA.gff -b mikado.gff > infernal.lncRNA.notInMikado.gff
+```
+
+If any gene models have populated `infernal.lncRNA.notInMikado.gff`, append them to `mikado.gff`.
+
+```
+cat mikado.gff infernal.lncRNA.notInMikado.gff > mikado.infernal.gff
+```
+
+Now we want to label anything in `mikado.infernal.gff` with information from Infernal.
