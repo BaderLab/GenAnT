@@ -1,0 +1,120 @@
+---
+title: "Convert RFam symbols"
+output: html_notebook
+---
+
+## Read in GFF output from Infernal
+
+```{r}
+library(rtracklayer)
+library(dplyr)
+```
+
+Set file path
+
+```{r}
+filePath <- "./kogia_breviceps/mikado_all_stringtie_merge/"
+```
+
+Read in Infernal GFF
+
+```{r}
+infernal <- readGFF(paste(filePath, "infernal.gff", sep = ""))
+```
+
+## Reformat RFam table
+
+Read in RFam table
+
+```{r}
+rfam <- read.delim("family.txt", header = FALSE, sep = "\t")
+unique(rfam$V19)
+```
+
+Rename feature types (V19 column) to standard, singular features; note that order matters for these commands as some features are labelled as e.g. "Gene; snRNA; snoRNA; scaRNA;" and we have tried to pick the most appropriate name
+
+```{r}
+rfam$V19[grepl("scaRNA", rfam$V19)] <- "scaRNA"
+rfam$V19[grepl("splicing", rfam$V19)] <- "snRNA"
+rfam$V19[grepl("tRNA", rfam$V19)] <- "tRNA"
+rfam$V19[grepl("rRNA", rfam$V19)] <- "rRNA"
+rfam$V19[grepl("lncRNA", rfam$V19)] <- "lncRNA"
+rfam$V19[grepl("snoRNA", rfam$V19)] <- "snoRNA"
+rfam$V19[grepl("sRNA", rfam$V19)] <- "sRNA"
+rfam$V19[grepl("miRNA", rfam$V19)] <- "microRNA"
+rfam$V19[grepl(";", rfam$V19)] <- "misc_RNA"
+unique(rfam$V19)
+```
+
+## Reconstruct the GFF file
+
+Create a copy of the GFF
+
+```{r}
+output <- infernal
+```
+
+Split seqid into three and remove seqid
+
+```{r}
+output <- output %>%
+  separate(seqid, into = c("chromosome", "positions"), sep = ":", remove = FALSE) %>%
+  separate(positions, into = c("start1", "end1"), sep = "-", convert = TRUE)
+output$seqid <- NULL
+```
+
+Add start1 to start and replace start; add start1 to end and replace end
+
+```{r}
+output <- output %>%
+  mutate(
+    start = start + start1,
+    end = end + start1
+  )
+output$start1 <- NULL
+output$end1 <- NULL
+```
+
+Make current type column as ID and put ID before evalue
+
+```{r}
+output$ID <- output$type
+output <- output %>%
+  relocate(ID, .before = evalue)
+```
+
+Add info from RFam table; use the "type" column from the Infernal GFF and the second column of the RFam table to align the rows
+
+```{r}
+output <- output %>%
+  left_join(rfam, by = c("type" = "V2"))
+```
+
+Make the following modifications to format the GFF file:
+- Replace the "type" column with simplified feature types in column "V19"
+- Rename "V1" column as "RFamID"
+- Rename "V4" column with the longer description as the ncRNA product
+- Add a final column identifying the "gbkey" as ncRNA to match RefSeq formatting
+- Remove all other columns beginning with "V"
+
+```{r}
+output$type <- output$V19
+colnames(output)[11] <- "RFamID"
+colnames(output)[13] <- "product"
+output$gbkey <- "ncRNA"
+output <- output[,!grepl("^V", colnames(output))]
+head(output)
+```
+
+
+Create new GFF file
+
+```{r}
+export.gff3(output, paste(filePath, "infernal.types.gff", sep = ""), format = "gff3")
+```
+
+
+
+
+
+
