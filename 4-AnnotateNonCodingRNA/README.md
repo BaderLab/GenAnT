@@ -166,7 +166,14 @@ Finally, the tabular output of infernal can be converted to a GFF file. The [per
 perl infernal-tblout2gff.pl --cmscan --fmt2 assembly_genome.tblout > infernal.gff
 ```
 
-Looking at `infernal.gff`, you will see that the type of ncRNA that Infernal has identified in column three. tRNAs are easily recognizable, but all other ncRNAs are labeled with a more cryptic RFam identifier, like "SSU_rRNA_bacteria", "U6", etc. 
+Looking at `infernal.gff`, you will see that the type of ncRNA that Infernal has identified in column three. tRNAs are easily recognizable, but all other ncRNAs are labeled with a more cryptic RFam identifier, like "SSU_rRNA_bacteria", "U6", etc. In order to better interpret these results, we will want to reformat the GFF so that the feature types are more recognizable. We can do that by first downloading a table that contains the different RFam identifiers and their respective feature types.
+
+```
+wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/database_files/family.txt.gz
+gunzip family.txt.gz
+```
+
+The easiest way to use this table is to read it into R, in addition to the GFF file from Infernal, and use pattern matching to assign the different feature types to the ncRNAs output by Infernal. We have provided an R notebook that performs these modifications called `rfamConversion.Rmd` which can be found in this folder. The notebook outputs a reformatted GFF called `infernal.types.gff`.
 
 ### Identifying miRNAs with MirMachine
 
