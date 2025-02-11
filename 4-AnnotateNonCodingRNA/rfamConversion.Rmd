@@ -10,28 +10,22 @@ library(rtracklayer)
 library(dplyr)
 ```
 
-Set file path
+Read in GFF output from Infernal; file path must be specified for GFF file if "infernal.gff" is not in the working directory
 
 ```{r}
-filePath <- "./kogia_breviceps/mikado_all_stringtie_merge/"
+infernal <- readGFF("infernal.gff")
 ```
 
-Read in Infernal GFF
+## Read in and reformat RFam table
 
-```{r}
-infernal <- readGFF(paste(filePath, "infernal.gff", sep = ""))
-```
-
-## Reformat RFam table
-
-Read in RFam table
+Read in RFam table; file path must be specified if "family.txt" is not in the working directory. Run the "unique" function on column 19 to see the different types of ncRNAs that exist in this table.
 
 ```{r}
 rfam <- read.delim("family.txt", header = FALSE, sep = "\t")
 unique(rfam$V19)
 ```
 
-Rename feature types (V19 column) to standard, singular features; note that order matters for these commands as some features are labelled as e.g. "Gene; snRNA; snoRNA; scaRNA;" and we have tried to pick the most appropriate name
+Rename feature types (V19 column) to standard, singular features; note that order matters for these commands as some features are labelled as e.g. "Gene; snRNA; snoRNA; scaRNA;" and we have tried to pick the most appropriate name.
 
 ```{r}
 rfam$V19[grepl("scaRNA", rfam$V19)] <- "scaRNA"
@@ -54,7 +48,9 @@ Create a copy of the GFF
 output <- infernal
 ```
 
-Split seqid into three and remove seqid
+When the FASTA file was fed into Infernal, the file consisted of specific contigs and coordinates that Infernal would scan. The coordinates are therefore still included in the first column of the GFF, and the GFF coordinates in columns four and five need to be added onto the starting coordinate to adjust everything properly. E.g. if the FASTA provided to Infernal started at base pair 1186 on a specific contig, but then the ncRNA started at position 720 of that contig fragment, 1186 + 720 would be the true starting position. Therefore, we need to correct this.
+
+First, split the "seqid" column into three at the colon and dash. Remove the "seqid" column. Label the first new column "chromosome", and the second and third "start1" and "end1" respectively. "start1" is the starting position of the contig/chromosome fragment that was submitted to Infernal, and "end1" is the ending position.
 
 ```{r}
 output <- output %>%
@@ -63,7 +59,7 @@ output <- output %>%
 output$seqid <- NULL
 ```
 
-Add start1 to start and replace start; add start1 to end and replace end
+Add the "start1" column to the "start" column, and replace "start" with this value; add the "start1" column to the "end" column and use this to replace the "end" value. These represent the true coordinates where the ncRNA is.
 
 ```{r}
 output <- output %>%
@@ -75,7 +71,7 @@ output$start1 <- NULL
 output$end1 <- NULL
 ```
 
-Make current type column as ID and put ID before evalue
+Now take the current "type" column, which actually has a more descriptive name for the ncRNA that was identified, and relabel this column as "ID". Move the "ID" column to be located to the left of the "evalue" column, as this represents the first bit of the metadata in column nine that we want in the GFF file.
 
 ```{r}
 output$ID <- output$type
@@ -83,14 +79,14 @@ output <- output %>%
   relocate(ID, .before = evalue)
 ```
 
-Add info from RFam table; use the "type" column from the Infernal GFF and the second column of the RFam table to align the rows
+Then, to add the info from RFam table, we will start simply be combining the RFam table with the Infernal GFF file. To do this, use dplyr's "left_join" function to join the objects, using the "type" column from the Infernal GFF and the second column of the RFam table to align the rows.
 
 ```{r}
 output <- output %>%
   left_join(rfam, by = c("type" = "V2"))
 ```
 
-Make the following modifications to format the GFF file:
+Now that the two are combined, we will make the following modifications to format the GFF file:
 - Replace the "type" column with simplified feature types in column "V19"
 - Rename "V1" column as "RFamID"
 - Rename "V4" column with the longer description as the ncRNA product
@@ -106,11 +102,10 @@ output <- output[,!grepl("^V", colnames(output))]
 head(output)
 ```
 
-
-Create new GFF file
+Export the new GFF file called "infernal.types.gff"
 
 ```{r}
-export.gff3(output, paste(filePath, "infernal.types.gff", sep = ""), format = "gff3")
+export.gff3(output, "infernal.types.gff", format = "gff3")
 ```
 
 
