@@ -208,7 +208,7 @@ First, let's isolate the lncRNA features from the Infernal output using `grep`. 
 grep -P '\tlncRNA\t' infernal.types.gff > infernal.types.lncRNA.gff
 ```
 
-Then use `bedtools intersect` to find any lncRNAs from Infernal that don't have any overlap at all with Mikado's gene models (referred to as `mikado.gff`.
+Then use `bedtools intersect` to find any lncRNAs from Infernal that don't have any overlap at all with Mikado's gene models (referred to as `mikado.gff`. `-v` indicates that we're looking for models with no overlap between the GFFs specified by `-a` and `-b`, specifically keeping the non-overlapping models from `-a`.
 
 ```
 bedtools intersect -v -a infernal.types.lncRNA.gff -b mikado.gff > infernal.lncRNA.notInMikado.gff
@@ -220,4 +220,17 @@ If any gene models have populated `infernal.lncRNA.notInMikado.gff`, append them
 cat mikado.gff infernal.lncRNA.notInMikado.gff > mikado.infernal.gff
 ```
 
-Now we want to label anything in `mikado.infernal.gff` with information from Infernal.
+Now we want to label anything in `mikado.infernal.gff` with information from Infernal. We can do this using `bedtools intersect` again with `-a` pointing at the Mikado GFF file (with the Infernal-only lncRNAs added) and `-b` pointing at all of the Infernal lncRNAs. The `-wo` flag indicates that we want to write all of the Mikado features that overlap with the Infernal features, but keeping the information from both files. Therefore all possible lncRNA positions identified by Infernal will be present in this file, but associated with the transcript coordinates identified by Mikado. We give this a text file extension because it no longer follows GFF format.
+
+```
+bedtools intersect -a mikado.infernal.gff -b infernal.types.lncRNA.gff -wo > mikado.infernal.lncRNALabeled.txt
+```
+
+Let's cut the first nine columns to extract the Mikado information, and the 10th to 18th columns to extract the Infernal information. Giving each file nine columns will return proper GFF format. We don't need to worry about the number of base pair overlaps in column 19.
+
+```
+cut -f1-9 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.mikadoInfo.gff
+cut -f10-18 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.infernalInfo.gff
+```
+
+
