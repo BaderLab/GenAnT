@@ -29,6 +29,7 @@ Communication:
 
 ISO-seq:
 	- workflow for when --mixed, --long, and --short are all viable data options
+	- Add regtools to required tools to get junctions from ISOseq.
 
 Pipeline flexibility
 - replace cactus binary + venv with singularity
