@@ -233,4 +233,7 @@ cut -f1-9 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.mika
 cut -f10-18 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.infernalInfo.gff
 ```
 
+These two separate files can then be read into R via an R notebook that we provide called `RenameLncRNAs.Rmd` that (1) renames Mikado's gene models with Infernal lncRNA models found in the same location and (2) reformats Infernal gene models that did not overlap with Mikado's. The R notebook outputs a file called `mikado.infernal.lncRNALabeled.polished.gff` which is still a subset of lncRNAs that will need to be reintegrated with the rest of Mikado's gene models.
+
+
 
