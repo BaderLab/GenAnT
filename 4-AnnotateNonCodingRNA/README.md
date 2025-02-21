@@ -249,6 +249,10 @@ cat mikado.noLnc.gff mikado.infernal.lncRNALabeled.polished.gff > mikado.lncLabe
 
 At this point, we now want to add the short non-coding RNAs to the gene models found in `mikado.lncLabeled.gff`. There will be two key steps here: (1) Removing any non-coding RNAs that exist within an exon found by Mikado (because it means that the non-coding RNA probably isn't real), and (2) creating gene and exon features for the remaining non-coding RNAs.
 
+Let's start by isolating all of the exons from `mikado.lncLabeled.gff` using a simple grep command. We'll need this to check for overlap later with `bedtools`.
 
+```
+grep -P "\texon\t" mikado.lncLabeled.gff > mikado.lncLabeled.exons.gff
+```
 
 
