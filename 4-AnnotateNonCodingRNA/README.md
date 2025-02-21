@@ -235,5 +235,20 @@ cut -f10-18 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.in
 
 These two separate files can then be read into R via an R notebook that we provide called `RenameLncRNAs.Rmd` that (1) renames Mikado's gene models with Infernal lncRNA models found in the same location and (2) reformats Infernal gene models that did not overlap with Mikado's. The R notebook outputs a file called `mikado.infernal.lncRNALabeled.polished.gff` which is still a subset of lncRNAs that will need to be reintegrated with the rest of Mikado's gene models.
 
+We can integrate these newly formatted lncRNAs with the rest of Mikado's gene models by first subtracting the lncRNA features from the original Mikado features. Specifically, we'll be removing gene models from the file we created earlier called `mikado.infernal.gff`. This will provide us with a file that only has Mikado features that don't share any overlap with those in `mikado.infernal.lncRNALabeled.polished.gff`. We use the `-A` flag which indicates that an entire feature is removed if there is any overlap to prevent features from being broken up into smaller pieces (which shouldn't matter because we only extracted whole features earlier, but it's a good precaution). We'll call this file `mikado.noLnc.gff`.
+
+```
+bedtools subtract -A -a mikado.infernal.gff -b mikado.infernal.lncRNALabeled.polished.gff > mikado.noLnc.gff
+```
+
+Now we'll add those nicely-formatted lncRNA features from `mikado.infernal.lncRNALabeled.polished.gff` back into `mikado.noLnc.gff` using the `cat` command, which will just append the features from the former file onto the latter. We won't worry about sorting the GFF file by coordinate until the short non-coding RNAs are added, as well.
+
+```
+cat mikado.noLnc.gff mikado.infernal.lncRNALabeled.polished.gff > mikado.lncLabeled.gff
+```
+
+At this point, we now want to add the short non-coding RNAs to the gene models found in `mikado.lncLabeled.gff`. There will be two key steps here: (1) Removing any non-coding RNAs that exist within an exon found by Mikado (because it means that the non-coding RNA probably isn't real), and (2) creating gene and exon features for the remaining non-coding RNAs.
+
+
 
 
