@@ -249,10 +249,29 @@ cat mikado.noLnc.gff mikado.infernal.lncRNALabeled.polished.gff > mikado.lncLabe
 
 At this point, we now want to add the short non-coding RNAs to the gene models found in `mikado.lncLabeled.gff`. There will be two key steps here: (1) Removing any non-coding RNAs that exist within an exon found by Mikado (because it means that the non-coding RNA probably isn't real), and (2) creating gene and exon features for the remaining non-coding RNAs.
 
-Let's start by isolating all of the exons from `mikado.lncLabeled.gff` using a simple grep command. We'll need this to check for overlap later with `bedtools`.
+Let's start by isolating all of the exons from `mikado.lncLabeled.gff` using a simple grep command. `-P` means we're using Perl to recognize tabs on either side of "exon" to isolate rows where "exon" is in the feature type column, column two. We'll need this to check for overlap later with BEDTools.
 
 ```
 grep -P "\texon\t" mikado.lncLabeled.gff > mikado.lncLabeled.exons.gff
 ```
+
+Then we need to remove the lncRNAs from the Infernal results since we already dealt with those. We can use grep for that, as well. The `-v` flag means we're excluding whatever we're searching for, and `-P` allows us to specify tabs on either side of "lncRNA".
+
+```
+grep -v -P "\tlncRNA\t" infernal.types.gff > infernal.types.noLncRNA.gff
+```
+
+Now we'll want to combine all of the small non-coding RNAs from Infernal and MirMachine. Because both tools find microRNAs, there may be overlapping gene models. We're going to prioritize those from MirMachine, as MirMachine has clade-specific models that can be used allowing it to be more specific with its microRNA detection. Therefore, we're going to use BEDTools similarly to above. Let's start by subtracting any MirMachine microRNA models from the Infernal short non-coding RNAs. `-A` indicates that we're subtracting entire features with any overlap, and the file indicated by `-b` is getting subtracted from the file indicated by `-a`.
+
+```
+bedtools subtract -A -a infernal.types.noLncRNA.gff -b name_of_species.PRE.id.gff > infernal.noLnc.noMir.gff
+```
+
+Now let's concatenate the file we just made with the MirMachine GFF to collect all short non-coding RNAs.
+
+```
+cat name_of_species.PRE.id.gff infernal.noLnc.noMir.gff > short_ncRNAs.gff
+```
+
 
 
