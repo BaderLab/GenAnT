@@ -91,7 +91,7 @@ gffread stringtie_annotation.ncRNA.gtf --bed | cut -f1-4 > stringtie_annotation.
 Finally grab a BED file of repeats from the output of Earl Grey, as these are also candidate non-coding regions for Infernal. Earl Grey already spits out a BED file that you can find in the "summaryFiles" directory (e.g. `earl_grey/species_EarlGrey/species_EarlGrey_summaryFiles/species.filteredRepeats.bed`). Isolate the first four columns of this file.
 
 ```
-cut -f1-4 species.filteredRepeats.bed > earlGrey_annotation.ncRNA.bed
+grep -i "RNA" heterocephalus_glaber.filteredRepeats.bed | cut -f1-4 > earlGrey_annotation.ncRNA.bed
 ```
 
 All of these BED files can now be combined.
