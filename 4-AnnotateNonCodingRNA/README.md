@@ -37,7 +37,7 @@ Next, BLAST your unmasked genome FASTA file against the Rfam BLAST database. `-d
 ```
 blastn -db Rfam_ncRNA \ 
 -query genome.fasta \
--evalue 1e-6 -max_hsps 6 -max_target_seqs 6 -outfmt 6 \
+-evalue 1e-2 -max_hsps 6 -outfmt 6 \
 -num_threads number_of_threads \
 -out assembly.rfam.blastn
 ```
