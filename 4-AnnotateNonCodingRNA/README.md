@@ -273,5 +273,10 @@ Now let's concatenate the file we just made with the MirMachine GFF to collect a
 cat name_of_species.PRE.id.gff infernal.noLnc.noMir.gff > short_ncRNAs.gff
 ```
 
+Now we will want to remove any gene models from `short_ncRNAs.gff` that overlap with `mikado.lncLabeled.exons.gff`. We can use `bedtools subtract` again to remove the gene models, using `-A` to indicate that we are removing entire features if there is any overlap.
 
+```
+bedtools subtract -A -a short_ncRNAs.gff -b mikado.lncLabeled.exons.gff > short_ncRNAs.noOverlap.gff
+```
 
+Before being added to the Mikado + lncRNA gene models, these short ncRNAs are missing gene and exon features. We can add these features via an R notebook called
