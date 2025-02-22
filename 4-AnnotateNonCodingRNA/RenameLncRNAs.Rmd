@@ -3,7 +3,7 @@ title: "Rename lncRNAs"
 output: html_notebook
 ---
 
-This notebook reads in Mikado gene models labeled by Infernal, and assign Infernal gene names to all gene models.
+This notebook reads in Mikado gene models labeled by Infernal, and assigns Infernal gene names to all gene models.
 
 ## Read in file
 
