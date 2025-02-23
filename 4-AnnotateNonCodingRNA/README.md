@@ -88,10 +88,10 @@ Convert to a four-column BED file with GFFRead:
 gffread stringtie_annotation.ncRNA.gtf --bed | cut -f1-4 > stringtie_annotation.ncRNA.bed
 ```
 
-Finally grab a BED file of repeats from the output of Earl Grey, as these are also candidate non-coding regions for Infernal. Earl Grey already spits out a BED file that you can find in the "summaryFiles" directory (e.g. `earl_grey/species_EarlGrey/species_EarlGrey_summaryFiles/species.filteredRepeats.bed`). Isolate the first four columns of this file.
+Finally grab a BED file of repeats from the output of Earl Grey, as these are also candidate non-coding regions for Infernal. Earl Grey already spits out a BED file that you can find in the "summaryFiles" directory (e.g. `earl_grey/species_EarlGrey/species_EarlGrey_summaryFiles/species.filteredRepeats.bed`). To isolate only the non-coding RNAs found by Earl Grey and not the repeats, we can do a `grep` search for "RNA", using yhr `-i` flag to ignore case restrictions in case any parts of "RNA" are present in lowercase. We'll then pipe this command into `cut` to isolate the first four columns of this file.
 
 ```
-grep -i "RNA" heterocephalus_glaber.filteredRepeats.bed | cut -f1-4 > earlGrey_annotation.ncRNA.bed
+grep -i "RNA" species.filteredRepeats.bed | cut -f1-4 > earlGrey_annotation.ncRNA.bed
 ```
 
 All of these BED files can now be combined.
