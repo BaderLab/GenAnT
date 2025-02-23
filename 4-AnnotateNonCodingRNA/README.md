@@ -114,10 +114,10 @@ Sort the full BED file by coordinate:
 bedtools sort -i assembly_ncRNA_seed.bed > assembly_ncRNA_seed.s.bed
 ```
 
-At this point, you should have a BED file with four columns containing many different genomic coordinates. The first column is the contig ID, the second column is the starting base pair position, the third column is the ending base pair position, and the fourth column is the feature ID from the source it was derived. To remove some redundancy, remove rows that share the exact same contig ID, and base pair coordinates:
+At this point, you should have a BED file with four columns containing many different genomic coordinates. The first column is the contig ID, the second column is the starting base pair position, the third column is the ending base pair position, and the fourth column is the feature ID from the source it was derived. To remove some redundancy, we can use `bedtools merge` to dissolve overlapping genomic locations, since Infernal only needs the general locations for seeding and doesn't rely on the exact coordinates for anything.
 
 ```
-awk -F'\t' '!seen[$1 FS $2 FS $3]++' assembly_ncRNA_seed.s.bed | sponge assembly_ncRNA_seed.s.bed
+bedtools merge -i assembly_ncRNA_seed.s.bed | sponge assembly_ncRNA_seed.s.bed
 ```
 
 If not done yet, index the unmasked genome FASTA file using SAMtools:
