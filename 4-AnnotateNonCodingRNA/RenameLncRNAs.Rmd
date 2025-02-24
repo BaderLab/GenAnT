@@ -122,11 +122,11 @@ for(gene in genes) {
   contigs <- unique(mikado$seqid[mikado$predicted_gene_symbol == gene])
   # If there is more than one contig, loop through the different contigs
   if(length(contigs) > 1) {
-    # Start a counter at 1
-    i <- 1
+    # Start a counter at 0
+    i <- 0
     for(contig in contigs) {
       # Only add modifications at the second contig onward
-      if(i > 1){
+      if(i > 0){
         # Create new unique ID name
         new_id <- paste(gene, "-copy", i, sep = "")
         # Replace the current ID for this gene and contig with new_id
