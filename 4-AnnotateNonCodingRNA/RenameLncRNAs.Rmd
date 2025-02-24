@@ -58,16 +58,16 @@ mikado$type <- gsub("^ncRNA$", "lncRNA", mikado$type)
 
 Finally, we want to add information from Infernal to the Mikado gene models. We only want to add this information to gene, mRNA, lncRNA_gene, and lncRNA features. This is because not all exons or other features associated with genes or transcripts were captured using `bedtools intersect`, and generally, child features (i.e. features contained within specific genes or transcripts) only need to associate with their parent features (i.e. corresponding genes and transcripts) to be sufficiently interpreted.
 
-Therefore, we will isolate any gene and transcript features and add the information from column nine of Infernal (i.e. the metadata). We will want to change the "ID" column to "infernal_gene_symbol".
+Therefore, we will isolate any gene and transcript features and add the information from column nine of Infernal (i.e. the metadata). We will want to change the "ID" column to "predicted_gene_symbol".
 
 ```{r}
-mikado$infernal_gene_symbol <- NA
+mikado$predicted_gene_symbol <- NA
 mikado$infernal_product <- NA
 mikado$gbkey <- NA
 mikado$gene_biotype <- NA
 for(row in 1:nrow(mikado)) {
   if(mikado$type[row] %in% c("gene","mRNA","lncRNA_gene","lncRNA")) {
-    mikado$infernal_gene_symbol[row] <- infernal$ID[row]
+    mikado$predicted_gene_symbol[row] <- infernal$ID[row]
     mikado$infernal_product[row] <- infernal$product[row]
     if(mikado$type[row] %in% c("gene","lncRNA_gene")) {
       mikado$gene_biotype[row] <- "lncRNA"
@@ -88,16 +88,16 @@ Since we removed the unique characters in the Infernal gene symbols and product 
 Specify columns we want to make sure are unique
 
 ```{r}
-uniq_cols <- setdiff(names(mikado), c("infernal_gene_symbol", "infernal_product"))
+uniq_cols <- setdiff(names(mikado), c("predicted_gene_symbol", "infernal_product"))
 ```
 
-Group by these columns; if `infernal_gene_symbol` and `infernal_product` differ, these will be separated by semi-colons
+Group by these columns; if `predicted_gene_symbol` and `infernal_product` differ, these will be separated by semi-colons
 
 ```{r}
 mikado <- mikado %>%
   group_by(across(all_of(uniq_cols))) %>%
   dplyr::summarize(
-    across(all_of(c("infernal_gene_symbol", "infernal_product")), ~ paste(unique(.), collapse = ";")),
+    across(all_of(c("predicted_gene_symbol", "infernal_product")), ~ paste(unique(.), collapse = ";")),
     .groups = "drop"
   )
 ```
@@ -115,11 +115,11 @@ The first thing we want to do is make sure that all separate "cmscan" lncRNAs ha
 
 ```{r}
 # Isolate unique Infernal gene symbols with no Mikado overlap
-genes <- unique(mikado$infernal_gene_symbol[mikado$source == "cmscan"])
+genes <- unique(mikado$predicted_gene_symbol[mikado$source == "cmscan"])
 # Loop through genes
 for(gene in genes) {
   # Gather the different contigs that the gene is on
-  contigs <- unique(mikado$seqid[mikado$infernal_gene_symbol == gene])
+  contigs <- unique(mikado$seqid[mikado$predicted_gene_symbol == gene])
   # If there is more than one contig, loop through the different contigs
   if(length(contigs) > 1) {
     # Start a counter at 1
@@ -139,7 +139,7 @@ for(gene in genes) {
 }
 # Look at all of the unique gene symbols to see if any copies were made
 # (They will have "copy#" after the gene symbol)
-unique(mikado$infernal_gene_symbol[mikado$source == "cmscan"])
+unique(mikado$predicted_gene_symbol[mikado$source == "cmscan"])
 ```
 
 
@@ -152,15 +152,15 @@ mikado$gbkey[mikado$source == "cmscan"] <- rep(NA, length(mikado$source == "cmsc
 mikado$gene_biotype[mikado$source == "cmscan"] <- rep(NA, length(mikado$source == "cmscan"))
 mikado$Parent[mikado$source == "cmscan"] <- rep(NA, length(mikado$source == "cmscan"))
 # Isolate unique Infernal gene symbols with no Mikado overlap
-genes <- unique(mikado$infernal_gene_symbol[mikado$source == "cmscan"])
+genes <- unique(mikado$predicted_gene_symbol[mikado$source == "cmscan"])
 # Loop through genes
 for(gene in genes) {
   # Gather the different contigs that the gene is on
-  contigs <- unique(mikado$seqid[mikado$infernal_gene_symbol == gene])
+  contigs <- unique(mikado$seqid[mikado$predicted_gene_symbol == gene])
   # Loop through contigs
   for(contig in contigs){
     # Get indexing in terms of where these occur in the dataframe to reduce code
-    i <- mikado$infernal_gene_symbol == gene & mikado$seqid == contig
+    i <- mikado$predicted_gene_symbol == gene & mikado$seqid == contig
     # First, duplicate one of the "exon" rows - this will become our gene feature
     gene_feat <- mikado[i,][1,]
     # Change type to lncRNA_gene
