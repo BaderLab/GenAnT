@@ -88,6 +88,14 @@ for(id in gff$ID) {
 head(gff)
 ```
 
+Reorder so that the "Parent" column is second in the metadata
+
+```{r}
+library(dplyr)
+gff <- gff %>%
+  relocate(Parent, .after = ID)
+```
+
 Remove any rows of NAs
 
 ```{r}
