@@ -279,4 +279,10 @@ Now we will want to remove any gene models from `short_ncRNAs.gff` that overlap 
 bedtools subtract -A -a short_ncRNAs.gff -b mikado.lncLabeled.exons.gff > short_ncRNAs.noOverlap.gff
 ```
 
+Also note that Infernal and MirMachine both have recorded "e-values", a statistic indicating the confidence of the gene model. However, MirMachine's e-value is noted as "E-value" whereas Infernal's is "evalue" in the GFF file. We can use `sed -i` to modify the file in-place, replacing "E-value" with "evalue" for cleanness and consistency.
+
+```
+sed -i 's/E-value/evalue/g' short_ncRNAs.noOverlap.gff
+```
+
 Before being added to the Mikado + lncRNA gene models, these short ncRNAs are missing gene and exon features. We can add these features via an R notebook called
