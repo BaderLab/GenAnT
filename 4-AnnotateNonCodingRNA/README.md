@@ -285,4 +285,17 @@ Also note that Infernal and MirMachine both have recorded "e-values", a statisti
 sed -i 's/E-value/evalue/g' short_ncRNAs.noOverlap.gff
 ```
 
-Before being added to the Mikado + lncRNA gene models, these short ncRNAs are missing gene and exon features. We can add these features via an R notebook called
+Before being added to the Mikado + lncRNA gene models, these short ncRNAs are missing gene and exon features. We can add these features via an R notebook called `AddFeaturesNcRNAs.Rmd` which takes `short_ncRNAs.noOverlap.gff` and outputs `short_ncRNAs.polished.gff`. Now we can concatenate these short ncRNAs to the rest of the gene models in `mikado.lncLabeled.gff`.
+
+```
+cat mikado.lncLabeled.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
+```
+
+Finally, we can sort this file by coordinate using BEDTools.
+
+```
+bedtools sort -i full_annotation.unsorted.gff > full_annotation.gff
+```
+
+
+
