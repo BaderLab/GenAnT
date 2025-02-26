@@ -291,10 +291,16 @@ Before being added to the Mikado + lncRNA gene models, these short ncRNAs are mi
 cat mikado.lncLabeled.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
 ```
 
+Any non-coding RNAs that haven't been assigned any kind of identity and were found by Mikado can also be called lnc_RNA since Mikado only keeps non-coding transcripts longer than 200bp by default. This can be done with `awk`. This `awk` statement takes a tab-delimited file (specified by `BEGIN{OFS=FS="\t"}`), and whenever "ncRNA_gene" is encountered in column 3 it is replaced with "lncRNA_gene"; similarly, any "ncRNA" in column 3 is replaced with "lncRNA".
+
+```
+awk 'BEGIN{OFS=FS="\t"} $3 == "ncRNA_gene" {$3="lncRNA_gene"} $3 == "ncRNA" {$3="lncRNA"} 1' full_annotation.unsorted.gff > full_annotation.type_final.gff
+```
+
 Finally, we can sort this file by coordinate using BEDTools.
 
 ```
-bedtools sort -i full_annotation.unsorted.gff > full_annotation.gff
+bedtools sort -i full_annotation.type_final.gff > full_annotation.gff
 ```
 
 
