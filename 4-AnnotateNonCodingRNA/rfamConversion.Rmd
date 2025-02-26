@@ -54,8 +54,8 @@ First, split the "seqid" column into three at the colon and dash. Remove the "se
 
 ```{r}
 output <- output %>%
-  separate(seqid, into = c("chromosome", "positions"), sep = ":", remove = FALSE) %>%
-  separate(positions, into = c("start1", "end1"), sep = "-", convert = TRUE)
+  tidyr::separate(seqid, into = c("chromosome", "positions"), sep = ":", remove = FALSE) %>%
+  tidyr::separate(positions, into = c("start1", "end1"), sep = "-", convert = TRUE)
 output$seqid <- NULL
 ```
 
