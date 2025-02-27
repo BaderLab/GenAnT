@@ -210,7 +210,9 @@ write.table(mikado_df, file = "gene_symbols.tsv",
 Note that if you really don't want copy numbers on the end of the gene symbols, you can skip that step OR remove them all here and save your table as such.
 
 ```{r}
-mikado_df_noCopies <- as.data.frame(apply(mikado_df, 2, function(x) gsub("-copy.*", "", x)))
+mikado_df_noCopies <- mikado_df
+mikado_df_noCopies$liftoff_gene <- gsub("-copy.*", "", mikado_df_noCopies$liftoff_gene)
+mikado_df_noCopies$toga_gene <- gsub("-copy.*", "", mikado_df_noCopies$toga_gene)
 write.table(mikado_df_noCopies, file = "gene_symbols_noCopies.tsv",
             quote = FALSE, sep = "\t",
             row.names = FALSE, col.names = TRUE)
