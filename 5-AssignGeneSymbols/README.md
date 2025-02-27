@@ -9,7 +9,7 @@ You may have already used LiftOff and TOGA earlier in the tutorial, making it fa
 First, we will want to isolate the protein-coding genes and lncRNA from `full_annotation.gff`, which we created in step 4. We can do this with a simple `grep` statement, with the `-P` flag meaning that we are activating Perl to recognize the tab symbols on either side of "mRNA" and "lncRNA" so that we only isolate features where mRNA or lncRNA make up column 3. The `|` acts as an "or" statement, separating the patterns we wish to extract. This can be output to a file called `mikado.mRNA.lncRNA.gff`.
 
 ```
-grep -P "\tmRNA\t" full_annotation.gff > mikado.mRNA.lncRNA.gff
+grep -P "\tmRNA\t|\tlncRNA\t" full_annotation.gff > mikado.mRNA.lncRNA.gff
 ```
 
 Similarly, we will want to pull out the transcript features found by both LiftOff and TOGA. Although we referred to them by different names earlier, for simplicity we will refer to the outputs of LiftOff and TOGA from step 2 as `liftoff.gff` and `toga.gff`.
