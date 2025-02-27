@@ -44,7 +44,7 @@ cut -f1-9 mikado.toga.mRNA.lncRNA.txt > toga_overlap.mikadoInfo.gff
 cut -f10-18 mikado.toga.mRNA.lncRNA.txt > toga_overlap.togaInfo.gff
 ```
 
-These can now be read into an R notebook called `MakeGeneSymbolTableLiftOffTOGA.rmd`, which processes these files to output a table of which LiftOff, TOGA, and non-coding RNA gene symbols from step 4 align to the different gene IDs.
+These can now be read into an R notebook called `MakeGeneSymbolTableLiftOffTOGA.rmd`, which processes these files to output a table of which LiftOff, TOGA, and non-coding RNA gene symbols from step 4 align to the different gene IDs. The file is a tab-delimited (TSV) file called `gene_symbols.tsv`.
 
 ### OrthoFinder
 
