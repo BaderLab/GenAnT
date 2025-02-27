@@ -50,4 +50,47 @@ These can now be read into an R notebook called `MakeGeneSymbolTableLiftOffTOGA.
 
 OrthoFinder, a tool that maps sequence-similarity relationships between proteins across two or more species based on their sequences, can also be used to identify predicted orthologs. OrthoFinder builds gene trees, considers gene duplication events, is considered to be one of the most accurate orthologs inference methods, and was used for gene naming in the DNA zoo annotation project. OrthoFinder outputs lists of protein-protein sequence-similarity relationships that can be used to infer gene-gene relationships.
 
-OrthoFinder is especially helpful for gene symbol labeling if you wish to label the annotated target genome with gene symbols from a species that you DIDN'T use for homology-based annotation (since you won't have the outputs of LiftOff or TOGA).
+OrthoFinder is especially helpful for gene symbol labeling if you wish to label the annotated target genome with gene symbols from a species that you DIDN'T use for homology-based annotation (since you won't have the outputs of LiftOff or TOGA). To run OrthoFinder, you need a FASTA file of protein sequences from both your reference and target species. You can even use multiple reference species to analyse more orthologous relationships, but we'll just assume two species.
+
+Get protein sequences from target species with GFFRead:
+
+```
+gffread -y target_proteins.faa -g target_genome.softmasked.fasta -S full_annotation.gff
+```
+
+Let's say you wish to compare the protein sequences of your target species to that of human. Download human FASTA and GFF and unzip.
+
+```
+wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+#
+gunzip GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+#
+wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.gff.gz
+#
+gunzip GCF_000001405.40_GRCh38.p14_genomic.gff.gz
+```
+
+Use these files to get protein sequences with GFFRead:
+
+```
+gffread -y reference_proteins.faa -g GCF_000001405.40_GRCh38.p14_genomic.fna -S GCF_000001405.40_GRCh38.p14_genomic.gff
+```
+
+Put protein sequences in their own directory called `protein_seqs`
+
+```
+mkdir protein_seqs
+mv target_proteins.faa protein_seqs
+mv reference_proteins.faa protein_seqs
+```
+
+Run OrthoFinder on protein sequences. `-t` and `-a` both specify the number of threads for different processes (sequence search and analysis respectively), `-o` specifies the name of the output directory, `-f` points to the folder of protein sequences.
+
+```
+orthofinder -t number_of_threads -a number_of_threads -o orthofinder -f protein_seqs
+```
+
+The OrthoFinder results we are interested in are pairwise protein-protein relationships between the reference and target species. They can be found in `./orthofinder/Results_date_of_run/Orthologues/Orthologues_target_proteins/target_proteins__v__reference_proteins.tsv`. These can be read into an R notebook called `AddOrthoFinderGenes.Rmd`.
+
+
+
