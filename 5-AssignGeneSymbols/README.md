@@ -68,6 +68,8 @@ gunzip GCF_000001405.40_GRCh38.p14_genomic.fna.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.gff.gz
 #
 gunzip GCF_000001405.40_GRCh38.p14_genomic.gff.gz
+#
+mv GCF_000001405.40_GRCh38.p14_genomic.gff reference.gff
 ```
 
 Use these files to get protein sequences with GFFRead:
