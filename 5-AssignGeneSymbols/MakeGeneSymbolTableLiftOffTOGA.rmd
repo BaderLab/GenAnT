@@ -1,0 +1,221 @@
+---
+title: "Make a gene symbol table using results from LiftOff and TOGA"
+output: html_notebook
+---
+
+This notebook performs the following:
+- Reads in the results from `bedtools intersect` between the Mikado gene models and LiftOff and TOGA results
+- Builds a table assigning each unique Mikado gene model the corresponding LiftOff and TOGA gene symbol
+- Mikado gene models without a LiftOff or TOGA gene symbol are given an NA
+
+```{r}
+library(rtracklayer)
+library(dplyr)
+```
+
+First, read in the Mikado GFF file:
+
+```{r}
+mikado <- as.data.frame(readGFF("full_annotation.gff"))
+```
+
+Isolate only the gene rows from this file:
+
+```{r}
+mikado <- mikado[mikado$type %in% c("gene", "lncRNA_gene"),]
+```
+
+We now only need the IDs from this file, as well as any predicted gene symbols that were found in step 4 when working with non-coding RNAs.
+
+```{r}
+mikado_df <- data.frame(mikado_id = mikado$ID, ncRNA_gene = mikado$predicted_gene_symbol)
+head(mikado_df)
+```
+
+## LiftOff
+
+Read in the results from `bedtools intersect` for LiftOff:
+
+```{r}
+liftoff_mikadoInfo <- as.data.frame(readGFF("liftoff_overlap.mikadoInfo.gff"))
+liftoff_liftoffInfo <- as.data.frame(readGFF("liftoff_overlap.liftoffInfo.gff"))
+```
+
+We can use the overlapping information to assign gene symbols to the Mikado gene models. First, let's join the Mikado gene models from `liftoff_overlap.mikadoInfo.gff` with the gene symbols assigned by LiftOff in `liftoff_overlap.liftoffInfo.gff`. We'll make these into a new dataframe called `liftoff_df`.
+
+```{r}
+liftoff_df <- data.frame(mikado_id = liftoff_mikadoInfo$ID, liftoff_gene = liftoff_liftoffInfo$gene)
+head(liftoff_df)
+```
+
+This data frame now has gene names from LiftOff corresponding to Mikado transcript IDs, however we only want gene symbols for Mikado gene IDs. This is because Mikado stores multiple transcript possibilties for a single gene. In order to find which gene symbols match to each Mikado gene ID, we can just remove everything after and including the final decimal point from the Mikado ID.
+
+```{r}
+liftoff_df$mikado_id <- gsub("\\.[^.]*$", "", liftoff_df$mikado_id)
+head(liftoff_df)
+```
+
+At this point, there will be many identical rows in `liftoff_df`. This is largely because BEDTools captures overlap between both splice variants from Mikado and splice variants from LiftOff. This creates multiple nearly-duplicate entries in the BEDTools results, since splice variants map back to the same gene. When we remove all of the different splice variants from both the Mikado results and the LiftOff results, we get a lot of rows that tell us that "Gene A" from Mikado maps to "Gene B" from LiftOff for almost every splice variant that exists. We can easily remove redundant rows using a function from the `dplyr` package.
+
+```{r}
+liftoff_df <- dplyr::distinct(liftoff_df)
+```
+
+One issue that remains, is that we may now have a single Mikado gene in the left column represented by multiple LiftOff gene symbols in the right column. This may have happened if e.g. two smaller genes overlapped with a single larger mikado gene model. There may also be the case where multiple smaller Mikado gene models matched to the same LiftOff gene, or perhaps there were gene copies in other areas of the genome. In this case, the same LiftOff gene will be repeated for multiple different Mikado gene IDs.
+
+To tackle each of these issues, we can give a "-copy#" extension to LiftOff gene symbols that are repeated multiple times, and separate multiple LiftOff gene names with semi-colons if they match to the same Mikado ID. First, let's perform the latter. We can start by sorting the data frame alphabetically so that when gene symbols get joined together, they are in alphabetical order. This means that we'll perform a nested sort, with gene symbols sorted within each Mikado ID.
+
+```{r}
+liftoff_df <- liftoff_df[order(liftoff_df$mikado_id,
+                               liftoff_df$liftoff_gene),]
+```
+
+Now we can join together different LiftOff genes that represent the same Mikado ID with a semi-colon with `ddply` from the `plyr` package. `ddply` groups the data frame at the "mikado_id" level, collapsing the gene symbols together.
+
+```{r}
+liftoff_df <- plyr::ddply(liftoff_df,
+                          "mikado_id",
+                          summarize,
+                          liftoff_gene = paste(liftoff_gene, collapse = ";"))
+head(liftoff_df)
+```
+
+Once this is done, make annotated genes unique if a reference gene symbol appears more than once.
+
+```{r}
+liftoff_df$liftoff_gene <- make.unique(liftoff_df$liftoff_gene, sep = "-copy")
+```
+
+These gene symbols can now be joined to the Mikado data frame with all gene IDs. This can be done using `left_join` from `dplyr` which joins `liftoff_df` to `mikado_df`, connecting the rows where there is a matching `mikado_id`.
+
+```{r}
+mikado_df <- dplyr::left_join(mikado_df,
+                       liftoff_df,
+                       by = "mikado_id")
+head(mikado_df)
+```
+
+## TOGA
+
+Adding the gene symbols predicted by TOGA is very similar to doing so from LiftOff with a few extra steps. Let's start by reading in the results from `bedtools intersect`.
+
+```{r}
+toga_mikadoInfo <- as.data.frame(readGFF("toga_overlap.mikadoInfo.gff"))
+toga_togaInfo <- as.data.frame(readGFF("toga_overlap.togaInfo.gff"))
+```
+
+For TOGA, we now want to keep the Mikado IDs from `toga_mikadoInfo`, and the "ID" column from `toga_togaInfo`, since there isn't a handy "gene" column like in the LiftOff results. The ID contains the transcript ID rather than gene symbol.
+
+```{r}
+toga_df <- data.frame(mikado_id = toga_mikadoInfo$ID, toga_gene = toga_togaInfo$ID)
+head(toga_df)
+```
+
+TOGA has added an extra decimal point and numerical value to its IDs, and we only want the original transcript ID. Therefore, we want to remove everything after and including the final decimal place from the final gene symbol, which we can do with `gsub`.
+
+```{r}
+toga_df$toga_gene <- gsub("\\.[^.]*$", "", toga_df$toga_gene)
+head(toga_df)
+```
+
+Similarly with the LiftOff results, we also want to remove everything after and including the final decimal point in the "mikado_id" column and remove row redundancy.
+
+```{r}
+toga_df$mikado_id <- gsub("\\.[^.]*$", "", toga_df$mikado_id)
+toga_df <- dplyr::distinct(toga_df)
+head(toga_df)
+```
+
+We still have the problem of dealing with the transcript IDs, as gene symbols would be much nicer. Fortunately we can replace the transcript IDs with their appropriate gene symbol by reading in the original GFF file from the closely-related species that was used for TOGA. We can refer to that GFF as `toga_reference.gff`.
+
+```{r}
+toga_ref <- as.data.frame(readGFF("toga_reference.gff"))
+```
+
+All GFFs may be formatted slightly differently, but a GFF from RefSeq will likely have RNA IDs and gene names stored as metadata, and therefore very easy to access and convert between. The following code will assume a RefSeq-derived reference GFF.
+
+First, let's extract rows with "mRNA" or "lnc_RNA" in the "type" column.
+
+```{r}
+toga_ref <- toga_ref[toga_ref$type %in% c("mRNA", "lnc_RNA"),]
+head(toga_ref)
+```
+
+For these feature types, the transcript ID is likely in the "Name" column, with the gene symbol in the "gene" column. Let's isolate these two columns since they are all we need. 
+
+```{r}
+toga_ref <- toga_ref[,which(colnames(toga_ref) %in% c("gene","Name"))]
+head(toga_ref)
+```
+
+We can now use `toga_ref` as a reference key to convert transcript IDs to gene symbols. One way to do this is to use `left_join` again, combining `toga_df` with `toga_ref`. To do this, rename the "Name" column of `toga_ref` to "toga_gene", and use this column for the "by" argument to connect the two data frames.
+
+```{r}
+colnames(toga_ref)[which(colnames(toga_ref) == "Name")] <- "toga_gene"
+toga_df <- dplyr::left_join(toga_df, toga_ref, by = "toga_gene")
+head(toga_df)
+```
+
+We can now replace the "toga_gene" column with "gene", and then remove the "gene" column. After this, we will also remove redundant rows since different transcript names may share the same gene name.
+
+```{r}
+toga_df$toga_gene <- toga_df$gene
+toga_df$gene <- NULL
+toga_df <- dplyr::distinct(toga_df)
+head(toga_df)
+```
+
+We can now repeat the processing done with the LiftOff data frame to combine multiple gene names that share a single Mikado gene ID with a semi-colon, and adding copy numbers to multiple Mikado IDs that share the same gene symbol.
+
+Start by sorting:
+
+```{r}
+toga_df <- toga_df[order(toga_df$mikado_id,
+                         toga_df$toga_gene),]
+```
+
+Now collapse by Mikado ID and add the semi-colons if necessary:
+
+```{r}
+toga_df <- plyr::ddply(toga_df,
+                       "mikado_id",
+                       summarize,
+                       toga_gene = paste(toga_gene, collapse = ";"))
+head(toga_df)
+```
+
+Add copy numbers:
+
+```{r}
+toga_df$toga_gene <- make.unique(toga_df$toga_gene, sep = "-copy")
+```
+
+Use `left_join` to add these new gene symbols to the Mikado data frame and ponder the differences
+
+```{r}
+mikado_df <- dplyr::left_join(mikado_df,
+                       toga_df,
+                       by = "mikado_id")
+head(mikado_df)
+```
+
+You can now save the table of gene symbols to use for future reference
+
+```{r}
+write.table(mikado_df, file = "gene_symbols.tsv",
+            quote = FALSE, sep = "\t",
+            row.names = FALSE, col.names = TRUE)
+```
+
+Note that if you really don't want copy numbers on the end of the gene symbols, you can skip that step OR remove them all here and save your table as such.
+
+```{r}
+mikado_df_noCopies <- as.data.frame(apply(mikado_df, 2, function(x) gsub("-copy.*", "", x)))
+write.table(mikado_df_noCopies, file = "gene_symbols_noCopies.tsv",
+            quote = FALSE, sep = "\t",
+            row.names = FALSE, col.names = TRUE)
+```
+
+
+
+
