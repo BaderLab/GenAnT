@@ -96,5 +96,7 @@ The OrthoFinder results we are interested in are pairwise protein-protein relati
 
 ### GFF formatting
 
-At this point in the tutorial, we now have a GFF full of gene models ("full_annotation.gff") and a table of gene symbols corresponding to the Mikado and other ncRNA gene IDs. However, this is not a practical way to have everything stored if you wish to do any kind of analysis that relies on gene symbols (e.g. any kind of whole genome analysis).
+At this point in the tutorial, we now have a GFF full of gene models ("full_annotation.gff") and a table of gene symbols corresponding to the Mikado and other ncRNA gene IDs. However, this is not a practical way to have everything stored if you wish to do any kind of analysis that relies on gene symbols (e.g. any kind of whole genome analysis). Luckily it is fairly straightforward to add and edit gene symbols in R using `rtracklayer`. In R, we can read in the gene symbol table, and add and/or replace certain metadata columns with the gene symbols of our choice.
+
+First, we may just want to create a "master" GFF file that has all possible gene symbols listed in the metadata without worrying how these gene symbols would impact downstream bioinformatics tools. Second, you may also wish to have a GFF file that is formatted in such a way that one comprehensive set of gene symbols will be recognized and used for downstream analysis. This latter GFF file would have minimal information and focus on having unique, interprettable gene symbols that work with most bioinformatics software. We create both GFF files in the R notebook `FormatFinalGFF.rmd`.
 
