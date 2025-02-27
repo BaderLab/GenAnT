@@ -44,7 +44,7 @@ cut -f1-9 mikado.toga.mRNA.lncRNA.txt > toga_overlap.mikadoInfo.gff
 cut -f10-18 mikado.toga.mRNA.lncRNA.txt > toga_overlap.togaInfo.gff
 ```
 
-These can now be read into an R notebook called `MakeGeneSymbolTableLiftOffTOGA.rmd`, which processes these files to output a table of which LiftOff, TOGA, and non-coding RNA gene symbols from step 4 align to the different gene IDs. The file is a tab-delimited (TSV) file called `gene_symbols.tsv`.
+These can now be read into an R notebook called `MakeGeneSymbolTableLiftOffTOGA.rmd`, which processes these files to output a table of which LiftOff, TOGA, and non-coding RNA gene symbols from step 4 align to the different gene IDs. The file is a tab-delimited (TSV) file called `gene_symbols.tsv`. This table has "-copy#" suffixes indicating if multiple copies of the same reference gene was found. The notebook also output `gene_symbols_noCopies.tsv` which is the same table, but lacking the "-copy#" suffixes.
 
 ### OrthoFinder
 
@@ -92,7 +92,9 @@ Run OrthoFinder on protein sequences. `-t` and `-a` both specify the number of t
 orthofinder -t number_of_threads -a number_of_threads -o orthofinder -f protein_seqs
 ```
 
-The OrthoFinder results we are interested in are pairwise protein-protein relationships between the reference and target species. They can be found in `./orthofinder/Results_date_of_run/Orthologues/Orthologues_target_proteins/target_proteins__v__reference_proteins.tsv`. These can be read into an R notebook called `AddOrthoFinderGenes.Rmd`.
+The OrthoFinder results we are interested in are pairwise protein-protein relationships between the reference and target species. They can be found in `./orthofinder/Results_date_of_run/Orthologues/Orthologues_target_proteins/target_proteins__v__reference_proteins.tsv`. These can be read into an R notebook called `AddOrthoFinderGenes.Rmd` which will take the results from OrthoFinder and add a column to `gene_symbols.tsv` and `gene_symbols_noCopies.tsv` with the OrthoFinder gene symbols.
 
+### GFF formatting
 
+At this point in the tutorial, we now have a GFF full of gene models ("full_annotation.gff") and a table of gene symbols corresponding to the Mikado and other ncRNA gene IDs. However, this is not a practical way to have everything stored if you wish to do any kind of analysis that relies on gene symbols (e.g. any kind of whole genome analysis).
 
