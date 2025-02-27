@@ -48,4 +48,6 @@ These can now be read into an R notebook called `MakeGeneSymbolTableLiftOffTOGA.
 
 ### OrthoFinder
 
-OrthoFinder, a tool that maps sequence-similarity relationships between proteins across two or more species based on their sequences, can also be used to identify predicted orthologs. OrthoFinder builds gene trees, considers gene duplication events, is considered to be one of the most accurate orthologs inference methods49, and was used for gene naming in the DNA zoo annotation project. OrthoFinder outputs lists of protein-protein sequence-similarity relationships that can be used to infer gene-gene relationships.
+OrthoFinder, a tool that maps sequence-similarity relationships between proteins across two or more species based on their sequences, can also be used to identify predicted orthologs. OrthoFinder builds gene trees, considers gene duplication events, is considered to be one of the most accurate orthologs inference methods, and was used for gene naming in the DNA zoo annotation project. OrthoFinder outputs lists of protein-protein sequence-similarity relationships that can be used to infer gene-gene relationships.
+
+OrthoFinder is especially helpful for gene symbol labeling if you wish to label the annotated target genome with gene symbols from a species that you DIDN'T use for homology-based annotation (since you won't have the outputs of LiftOff or TOGA).
