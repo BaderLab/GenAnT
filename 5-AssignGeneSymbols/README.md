@@ -52,18 +52,20 @@ OrthoFinder, a tool that maps sequence-similarity relationships between proteins
 
 OrthoFinder is especially helpful for gene symbol labeling if you wish to label the annotated target genome with gene symbols from a species that you DIDN'T use for homology-based annotation (since you won't have the outputs of LiftOff or TOGA). To run OrthoFinder, you need a FASTA file of protein sequences from both your reference and target species. You can even use multiple reference species to analyse more orthologous relationships, but we'll just assume two species.
 
-Get protein sequences from target species with GFFRead:
+Let's start by using GFFRead to create predicted protein sequences from your target species. `-y` indicates that protein sequences are being generated and points to the new protein sequence file, `-g` is your softmasked genome sequence, and `-S` is the GFF file that you created in step 4.
 
 ```
 gffread -y target_proteins.faa -g target_genome.softmasked.fasta -S full_annotation.gff
 ```
 
-Let's say you wish to compare the protein sequences of your target species to that of human. Download human FASTA and GFF and unzip.
+Let's say you wish to compare the protein sequences of your target species to that of human. Download the human FASTA and GFF files using `wget` and unzip these files. We're going to rename these files as `reference.fna` and `reference.gff` to make them easier to refer to.
 
 ```
 wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
 #
 gunzip GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+#
+mv GCF_000001405.40_GRCh38.p14_genomic.fna reference.fna
 #
 wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.gff.gz
 #
@@ -72,13 +74,13 @@ gunzip GCF_000001405.40_GRCh38.p14_genomic.gff.gz
 mv GCF_000001405.40_GRCh38.p14_genomic.gff reference.gff
 ```
 
-Use these files to get protein sequences with GFFRead:
+Use these files to generate protein sequences with GFFRead, just as you did with your target genome.
 
 ```
-gffread -y reference_proteins.faa -g GCF_000001405.40_GRCh38.p14_genomic.fna -S GCF_000001405.40_GRCh38.p14_genomic.gff
+gffread -y reference_proteins.faa -g reference.fna -S reference.gff
 ```
 
-Put protein sequences in their own directory called `protein_seqs`
+OrthoFinder only requires a directory with files of protein sequences as input. So let's create a directory called `protein_seqs` and put the protein sequence files there using `mv`.
 
 ```
 mkdir protein_seqs
@@ -86,7 +88,7 @@ mv target_proteins.faa protein_seqs
 mv reference_proteins.faa protein_seqs
 ```
 
-Run OrthoFinder on protein sequences. `-t` and `-a` both specify the number of threads for different processes (sequence search and analysis respectively), `-o` specifies the name of the output directory, `-f` points to the folder of protein sequences.
+Now run OrthoFinder on protein sequences. `-t` and `-a` both specify the number of threads for different processes (sequence search and analysis respectively), `-o` specifies the name of the output directory, `-f` points to the folder of protein sequences.
 
 ```
 orthofinder -t number_of_threads -a number_of_threads -o orthofinder -f protein_seqs
