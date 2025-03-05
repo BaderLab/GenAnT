@@ -96,9 +96,19 @@ orthofinder -t number_of_threads -a number_of_threads -o orthofinder -f protein_
 
 The OrthoFinder results we are interested in are pairwise protein-protein relationships between the reference and target species. They can be found in `./orthofinder/Results_date_of_run/Orthologues/Orthologues_target_proteins/target_proteins__v__reference_proteins.tsv`. These can be read into an R notebook called `AddOrthoFinderGenes.Rmd` which will take the results from OrthoFinder and add a column to `gene_symbols.tsv` and `gene_symbols_noCopies.tsv` with the OrthoFinder gene symbols.
 
+### Functional prediction with InterProScan
+
+Further information can be determined about the protein-coding gene models with [InterProScan](https://www.ebi.ac.uk/interpro/about/interproscan/), a tool that scans protein sequences for patterns that are associated with protein names, families and domains. These additional annotations provide evidence for gene function in genes that could not be identified with a unique gene symbol (e.g. unnamed gene-X has a zinc-finger domain). InterProScan takes the predicted protein sequences of your target genome (`-i target_proteins.faa`) as input, and returns a TSV file of information that corresponds to the different protein identities (`-o output.iprscan.tsv`). We also add `-f tsv` to specify the TSV output format, and `-dp` to disable the use of the precalculated match lookup service to avoid interacting with a hosted web server. Note that InterProScan will not work if there are spaces in the directory names.
+
+```
+interproscan.sh -i target_proteins.faa -f tsv -dp -o output.iprscan.tsv
+```
+
+The information output by InterProScan can be added to `full_annotation.gff` via the R notebook, `AddInterProScan.Rmd`. This script takes `output.iprscan.tsv` and `full_annotation.gff` as input, and outputs `full_annotation.interpro.gff`, which is the GFF file you inputted with the InterProScan information added in the metadata column under `Dbxref`.
+
 ### GFF formatting
 
-At this point in the tutorial, we now have a GFF full of gene models ("full_annotation.gff") and a table of gene symbols corresponding to the Mikado and other ncRNA gene IDs. However, this is not a practical way to have everything stored if you wish to do any kind of analysis that relies on gene symbols (e.g. any kind of whole genome analysis). Luckily it is fairly straightforward to add and edit gene symbols in R using `rtracklayer`. In R, we can read in the gene symbol table, and add and/or replace certain metadata columns with the gene symbols of our choice.
+At this point in the tutorial, we now have a GFF full of gene models with InterProScan information ("full_annotation.interpro.gff") and a table of gene symbols corresponding to the Mikado and other ncRNA gene IDs. However, this is not a practical way to have everything stored if you wish to do any kind of analysis that relies on gene symbols (e.g. any kind of whole genome analysis). Luckily it is fairly straightforward to add and edit gene symbols in R using `rtracklayer`. In R, we can read in the gene symbol table, and add and/or replace certain metadata columns with the gene symbols of our choice.
 
 First, we may just want to create a "master" GFF file that has all possible gene symbols listed in the metadata without worrying how these gene symbols would impact downstream bioinformatics tools. Second, you may also wish to have a GFF file that is formatted in such a way that one comprehensive set of gene symbols will be recognized and used for downstream analysis. This latter GFF file would have minimal information and focus on having unique, interprettable gene symbols that work with most bioinformatics software. We create both GFF files in the R notebook `FormatFinalGFF.rmd`.
 
