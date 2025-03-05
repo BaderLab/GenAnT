@@ -15,7 +15,7 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/Rfam.fa.gz
 gunzip Rfam.fa.gz
 ```
 
-Then filter duplicate non-coding RNAs stored within the database, as duplicates can interrupt generating the BLAST database that you'll need to build in order to BLAST against it. There are many ways of doing this; we used [seqtk](https://github.com/lh3/seqtk).
+Then filter duplicate non-coding RNAs stored within the database, as duplicates can interrupt generating the BLAST database that you'll need to build in order to BLAST against it. There are many ways of doing this; we used [SeqKit](https://bioinf.shenwei.me/seqkit/).
 
 ```
 seqkit rmdup Rfam.fa > Rfam.rmdup.fa
