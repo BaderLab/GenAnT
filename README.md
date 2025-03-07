@@ -1,4 +1,4 @@
-# Tutorial: annotation and interpretation of novel mammalian reference genomes
+# Tutorial: annotation and interpretation of mammalian genomes
 
 This is a tutorial on how to annotate a newly sequenced mammalian genome. This takes the user from their FASTA sequence to a high-quality GFF file annotated with gene symbols. We break the process into five main steps:
 
