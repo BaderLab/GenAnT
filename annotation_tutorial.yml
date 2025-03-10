@@ -1,0 +1,22 @@
+name: annotation_tutorial  # Name of the environment
+channels:             # Channels to search for packages
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:         # List of packages and their versions
+  - earlgrey=5.1.0  # check if that's still on bioconda -- blast comes from here otherwise there's an issue
+  - liftoff=1.6.3
+  - infernal=1.1.2
+  - busco=5.7.1
+  - transdecoder=5.7.1
+  - portcullis=1.2.4
+  - minimap2=2.28
+  - diamond=2.1.10
+  - bedtools=2.31.1
+  - mirmachine=0.2.13
+  - orthofinder=3.0.1b1
+  - hisat2=2.2.1 
+  - augustus=3.5.0
+  - gffread=0.12.7
+  - nextflow=24.10.4
+  - regtools=1.0.0
