@@ -111,6 +111,9 @@ At this point in the tutorial, we now have a GFF full of gene models (`full_anno
 Finally, certain bioinformatics tools like CellRanger can be really picky with their GFF formatting. CellRanger specifically needs GFF files to be in GTF format. Here, GFFRead comes in handy as it's very good at converting between GFF and GTF formats and also smoothes out "minor errors" in the GFF file (e.g. errors that may even be the result of an unexpected symbol somewhere that could also trip up another bioinformatics tool).
 
 ```
-gffread full_annotation.geneSymbols.gff --keep-comments --keep-genes -T -o full_annotation.geneSymbols.gtf
+gffread full_annotation.geneSymbols.gff -F -T -o full_annotation.geneSymbols.gtf
 ```
 
+If you find specific issues regarding how a GFF file you've made works with a bioinformatics tool, please post an issue! It's likely that some file manipulation with `rtracklayer` or GFFRead will do the trick.
+
+At this point, you will hopefully have an informative, labeled genome annotation that works well for your purposes. We are always striving to make this tutorial more comprehensive and generalizable, so please reach out with your feedback!
