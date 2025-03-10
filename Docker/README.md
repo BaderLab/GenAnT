@@ -21,8 +21,8 @@ Primary function of instance is to run mikado.  To use this instance to run mika
 docker run -it -v  "$(pwd)":/global baderlab/mikado:ubuntu22_mikado2.3.2 mikado configure [...]
 ```
 
-for example of how to run the mikado pipeline see the script (using the blast and portucullis docker images) - [example script](https://github.com/BaderLab/GenomeAnnotationTutorial/blob/main/Docker/Mikado/test_ubuntu22_data/final_commands.sh) 
+For an example of how to run the mikado pipeline see the script (using the blast and portucullis docker images) - [example script](https://github.com/BaderLab/GenomeAnnotationTutorial/blob/main/Docker/Mikado/test_ubuntu22_data/final_commands.sh) 
 
-example data was downloaded from [mikado example data](https://github.com/EI-CoreBioinformatics/mikado/tree/master/sample_data).
+Example data was downloaded from [mikado example data](https://github.com/EI-CoreBioinformatics/mikado/tree/master/sample_data).
 
 For detailed instructions running mikado see - [mikado documentation](https://mikado.readthedocs.io/en/stable/Tutorial/)}
