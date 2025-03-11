@@ -30,10 +30,25 @@ For each annotation generated in steps 3, 4, 6, and 7, we recommend converting t
 
 ### How to use this repository
 
+We provide three ways to use this tutorial to cater towards different preferences and computational set-ups.
+
+1. A customizable step-by-step set of instructions
+   
+   These instructions can be found in the folders labeled by step (e.g. "1-RepeatMasking") which contain README files of instructions on how to use the various tools. Explanations are accompanied by pseudocode and screenshots of what to expect (screenshots in progress), and R notebooks performing intermediate formatting steps are available when required. Installation instructions for all of the required tools will be uploaded shortly.
+   
+2. A series of scripts that run the recommended tools
+   
+   TBD.
+   
+3. A Snakemake pipeline
+   
+   TBD.
+
 ### List of tools
 
 The tools used in this tutorial are listed below:
 - Installed with Conda: [Earl Grey v5.1.0](https://github.com/TobyBaril/EarlGrey), [LiftOff v1.6.3](https://github.com/agshumate/Liftoff), [Infernal v1.1.2](http://eddylab.org/infernal/), [BUSCO v5.7.1](https://busco.ezlab.org/), [TransDecoder v5.7.1](https://github.com/TransDecoder/TransDecoder), [Portcullis v1.2.4](https://github.com/EI-CoreBioinformatics/portcullis), [Minimap2 v2.28](https://github.com/lh3/minimap2), [Diamond v2.1.10](https://github.com/bbuchfink/diamond), [BedTools v2.31.1](https://github.com/arq5x/bedtools2), [MirMachine v0.2.13](https://github.com/sinanugur/MirMachine), [NextFlow v24.10.4](https://www.nextflow.io/), [OrthoFinder v3.0.1b1](https://github.com/davidemms/OrthoFinder), [HISAT2 v2.2.1](https://daehwankimlab.github.io/hisat2/), [Augustus v3.5.0](https://bioinf.uni-greifswald.de/augustus/), [GFFRead v0.12.7](https://github.com/gpertea/gffread), [RegTools v1.0.0](https://regtools.readthedocs.io/en/latest/)
+- 
 
 ### Notes on computational requirements
 
