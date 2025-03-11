@@ -48,7 +48,8 @@ We provide three ways to use this tutorial to cater towards different preference
 
 The tools used in this tutorial are listed below:
 - Installed with Conda: [Earl Grey v5.1.0](https://github.com/TobyBaril/EarlGrey), [LiftOff v1.6.3](https://github.com/agshumate/Liftoff), [Infernal v1.1.2](http://eddylab.org/infernal/), [BUSCO v5.7.1](https://busco.ezlab.org/), [TransDecoder v5.7.1](https://github.com/TransDecoder/TransDecoder), [Portcullis v1.2.4](https://github.com/EI-CoreBioinformatics/portcullis), [Minimap2 v2.28](https://github.com/lh3/minimap2), [Diamond v2.1.10](https://github.com/bbuchfink/diamond), [BedTools v2.31.1](https://github.com/arq5x/bedtools2), [MirMachine v0.2.13](https://github.com/sinanugur/MirMachine), [NextFlow v24.10.4](https://www.nextflow.io/), [OrthoFinder v3.0.1b1](https://github.com/davidemms/OrthoFinder), [HISAT2 v2.2.1](https://daehwankimlab.github.io/hisat2/), [Augustus v3.5.0](https://bioinf.uni-greifswald.de/augustus/), [GFFRead v0.12.7](https://github.com/gpertea/gffread), [RegTools v1.0.0](https://regtools.readthedocs.io/en/latest/)
-- 
+- Singularity images: [BRAKER3](https://github.com/Gaius-Augustus/BRAKER)
+- Binaries: [TOGA v1.1.8.dev](https://github.com/hillerlab/TOGA), [CACTUS v2.8.4](https://github.com/ComparativeGenomicsToolkit/cactus), [kent utilities v362](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [StringTie v3.3.0](https://github.com/gpertea/stringtie), [InterProScan v1.8.0_412](https://www.ebi.ac.uk/interpro/about/interproscan/)
 
 ### Notes on computational requirements
 
