@@ -5,7 +5,7 @@ date: "2025-03-10"
 output: html_document
 ---
 
-Our mammalian genome annotation tutorial includes scripts and a snakemake workflow that facilitates end-to-end genome annotation using a config file. This pipeline expects specific directory structure and for specific programs to be installed.
+Our mammalian genome annotation tutorial includes scripts and a Snakemake workflow that facilitates end-to-end genome annotation using a config file. This pipeline expects specific directory structure and for specific programs to be installed.
 
 ### Plug and Chug
 
@@ -51,7 +51,7 @@ Clone the tutorial repo.
 `git clone https://github.com/BaderLab/GenomeAnnotationTutorial.git`
 
 Create a `/data` and a `/external` directory. `/data` will hold public dataests
-and reference genomes, while `/external` will hold binaries and singularity images
+and reference genomes, while `/external` will hold binaries and Singularity images
 used in the tutorial and workflow.
 
 ```
@@ -61,7 +61,7 @@ mkdir -p GenomeAnnotationTutorial/external
 
 ```
 
-Lastly, we install multiple singularity images. Having `$SINGULARITY_CACHEDIR` and `SINGULARITY_TMPDIR` will throw a failure to install images error for many non-admin accounts as their roots typically allow for ~10 or ~100Gb or space.
+Lastly, we install multiple Singularity images. Having `$SINGULARITY_CACHEDIR` and `SINGULARITY_TMPDIR` will throw a failure to install images error for many non-admin accounts as their roots typically allow for ~10 or ~100Gb or space.
 
 ```
 mkdir -p singularitycache
@@ -83,7 +83,7 @@ export SINGULARITY_TMPDIR=/path-to/singularitytemp
 
 ```
   
-The YML file is on the github, but can also be copied from here:
+The YML file is on the GitHub, but can also be copied from here:
 
 ```
 name: annotation_tutorial  # Name of the environment
@@ -161,7 +161,7 @@ rm -r tmp/*
   of a directory called  `external`. (see `i.e` data and package structure)
   
 #### TOGA
-  The documentation of `TOGA` requires that you also install the binary for the cactus aligner. We elected to use their singularity image to promote the stability of this tutorial across version upgrades. As such, the `cactus` aligner is already installed at this point.
+  The documentation of `TOGA` requires that you also install the binary for the Cactus aligner. We elected to use their Singularity image to promote the stability of this tutorial across version upgrades. As such, the `cactus` aligner is already installed at this point.
 
 ```
 
@@ -176,10 +176,10 @@ python3 -m pip install -r requirements.txt --user
 
 ```
 
-TOGA should be tested at this point as well. TOGA requires nextflow, so the test will require a conda environment with nextflow (preferable our annotation_tutorial) conda environment to be active
+TOGA should be tested at this point as well. TOGA requires NextFlow, so the test will require a Conda environment with NextFlow (preferable our annotation_tutorial environment) Conda environment to be active
 
 ```
-conda activate annotation tutorial
+conda activate annotation_tutorial
 ./run_test.sh micro
 ```
 
