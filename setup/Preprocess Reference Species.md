@@ -99,8 +99,8 @@ Covert GFF file into a BED12 file compatible with TOGA.
 Generate gene-keys.
 
 * An "isoforms.tsv" file for TOGA. This file is a key between gene ID and each transcript ID.
-* A "table.txt" file for orthofinder. This file is a key between the faa file heading and gene symbol.
-* A genekey.txt file. This is a key between gene ID, transcript ID, and gene symbol.
+* A "table.txt" file for OrthoFinder. This file is a key between the faa file heading and gene symbol.
+* A "genekey.txt" file. This is a key between gene ID, transcript ID, and gene symbol.
 
 We do this using R.
 
