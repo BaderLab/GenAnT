@@ -72,7 +72,7 @@ export SINGULARITY_TMPDIR=/path-to/singularitytemp
 
 ```
 
-### i.a Conda evnironment
+### i.a Conda environment
   This tutorial requires a series of conda packages. All of which are found on 
   bioconda or conda-forge. These conda packages are listed below. Installing
   this combined environment can be performed using the following yml file:
@@ -83,7 +83,7 @@ export SINGULARITY_TMPDIR=/path-to/singularitytemp
 
 ```
   
-The yml file is on the github, but can also be copied from here:
+The YML file is on the github, but can also be copied from here:
 
 ```
 name: annotation_tutorial  # Name of the environment
@@ -113,7 +113,7 @@ dependencies:         # List of packages and their versions
   
 ### i.b Singularity images
 
-  This tutorial uses two singularity images: one for `mikado`, two for 
+  This tutorial uses two Singularity images: one for `mikado`, two for 
   `braker` (the short read RNAseq and ISOseq options), and one for the `cactus` aligner.
   
 
@@ -129,7 +129,7 @@ cd singularity_images
 ```
 
 
-Install the relevant singularity images.
+Install the relevant Singularity images.
 
 ```
 
@@ -143,7 +143,7 @@ singularity build mikado_gat.sif docker://risserlin/mikado:ubuntu22_mikado2.3.2
 
 ```
 
-Optionally clear the singularity and temporary cache to save space.
+Optionally clear the Singularity and temporary cache to save space.
 
 ```
 rm -r cache/*
@@ -288,7 +288,7 @@ executor {
 }
 ```
 
-#### kent utils
+#### Kent Utils
 
 The `kent` binaries are universally valuable packages used for converting
 genomic file types to one another. Accordingly, a number of these binaries are
@@ -326,9 +326,9 @@ for i in `ls` ; do chmod +x $i ; done
 
 ```
 
-#### stringtie 
+#### StringTie 
 
-The `stringtie` binary is required for individuals with RNA-seq data. 
+The `StringTie` binary is required for individuals with RNA-seq data. 
 Many different installation sources can be found at their website
 (https://ccb.jhu.edu/software/stringtie/), however we found the easiet approach
 was to clone their github repository.
@@ -339,7 +339,7 @@ was to clone their github repository.
   make release
 ```
 
-#### interproscan
+#### Interproscan
 
 Finally, interproscan is used for annotating functional domains for proteins
 
@@ -442,7 +442,7 @@ tar -xvzf example_data.tar.gz
 
 ```
 
-The last step is building a reference genome for a species. We provide a markdown to build this reference in "PreprocessRefereceSpecies.md". Please move to this markdown to continue building the workflow.
+The last step is building a reference genome for a species. We provide a markdown to build this reference in "PreprocessReferenceSpecies.md". Please move to this markdown to continue building the workflow.
 
 
 
