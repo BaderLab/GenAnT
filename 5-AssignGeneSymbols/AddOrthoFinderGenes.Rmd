@@ -49,20 +49,16 @@ orthofinder_pairs <- dplyr::distinct(orthofinder_pairs)
 
 ## Gene name conversion
 
-Read in reference GFF file (in this example we're using the human GFF)
+Read in the text file of gene symbols and transcript IDs to use as a conversion key between the IDs used for OrthoFinder and the gene symbols we would like to eventually be using.
 
 ```{r}
-reference <- as.data.frame(rtracklayer::readGFF("reference.gff"))
+reference <- read.table("reference.table.txt", header = TRUE, sep = "\t")
 ```
 
-Isolate the appropriate columns representing the "protein name" used by OrthoFinder (e.g. "ID") and the desired gene symbol column (e.g. "gene"). Remove NAs and duplicates from this data frame. Rename the columns so that the "protein name" column matches "orthofinder_gene" so that we can eventually merge the "reference" data frame with the "orthofinder_pairs" data frame, using that column to join the rows.
-
+Rename the columns so that the "protein name" column matches "orthofinder_gene" so that we can eventually merge the "reference" data frame with the "orthofinder_pairs" data frame, using that column to join the rows.
 
 ```{r}
-reference <- reference[,which(colnames(reference) %in% c("ID","gene"))]
-reference <- reference[!is.na(reference$gene),]
-reference <- dplyr::distinct(reference)
-colnames(reference) <- c("orthofinder_gene", "gene")
+colnames(reference) <- c("gene", "orthofinder_gene")
 head(reference)
 ```
 
