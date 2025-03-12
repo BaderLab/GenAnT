@@ -34,7 +34,7 @@ We provide three ways to use this tutorial to cater towards different preference
 
 1. A customizable step-by-step set of instructions
    
-   These instructions can be found in the folders labeled by step (e.g. "1-RepeatMasking") which contain README files of instructions on how to use the various tools. Explanations are accompanied by pseudocode and screenshots of what to expect (screenshots in progress), and R notebooks performing intermediate formatting steps are available when required. Installation instructions for all of the required tools will be uploaded shortly.
+   These instructions can be found in the folders labeled by step (e.g. "1-RepeatMasking") which contain README files of instructions on how to use the various tools. Explanations are accompanied by pseudocode and screenshots of what to expect (screenshots in progress), and R notebooks performing intermediate formatting steps are available when required. Installation instructions for all of the required tools can be found in `setup/InstallAndDownload.md`; this file also contains instructions on database downloads and file formatting, but this is also performed in the step-by-step workflow.
    
 2. A series of scripts that run the recommended tools
    
@@ -51,6 +51,8 @@ The tools used in this tutorial are listed below:
 - Singularity images: [BRAKER3](https://github.com/Gaius-Augustus/BRAKER), [CACTUS v2.9.3](https://github.com/ComparativeGenomicsToolkit/cactus)
 - Binaries: [TOGA v1.1.8.dev](https://github.com/hillerlab/TOGA), [kent utilities v362](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [StringTie v2.2.3](https://github.com/gpertea/stringtie), [InterProScan v1.8.0_412](https://www.ebi.ac.uk/interpro/about/interproscan/), [Mikado v2.3.2](https://github.com/EI-CoreBioinformatics/mikado)
 - Data packages: [Uniprot Swiss-Prot database](https://www.uniprot.org/), [RFam database](https://rfam.org/), [OrthoDB database](https://bioinf.uni-greifswald.de/bioinf/partitioned_odb12/)
+
+Instructions on how to install these tools can be found in the `InstallAndDownload.md` script in the set-up directory.
 
 ### Notes on computational requirements
 
