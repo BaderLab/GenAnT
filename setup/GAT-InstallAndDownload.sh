@@ -122,11 +122,19 @@ python3 setup.py -f interproscan.properties
 
 cd ../
 
+cd ../../external
+
+# infernal table output to gff file postprocessing perl script.
+
+wget https://github.com/nawrockie/jiffy-infernal-hmmer-scripts/blob/master/infernal-tblout2gff.pl
+chmod +x infernal-tblout2gff.pl
+
+
 ##
 ### Moving onto data
 ##
 
-cd ../../data
+cd ../data
 
 
 echo "Downloading uniprot_sprot database. We convert this into a blastdb separately"
