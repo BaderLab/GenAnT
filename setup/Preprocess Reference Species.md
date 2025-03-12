@@ -22,7 +22,7 @@ In `~/data/references` make the directory where you will build the reference spe
 mkdir -p mmus_GRC39 ; cd mmus_GRC39
 ```
 
-Download the softmasked assembly, annotation (GFF), protein FASTA, and translated CDS FASTA for that species. The assembly and GFF files are for LiftOff and TOGA, while the protein FASTA and transladed CDS files are for OrthoFinder.
+Download the softmasked assembly and annotation (GFF) for that species. These are used for LiftOff, TOGA, and OrthoFinder.
 
 Download assembly:
 
@@ -147,7 +147,7 @@ In `~/data/references` make the directory where you will build the reference spe
 mkdir -p mmus_GRC39_embl ; cd mmus_GRC39_embl
 ```
 
-Download the softmasked assembly, annotation (GFF), protein FASTA, and translated CDS FASTA for that species. The assembly and GFF files are for LiftOff and TOGA, while the protein FASTA and translated CDS files are for orthofinder.
+Download the softmasked assembly and annotation (GFF) for that species. These files are used for LiftOff, TOGA, and OrthoFinder.
 
 Download assembly. Don't forget to use the assembly with the"sm" option, as we need a softmasked assembly for TOGA.
 
