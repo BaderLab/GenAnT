@@ -4,7 +4,7 @@ channels:             # Channels to search for packages
   - bioconda
   - defaults
 dependencies:         # List of packages and their versions
-  - earlgrey=5.1.0  # check if that's still on bioconda -- blast comes from here otherwise there's an issue
+  - earlgrey=5.1.0 
   - liftoff=1.6.3
   - infernal=1.1.2
   - busco=5.7.1
@@ -20,3 +20,4 @@ dependencies:         # List of packages and their versions
   - gffread=0.12.7
   - nextflow=24.10.4
   - regtools=1.0.0
+  - seqkit=2.9.0
