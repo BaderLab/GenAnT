@@ -365,6 +365,15 @@ cd ../
 
 ```
 
+Lastly, we use a postprocessing perl script for infernal to make a gff file from the ncRNAs
+
+This script is downloaded directly to `/external`
+
+```
+wget https://github.com/nawrockie/jiffy-infernal-hmmer-scripts/blob/master/infernal-tblout2gff.pl
+chmod +x infernal-tblout2gff.pl
+```
+
 # ii. Data packages
 
 Some publicly available datasets (e.g., uniprot, rfam) are required to complete the end to end tutorial. These datasets are downloaded into `GenomeAnnotationTutorial/data`.
