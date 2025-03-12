@@ -5,9 +5,9 @@ date: "2025-03-10"
 output: html_document
 ---
 
-# i. Building a reference directorty
+# i. Building a reference directory
 
-We use a reference genome three times in our tutorial. We use it to find gene models with liftOff, to find gene models with TOGA, and to annotate gene symbols with Orthofinder. The worlfow below describes how to preprocess a reference genome from NCBI or from Ensembl so that the assembly is compatable with each tool in our tutorial. These files may also be directly included in the config for our pipeline. We use the mouse GRC39 assembly for this example.
+We use a reference genome three times in our tutorial. We use it to find gene models with LiftOff, to find gene models with TOGA, and to annotate gene symbols with OrthoFinder. The workflow below describes how to preprocess a reference genome from NCBI or from Ensembl so that the assembly is compatable with each tool in our tutorial. These files may also be directly included in the config for our pipeline. We use the mouse GRC39 assembly for this example.
 
 ## From Refseq
 
@@ -22,7 +22,7 @@ In `~/data/references` make the directory where you will build the reference spe
 mkdir -p mmus_GRC39 ; cd mmus_GRC39
 ```
 
-Download the softmasked assembly, annotation (gff), protein fasta, and translated CDS fasta for that species. The assembly and GFF files are for liftoff and TOGA, while the protein fasta and transladed CDS files are for orthofinder.
+Download the softmasked assembly, annotation (GFF), protein FASTA, and translated CDS FASTA for that species. The assembly and GFF files are for LiftOff and TOGA, while the protein FASTA and transladed CDS files are for OrthoFinder.
 
 Download assembly:
 
@@ -51,8 +51,8 @@ This script has four positional arguments:
 
 - working directory (i.e., path to human_T2T_NCBI)
 - /scripts directory (i.e., path to the scripts in this tutorial)
-- genomic fasta
-- genomic gff
+- genomic FASTA
+- genomic GFF
 
 With our example, the script would be executed as shown below.
 
@@ -76,19 +76,19 @@ The directory: `~GenomeAnnotationTutorial/data/references/mmus_GRC39` has two fi
 
 The script itself is here, and each line is explained:
 
-Preprocess the downloaded gff file with `gffread`. GFF files allow for some flexibility in format even in NCBI and Ensembl (e.g., custom annotations in model organisms), and `gffread` ensures their compatibility with LiftOff and TOGA.
+Preprocess the downloaded gff file with `GFFRead`. GFF files allow for some flexibility in format even in NCBI and Ensembl (e.g., custom annotations in model organisms), and `GFFRead` ensures their compatibility with LiftOff and TOGA.
 
 ```
 gffread GCF_000001635.27_GRCm39_genomic.gff --keep-genes -o GCF_000001635.27_GRCm39_genomic.gffread.gff
 ```
 
-generate an amino acid fasta from CDS regions (for orthofinder)
+Generate an amino acid FASTA from CDS regions (for OrthoFinder)
 
 ```
 gffread -y GCF_000001635.27_GRCm39_genomic.protein.faa -g GCF_000001635.27_GRCm39_genomic.fna GCF_000001635.27_GRCm39_genomic.gffread.gff
 ```
 
-Covert gff file into a bed12 file compatible with TOGA.
+Covert GFF file into a BED12 file compatible with TOGA.
 
 ```
 ~/external/kent/gff3ToGenePred GCF_009914755.1_T2T-CHM13v2.0_genomic.gffread.gff GCF_009914755.1_T2T-CHM13v2.0_genomic.genePred
@@ -147,7 +147,7 @@ In `~/data/references` make the directory where you will build the reference spe
 mkdir -p mmus_GRC39_embl ; cd mmus_GRC39_embl
 ```
 
-Download the softmasked assembly, annotation (gff), protein fasta, and translated CDS fasta for that species. The assembly and GFF files are for liftoff and TOGA, while the protein fasta and transladed CDS files are for orthofinder.
+Download the softmasked assembly, annotation (GFF), protein FASTA, and translated CDS FASTA for that species. The assembly and GFF files are for LiftOff and TOGA, while the protein FASTA and translated CDS files are for orthofinder.
 
 Download assembly. Don't forget to use the assembly with the"sm" option, as we need a softmasked assembly for TOGA.
 
@@ -169,7 +169,7 @@ for i in *.gz ; do gunzip $i ; echo $i ; done
 
 #### Running Preprocessing Script
 
-The embl pre-processing script is idenical to the refseq script the exception that it uses a different R script to account for ensembl-specific GFF file headers.
+The EMBL pre-processing script is identical to the RefSeq script - the exception that it uses a different R script to account for Ensembl-specific GFF file headers.
 
 While we explain each step below, you can also perform this full analysis with our premade script:
 `reference_directory_ensembl.sh`. 
@@ -177,19 +177,19 @@ This script has six positional arguments:
 
 - working directory (i.e., path to human_T2T_NCBI)
 - /scripts directory (i.e., path to the scripts in this tutorial)
-- genomic fasta
-- genomic gff
+- genomic FASTA
+- genomic GFF
 
 reference_directory_ensembl.sh 
 
 With our example, the script would be executed as:
+
 ```
   bash reference_directory_ensembl.sh \
   ~/data/references/mmus_GRC39_embl \
   ~ \
   Mus_musculus.GRCm39.dna_sm.primary_assembly.fa \
   Mus_musculus.GRCm39.113.gff3
-
 ```
   
 This script and workflow is nearly identical to ncbi. The few differences are.
@@ -197,4 +197,4 @@ This script and workflow is nearly identical to ncbi. The few differences are.
 * Ensembl has the `gff3` suffix instead of `gff`
 * Ensembl uses `Name` to denote gene symbol, while ncbi uses `gene`
 * Ensembl tags gene and transcript with `gene:` and `transcript:` while Refseq uses `gene-` and `rna-`.
-* Ensembl includes transcript number in gene symbol, ncbi does not.
+* Ensembl includes transcript number in gene symbol, NCBI does not.
