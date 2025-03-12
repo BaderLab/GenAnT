@@ -5,7 +5,7 @@ date: "2025-03-10"
 output: html_document
 ---
 
-Our mammalian genome annotation tutorial includes scripts and a snakemake workflow that facilitates end-to-end genome annotation using a config file. This pipeline expects specific directory strucutre and for specific programs to be installed.
+Our mammalian genome annotation tutorial includes scripts and a snakemake workflow that facilitates end-to-end genome annotation using a config file. This pipeline expects specific directory structure and for specific programs to be installed.
 
 ### Plug and Chug
 
