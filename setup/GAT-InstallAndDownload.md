@@ -294,6 +294,8 @@ The `kent` binaries are universally valuable packages used for converting
 genomic file types to one another. Accordingly, a number of these binaries are
 required in this tutorial.
 
+If these binaries don't work (e.g., genePredToGtf throws an error), it could be that you have a very new version of ubuntu If so, redownload the binaries after removing `.v369` from the link for the most updated version. (e.g., wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainSwap)
+
 ```
 
 # Assuming you are in ~/external, where "~" is the path to your annotation pipeline
@@ -304,21 +306,21 @@ cd kent
 
 # Binaries for generating chain files for TOGA
 
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainSwap
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/chainSwap
 
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/axtChain
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/axtChain
 
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faToTwoBit
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/faToTwoBit
 
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/pslPosTarget
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/pslPosTarget
 
 # Binaries for converting TOGA outputs, and making reference annotations for TOGA
 
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/genePredToGtf
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedToGenePred
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/genePredToGtf
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/bedToGenePred
 wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/genePredToBed
 wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/gtfToGenePred
-wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/gff3ToGenePred
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/gff3ToGenePred
 
 # some clusters may require an extra step to ensure that each binary is executable
 for i in `ls` ; do chmod +x $i ; done
