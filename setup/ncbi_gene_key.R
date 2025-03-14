@@ -28,8 +28,10 @@ gff_transcript$trans_id <- unlist(gff_transcript$ID)
 key <- gff_transcript[,c("gene_id","trans_id","gene")]
 colnames(key) <- c("geneID","transcriptID","geneSymbol")
 
-key$geneID <- gsub("gene-","",key$geneID)
-key$transcriptID <- gsub("rna-","",key$transcriptID)
+# Remove deleting the `gene-` and `rna-` tag as it makes an incompatibility with toga isoforms
+
+# key$geneID <- gsub("gene-","",key$geneID)
+# key$transcriptID <- gsub("rna-","",key$transcriptID)
 
 write.table(key[,c("geneSymbol","transcriptID")],file=paste0(prefix,".table.txt"),
             quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
