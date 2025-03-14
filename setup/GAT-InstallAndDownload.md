@@ -5,9 +5,11 @@ date: "2025-03-10"
 output: html_document
 ---
 
-Our mammalian genome annotation tutorial includes scripts and a Snakemake workflow that facilitates end-to-end genome annotation using a config file. This pipeline expects specific directory structure and for specific programs to be installed.
+Our mammalian genome annotation tutorial includes (1) a step-by-step tutorial, (2) plug-and-chug scripts, and (3) a Snakemake workflow that facilitates end-to-end genome annotation using a config file. The following installation guide prepares your machine for any one of these workflows. A complete and smooth installation process can be performed by following all of the steps under "Plug-and-Chug", where you set up a Conda environment and then run two scripts that download and install the various tools and create a BLAST database. "Step-by-step" is a more tutorial-like installation process that guides you in detail through the installation process. Choose one to run.
 
-### Plug and Chug
+Both the plug-and-chug and Snakemake workflows expect specific directory structure and for specific programs to be installed. The step-by-step tutorial is more flexible.
+
+## Plug-and-Chug
 
 We provide scripts to streamline the installation process.
 
@@ -41,6 +43,8 @@ bash GAT-MakeBlastDB.sh /path-to-GenomeAnnotationTutorial
 It may be easier to edit `GAT-MakeBlastDB.sh` to submit it as a job on your cluster.
 
 Lastly, if your cluster is not `slurm`, you will need to update the nextflow config files described in `##### TOGA config` (or in the TOGA repo itself - https://github.com/hillerlab/toganextflow_config_files)
+
+## Step-by-step
 
 # i. Installation
 
