@@ -28,8 +28,8 @@ gff_transcript$trans_id <- unlist(gff_transcript$ID)
 key <- gff_transcript[,c("gene_id","trans_id","Name")]
 colnames(key) <- c("geneID","transcriptID","geneSymbol")
 
-key$geneID <- gsub("gene:","",key$geneID)
-key$transcriptID <- gsub("transcript:","",key$transcriptID)
+# key$geneID <- gsub("gene:","",key$geneID)
+# key$transcriptID <- gsub("transcript:","",key$transcriptID)
 key$geneSymbol <- sub("-(?!.*-).*", "", key$geneSymbol,perl = TRUE)
 
 write.table(key[,c("geneSymbol","transcriptID")],file=paste0(prefix,".table.txt"),
