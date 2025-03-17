@@ -374,24 +374,30 @@ cd ../..
 Lastly, we use a postprocessing perl script for infernal to make a GFF file from the ncRNAs. This script is downloaded directly to `/external`.
 
 ```
+
 wget https://github.com/nawrockie/jiffy-infernal-hmmer-scripts/blob/master/infernal-tblout2gff.pl
 chmod +x infernal-tblout2gff.pl
-```
-
-# ii. Data packages
-
-Some publicly available datasets (e.g., uniprot, rfam) are required to complete the end to end tutorial. These datasets are downloaded into `GenomeAnnotationTutorial/data`.
 
 ```
-cd GenomeAnnotationTutorial/data
+
+### 2. Data packages
+
+Some publicly available datasets (e.g., UniProt, Rfam) are required to complete the end to end tutorial. These datasets are downloaded into `GenomeAnnotationTutorial/data`.
+
+```
+
+cd ../data
+
 ```
 
 #### uniprot_sprot
+
 The uniprot_sprot database provides experimentally validated protein sequences
 to cross-reference candidate transcripts against. This datbase is used in 
 `Step 3: transcript selection`. We also remove duplicate fasta headings and generate a blastdb, which is required for the blast step in transcript selection. 
 
 ```
+
 mkdir -p uniprot_sprot
 
 cd uniprot_sprot
@@ -402,11 +408,14 @@ gunzip uniprot_sprot.fasta.gz
 
 seqkit rmdup -s < uniprot_sprot.fasta > uniprot_sprot_nodup.fasta
 
-makeblastdb -in uniprot_sprot_nodup.fasta -dbtype prot -out uniprot_sprot_nodup.fasta -title "UniPro Sprot  database without duplicated sequences" -parse_seqids 
+makeblastdb -in uniprot_sprot_nodup.fasta -dbtype prot -out uniprot_sprot_nodup.fasta -title "UniPro Sprot  database without duplicated sequences" -parse_seqids
+
+cd ..
 
 ```
 
 #### Rfam database
+
 The Rfam database is required for finding ncRNA genes with known secondary 
 structures and for identifying them into their RNA family. We also make a blastdb for this database for seeding.
 
@@ -425,12 +434,13 @@ seqkit rmdup -s < Rfam.fa > Rfam_nodup.fa
 
 makeblastdb -in Rfam_nodup.fa -dbtype nucl -out Rfam_nodup -title "Rfam database without duplicated sequences" -parse_seqids
 
+cd ..
 
 ```
 
-#### Vertrbrate Odb protein stequences
+#### Vertrbrate OrthoDB (Odb) protein stequences
 
-Braker uses the Odb database to help predict protein locations in an assembly.
+BRAKER uses the Odb database to help predict protein locations in an assembly.
 These sequences therefore must be downloaded in `/data`
 
 ```
@@ -441,21 +451,25 @@ cd braker_protein
 wget https://bioinf.uni-greifswald.de/bioinf/partitioned_odb12/Vertebrata.fa.gz
 
 gunzip Vertebrata.fa.gz
+
+cd ..
+
 ```
 
 #### Example data
 
 We include a chromosome from our naked mole-rat assembly (plus RNA-seq and ISO-seq data) to try this tutorial.
 
-This data can be pulled from the zenodo repository associated with this tutorial from ~/data
+These data can be pulled from the zenodo repository associated with this tutorial from ~/data
 
 ```
+
 wget https://zenodo.org/records/14962941/files/example_data.tar.gz
 tar -xvzf example_data.tar.gz
 
 ```
 
-The last step is building a reference genome for a species. We provide a markdown to build this reference in "PreprocessReferenceSpecies.md". Please move to this markdown to continue building the workflow.
+The last step in the setup is building a reference genome for a species. We provide a markdown to build this reference in "PreprocessReferenceSpecies.md". Please move to this markdown to continue building the workflow.
 
 
 
