@@ -14,6 +14,7 @@ Both the plug-and-chug and Snakemake workflows expect specific directory structu
 We provide scripts to streamline the installation process.
 
 ```
+
 # Clone the tutorial repo.
 
 git clone https://github.com/BaderLab/GenomeAnnotationTutorial.git
@@ -46,50 +47,53 @@ Lastly, if your cluster is not `slurm`, you will need to update the nextflow con
 
 ## Step-by-step
 
-# i. Installation
+### 1. Installation
 
-### Directory structure.
+#### 1a - Directory structure.
 
 Clone the tutorial repo.
 
 `git clone https://github.com/BaderLab/GenomeAnnotationTutorial.git`
 
-Create a `/data` and a `/external` directory. `/data` will hold public dataests
+Create a `/data` and a `/external` directory within the `GenomeAnnotationTutorial` directory. `/data` will hold public dataests
 and reference genomes, while `/external` will hold binaries and Singularity images
 used in the tutorial and workflow.
 
 ```
 
-mkdir -p GenomeAnnotationTutorial/data
-mkdir -p GenomeAnnotationTutorial/external
+cd GenomeAnnotationTutorial
+mkdir -p data
+mkdir -p external
 
 ```
 
-Lastly, we install multiple Singularity images. Having `$SINGULARITY_CACHEDIR` and `SINGULARITY_TMPDIR` will throw a failure to install images error for many non-admin accounts as their roots typically allow for ~10 or ~100Gb or space.
+We will eventually be installing multiple Singularity images. To prepare for this, we need to make sure Singularity will run without error in our environment. Having `$SINGULARITY_CACHEDIR` and `SINGULARITY_TMPDIR` will throw a failure to install images error for many non-admin accounts as their roots typically allow for ~10 or ~100Gb or space. To combat this, we can create new cache and temporary directories for Singularity somewhere in a space owned by the user, and reassign the variables.
 
 ```
-mkdir -p singularitycache
-mkdir -p singularitytemp
+
+mkdir -p external/singularity_images
+mkdir -p external/singularity_images/singularitycache
+mkdir -p external/singularity_images/singularitytemp
 
 export SINGULARITY_CACHEDIR=/path-to/singularitycache
 export SINGULARITY_TMPDIR=/path-to/singularitytemp
 
 ```
 
-### i.a Conda environment
-  This tutorial requires a series of conda packages. All of which are found on 
-  bioconda or conda-forge. These conda packages are listed below. Installing
-  this combined environment can be performed using the following yml file:
+#### 1b - Conda environment
+
+This tutorial requires a series of conda packages. All of which are found on bioconda or conda-forge. These conda packages are listed below. Installing this combined environment can be performed using the following YML file:
   
 ```
 
-  conda env create -f annotation_tutorial.yml
+conda env create -f annotation_tutorial.yml
 
 ```
   
 The YML file is on the GitHub, but can also be copied from here:
 
 ```
+
 name: annotation_tutorial  # Name of the environment
 channels:             # Channels to search for packages
   - conda-forge
@@ -113,22 +117,17 @@ dependencies:         # List of packages and their versions
   - nextflow=24.10.4
   - regtools=1.0.0
   - seqkit=2.9.0
+
   ```
   
-### i.b Singularity images
+#### 1c - Singularity images
 
-  This tutorial uses two Singularity images: one for `mikado`, two for 
-  `braker` (the short read RNAseq and ISOseq options), and one for the `cactus` aligner.
+This tutorial uses two Singularity images: one for `mikado`, two for `braker` (the short read RNAseq and ISOseq options), and one for the `cactus` aligner.
   
 
 ```
 
-cd GenomeAnnotationTutorial/external
-
-mkdir -p singularity_images
-
-cd singularity_images
-
+cd external/singularity_images
 
 ```
 
@@ -150,26 +149,26 @@ singularity build mikado_gat.sif docker://risserlin/mikado:ubuntu22_mikado2.3.2
 Optionally clear the Singularity and temporary cache to save space.
 
 ```
-rm -r cache/*
-rm -r tmp/*
+
+rm -r singularitycache/*
+rm -r singularitytemp/*
 
 ```
 
-### i.c Binaries
+#### 1d - Binaries
 
-  This tutorial uses four package binaries to complete the tutorial. Namely,
-  it uses binaries for `TOGA`,  `kent` utulities, `stringtie`, and 
-  `interproscan`.
+This tutorial uses four package binaries to complete the tutorial. Namely, it uses binaries for `TOGA`,  `kent` utulities, `stringtie`, and `interproscan`.
   
-  We expect that these binaries are all installed within subdirectories
-  of a directory called  `external`. (see `i.e` data and package structure)
+We expect that these binaries are all installed within subdirectories of a directory called  `external`. (see `i.e` data and package structure)
   
-#### TOGA
-  The documentation of `TOGA` requires that you also install the binary for the Cactus aligner. We elected to use their Singularity image to promote the stability of this tutorial across version upgrades. As such, the `cactus` aligner is already installed at this point.
+##### TOGA
+
+The documentation of `TOGA` requires that you also install the binary for the Cactus aligner. We elected to use their Singularity image to promote the stability of this tutorial across version upgrades. As such, the `cactus` aligner is already installed at this point.
 
 ```
 
-# Assuming you are in ~/external, where "~" is the path to your annotation pipeline
+# Navigate back to "external"
+cd ..
 
 # download and install TOGA
 git clone https://github.com/hillerlab/TOGA.git
@@ -177,21 +176,20 @@ cd TOGA
 python3 -m pip install -r requirements.txt --user
 ./configure.sh
 
+```
+
+TOGA should be tested at this point as well. TOGA requires NextFlow, so the test will require a Conda environment with NextFlow (preferable our `annotation_tutorial` environment) Conda environment to be active
 
 ```
 
-TOGA should be tested at this point as well. TOGA requires NextFlow, so the test will require a Conda environment with NextFlow (preferable our annotation_tutorial environment) Conda environment to be active
-
-```
 conda activate annotation_tutorial
 ./run_test.sh micro
+
 ```
 
 ##### TOGA config
 
-TOGA requires a cluster specific config file to run nextflow.
- 
-These files are in `TOGA/nextflow_config_files` and are built as default for `slurm`.
+TOGA requires a cluster specific config file to run nextflow. These files are in `TOGA/nextflow_config_files` and are built as default for `slurm`.
 
 As such, if you are using a `slurm` cluster, you probably do not need to alter any of these files and you can move to the next installation step.
 
@@ -211,7 +209,7 @@ executor.queueSize = 1000  // nextflow default is 100 - too few
 
 ```
 
-For sge, we use the code below. I found that my sge preferred the `process {}` and
+For SGE, we use the code below. I found that my SGE preferred the `process {}` and
 `executor {}` syntax, but both should be acceptable.
 
 ```
@@ -242,7 +240,7 @@ process.time = '1h'
 process.cpus = 1
 ```
 
-On sge we use:
+On SGE we use:
 
 ```
 process {
@@ -272,8 +270,7 @@ process.time = '1h'
 process.cpus = 1
 ```
 
-On sge we use:
-
+On SGE we use:
 
 ```
 process {
@@ -292,7 +289,7 @@ executor {
 }
 ```
 
-#### Kent Utils
+##### Kent Utils
 
 The `kent` binaries are universally valuable packages used for converting
 genomic file types to one another. Accordingly, a number of these binaries are
@@ -302,7 +299,8 @@ If these binaries don't work (e.g., genePredToGtf throws an error), it could be 
 
 ```
 
-# Assuming you are in ~/external, where "~" is the path to your annotation pipeline
+# Navigate back to "external"
+cd ..
 
 mkdir -p kent
 
@@ -329,23 +327,25 @@ wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v369/gff3ToGenePred
 # some clusters may require an extra step to ensure that each binary is executable
 for i in `ls` ; do chmod +x $i ; done
 
+# Navigate out of "kent"
+cd ..
 
 ```
 
-#### StringTie 
+##### StringTie 
 
-The `StringTie` binary is required for individuals with RNA-seq data. 
-Many different installation sources can be found at their website
-(https://ccb.jhu.edu/software/stringtie/), however we found the easiet approach
-was to clone their github repository.
+The `StringTie` binary is required for individuals with RNA-seq data. Many different installation sources can be found at their website (https://ccb.jhu.edu/software/stringtie/), however we found the easiet approach was to clone their github repository.
 
 ```
-  git clone https://github.com/gpertea/stringtie
-  cd stringtie
-  make release
+
+git clone https://github.com/gpertea/stringtie
+cd stringtie
+make release
+cd ..
+
 ```
 
-#### Interproscan
+##### Interproscan
 
 Finally, interproscan is used for annotating functional domains for proteins
 
@@ -364,16 +364,14 @@ cd interproscan-5.69-101.0-64-bit
 
 python3 setup.py -f interproscan.properties
 
-cd ../
+cd ../..
 
 # Must return *interproscan-5.69-101.0-64-bit.tar.gz: OK*
 # If not - try downloading the file again as it may be a corrupted copy
 
 ```
 
-Lastly, we use a postprocessing perl script for infernal to make a gff file from the ncRNAs
-
-This script is downloaded directly to `/external`
+Lastly, we use a postprocessing perl script for infernal to make a GFF file from the ncRNAs. This script is downloaded directly to `/external`.
 
 ```
 wget https://github.com/nawrockie/jiffy-infernal-hmmer-scripts/blob/master/infernal-tblout2gff.pl
