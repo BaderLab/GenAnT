@@ -131,7 +131,8 @@ cd ../../external
 
 # infernal table output to gff file postprocessing perl script.
 
-wget https://github.com/nawrockie/jiffy-infernal-hmmer-scripts/blob/master/infernal-tblout2gff.pl
+# Download perl script to convert output of infernal to tblout2gff
+wget https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl
 chmod +x infernal-tblout2gff.pl
 
 
