@@ -170,6 +170,12 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
 gunzip Rfam.fa
 gunzip Rfam.cm.gz
 
+# Install Clanin
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
+
+# Compress Rfam covariance models -- required for cmscan
+cmpress Rfam.cm
+
 cd ../
 
 # seqkit rmdup -s < Rfam.fa > Rfam_nodup.fa
