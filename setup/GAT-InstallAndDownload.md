@@ -430,9 +430,17 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
 gunzip Rfam.cm.gz
 gunzip Rfam.fa.gz
 
+# Install Clanin
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
+
+# Compress Rfam covariance models -- required for cmscan
+cmpress Rfam.cm
+
 seqkit rmdup -s < Rfam.fa > Rfam_nodup.fa
 
 makeblastdb -in Rfam_nodup.fa -dbtype nucl -out Rfam_nodup -title "Rfam database without duplicated sequences" -parse_seqids
+
+
 
 cd ..
 
