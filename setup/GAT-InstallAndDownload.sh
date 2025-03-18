@@ -177,6 +177,10 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
 # Compress Rfam covariance models -- required for cmscan
 cmpress Rfam.cm
 
+# Add Rfam family file for annotations
+https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/database_files/family.txt.gz
+wget family.txt
+
 cd ../
 
 # seqkit rmdup -s < Rfam.fa > Rfam_nodup.fa
