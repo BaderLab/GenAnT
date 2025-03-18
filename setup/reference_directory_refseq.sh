@@ -21,6 +21,10 @@ echo "make protein faa for orthofinder"
 
 gffread -y $prefix".protein.faa" -g $fa $prefix".gffread.gff"
 
+# filters for gff's with pseudogenes containing premature stop codons. 
+sed 's/\.//g' $prefix".protein.faa" > $prefix".nostop.protein.faa" 
+
+
 echo "make bed12 for TOGA"
 
 $GAT/external/kent/gff3ToGenePred $prefix".gffread.gff" $prefix".genePred"
