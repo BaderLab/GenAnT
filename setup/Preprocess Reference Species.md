@@ -88,6 +88,12 @@ Generate an amino acid FASTA from CDS regions (for OrthoFinder)
 gffread -y GCF_000001635.27_GRCm39_genomic.protein.faa -g GCF_000001635.27_GRCm39_genomic.fna GCF_000001635.27_GRCm39_genomic.gffread.gff
 ```
 
+Filters for gff's with pseudogenes containing premature stop codons. This is not always needed but the `.nostop.protein.faa` file will be more generalizable
+
+```
+sed 's/\.//g' GCF_000001635.27_GRCm39_genomic.protein.faa > GCF_000001635.27_GRCm39_genomic.nostop.protein.faa 
+```
+
 Covert GFF file into a BED12 file compatible with TOGA.
 
 ```
