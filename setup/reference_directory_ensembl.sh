@@ -20,7 +20,7 @@ gffread $gff --keep-genes -o $prefix.gffread.gff
 gffread -y $prefix".protein.faa" -g $fa $prefix".gffread.gff"
 
 # filters for gff's with pseudogenes containing premature stop codons. 
-sed 's/\.//g' $prefix".protein.faa" > $prefix".nostop.protein.faa" 
+sed  '/^>/!s/[.*]//g'  $prefix".protein.faa" > $prefix".nostop.protein.faa" 
 
 # make bed12 for TOGA
 
