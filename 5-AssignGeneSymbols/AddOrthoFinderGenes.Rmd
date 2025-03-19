@@ -44,6 +44,9 @@ Remove decimals from "mikado_id" column as they represent splice variants and co
 ```{r}
 orthofinder_pairs$mikado_id <- gsub("\\.[0-9]+$","",
                                     orthofinder_pairs$mikado_id)
+orthofinder_pairs$orthofinder_gene <- gsub("\\.[0-9]+$","",
+                                    orthofinder_pairs$orthofinder_gene) # added as we had runs where ".1" (or whatever transcript number) was maintained
+
 orthofinder_pairs <- dplyr::distinct(orthofinder_pairs)
 ```
 
@@ -140,7 +143,7 @@ mikado_df$toga_gene <- mikado_df_noCopies$toga_gene <- toga_gene
 
 # Add copy to mikado_df
 
-mikado_df$toga_gene <- make.unique(orthofinder_pairs$toga_gene, sep = "-copy")
+mikado_df_noCopies$toga_gene <- make.unique(mikado_df_noCopies$toga_gene, sep = "-copy")
 
 ```
 
