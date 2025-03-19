@@ -124,6 +124,26 @@ mikado_df_noCopies <- dplyr::left_join(mikado_df_noCopies,
 mikado_df_noCopies$orthofinder_gene <- gsub("-copy.*", "", mikado_df_noCopies$orthofinder_gene)
 ```
 
+Toga currently has transcript ID instead of gene symbol. We can fix this with reference.table like with orthofinder
+
+```{r}
+reference <- read.delim("reference.table.txt", header = TRUE, sep = "\t")
+
+colnames(reference) <- c("geneSymbol", "transcriptID")
+rownames(reference) <- reference$transcriptID
+
+toga_ID <- mikado_df$toga_gene
+
+toga_gene <- unlist(lapply(toga_ID,function(x) reference[x,"geneSymbol"]))
+
+mikado_df$toga_gene <- mikado_df_noCopies$toga_gene <- toga_gene
+
+# Add copy to mikado_df
+
+mikado_df$toga_gene <- make.unique(orthofinder_pairs$toga_gene, sep = "-copy")
+
+```
+
 Save both tables
 
 ```{r}
