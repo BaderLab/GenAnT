@@ -32,11 +32,11 @@ For each annotation generated in steps 3, 4, 6, and 7, we recommend converting t
 
 We provide three ways to use this tutorial to cater towards different preferences and computational set-ups.
 
-1. A customizable step-by-step set of instructions
+#### 1. A customizable step-by-step set of instructions
    
    These instructions can be found in the folders labeled by step (e.g. "1-RepeatMasking") which contain README files of instructions on how to use the various tools. Explanations are accompanied by pseudocode and screenshots of what to expect (screenshots in progress), and R notebooks performing intermediate formatting steps are available when required. Installation instructions for all of the required tools can be found in `setup/InstallAndDownload.md`; this file also contains instructions on database downloads, but this is also performed in the step-by-step workflow. Once installations are complete, you do not need to move onto `PreprocessReferenceSpecies.md`, and can instead begin at "1-RepeatMasking" to begin working through everything step-by-step.
    
-2. A series of scripts that run the recommended tools
+#### 2. A series of scripts that run the recommended tools
    
 These scripts are found in /scripts and runs each step of the tutorial.
 
