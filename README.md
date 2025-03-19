@@ -38,7 +38,22 @@ We provide three ways to use this tutorial to cater towards different preference
    
 2. A series of scripts that run the recommended tools
    
-   TBD.
+These scripts are found in /scripts and runs each step of the tutorial.
+
+The `Execute_GAT_in_serial.sh` contains the variables required to run the tutorial as well as flow control to run each step in serial. 
+
+Assuming everything is properly installed and you have adjusted the two variables below. You can run the example data by submitting Execute_GAT_in_serial.sh as a job. We recommend ~72h runtime, 16 cores, and 64Gb of RAM for the tutorial data.
+
+The Snakemake pipeline brings this down to ~20h as it controls which scripts can be run in parallel. `Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
+
+The most time-consuming steps are EarlGrey and Braker (short read)/TOGA/Braker (long read), which are each in the 100-200h range. With a 3Gb mammalian genome, the remaining steps may take an additional ~50 hours combined. As such, we'd expect an end-to-end annotation with this tutorial to be performed in 2-3 weeks of runtime.
+
+Assuming the tutorial and reference directories are properly put together, executing each script on your own should only take a few hours of hands-on human time (e.g., setup, submitting groups of scripts that should be run in parallel, making sure that each step has the expected output). By nature, when the Snakemake is ready, annotations should take no human time after setting up the config file for each assembly.
+
+```
+sourceDir=/path-to/miniconda3/
+tutorialDir=/path-to/GenomeAnnotationTutorial
+```
    
 3. A Snakemake pipeline
    
