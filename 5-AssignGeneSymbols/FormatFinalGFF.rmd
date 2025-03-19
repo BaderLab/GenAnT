@@ -67,6 +67,61 @@ for (j in 1:nrow(symbols)) {
 }
 ```
 
+
+The below loop simplifies any orthofinder results in (e.g., hierarchical_gene) using their overlap with the gene models from TOGA and liftOff. For example, if the orthofinder output is ABC1, ABC2, ABC3, and TOGA/Liftoff thinks the gene is ABC2, then we assign ABC2.
+
+```{r}
+ortho_copies <- grep(";",symbols$hierarchical_gene)
+
+symbols_simplify <- symbols[grep(";",symbols$hierarchical_gene),]
+
+simple <- c()
+for(i in 1:nrow(symbols_simplify)) {
+  
+  if(is.na(symbols_simplify$liftoff_gene[i])) {
+    symbols_simplify$liftoff_gene[i] <- "-9"
+  }
+  if(is.na(symbols_simplify$toga_gene[i])) {
+    symbols_simplify$toga_gene[i] <- "-9"
+  }
+  
+ if(grepl(symbols_simplify$toga_gene[i],symbols_simplify$hierarchical_gene[i])) {
+   toga_pull <- symbols_simplify$toga_gene[i]
+ } else {
+   toga_pull <- "-9"
+ }
+  if(grepl(symbols_simplify$liftoff_gene[i],symbols_simplify$hierarchical_gene[i])) {
+    liftoff_pull <- symbols_simplify$liftoff_gene[i]
+  } else {
+    liftoff_pull <- "-9"
+  }
+  
+  if(toga_pull == "-9" & liftoff_pull == "-9" ) {
+    simple[i] <- symbols_simplify$hierarchical_gene[i]
+    next
+  }
+  
+  if(toga_pull == "-9") {
+    simple[i] <- liftoff_pull
+    next
+  }
+  if(liftoff_pull == "-9") {
+    simple[i] <- toga_pull
+    next
+  }
+    
+  if(toga_pull == liftoff_pull) {
+    simple[i] <- toga_pull
+    next
+  } 
+  
+  simple[i] <- paste0(liftoff_pull,";",toga_pull)
+}
+
+symbols$hierarchical_gene[ortho_copies] <- simple
+```
+
+
 An alternative to this hierarchical approach is to just pick your favourite column and use the gene names from there.
 
 Either way, let's assume that you now want to use the `hierarchical_gene` column to populate your gene names in the GFF file. Importantly, this gene name should be unique or else problems may arise in downstream analysis (since many downstream tools expect unique gene symbols, as exist in human or mouse). We can add a column to `symbols` which we'll call "unique_gene", and make the genes unique by adding `-copy#` to repeating gene symbols. We can do this using the `make.unique` function in R. This function sometimes adds unique identifiers to `NA` values, so we'll first grab indices for only non-NA values.
@@ -80,7 +135,11 @@ symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non
 If there are any NAs in the "unique" column, replace these values with the gene ID in the "mikado_id" column.
 
 ```{r}
+
 symbols$unique_gene[is.na(symbols$unique_gene)] <- symbols$mikado_id[is.na(symbols$unique_gene)]
+symbols_unique <- symbols[!duplicated(symbols$mikado_id),]
+
+
 ```
 
 
@@ -99,7 +158,7 @@ gff$mikado_id[gff$type %in% c("mRNA","lncRNA")] <- as.character(unlist(gff$Paren
 Now let's use `dplyr`'s `left_join` function to add the gene symbols data frame to the GFF file.
 
 ```{r}
-gff <- dplyr::left_join(gff, symbols,
+gff <- dplyr::left_join(gff, symbols_unique,
                         by = "mikado_id")
 ```
 
@@ -123,9 +182,14 @@ We can now export the GFF file and the updated gene symbol table.
 ```{r}
 rtracklayer::export.gff3(gff, "full_annotation.geneSymbols.gff", format = "gff3")
 
+write.table(symbols_unique, file = "gene_symbols_unique.tsv",
+            quote = FALSE, sep = "\t",
+            row.names = FALSE, col.names = TRUE)
+
 write.table(symbols, file = "gene_symbols_full.tsv",
             quote = FALSE, sep = "\t",
             row.names = FALSE, col.names = TRUE)
+
 ```
 
 
