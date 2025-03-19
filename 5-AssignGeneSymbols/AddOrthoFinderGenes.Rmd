@@ -145,6 +145,11 @@ mikado_df$toga_gene <- mikado_df_noCopies$toga_gene <- toga_gene
 
 mikado_df_noCopies$toga_gene <- make.unique(mikado_df_noCopies$toga_gene, sep = "-copy")
 
+# Ensure that there is copies for other columns and they were not lost
+
+mikado_df$liftoff_gene <- make.unique(mikado_df$liftoff_gene, sep = "-copy")
+mikado_df$orthofinder_gene <- make.unique(mikado_df$orthofinder_gene, sep = "-copy")
+
 ```
 
 Save both tables
