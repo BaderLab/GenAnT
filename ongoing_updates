@@ -80,3 +80,4 @@ Mikado installation: We found instances where the singularity image provided by 
 risserlin's mikado is stable regardless of your conda env. python install. etc.
 singularity pull mikado_tutorial.sif docker://baderlab/mikado:latest
 
+Snakemake earl-grey: add `-r` parameter for EarlGrey into config options 
