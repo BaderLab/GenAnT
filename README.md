@@ -55,7 +55,7 @@ sourceDir=/path-to/miniconda3/
 tutorialDir=/path-to/GenomeAnnotationTutorial
 ```
    
-3. A Snakemake pipeline
+#### 3. A Snakemake pipeline
 
 GAT_Snakemake allows for automated control for the genome annotation tutorial. We expect the same directory structure and setup when using the tutorial in any other manner (i.e., same /data and /external directories, the same annotation_tutorial conda environment, and access to `singularity` as a module or in your path).
 
