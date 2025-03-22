@@ -1,0 +1,36 @@
+sourceDir: "/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/bin/activate"
+externalDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/external"
+dataDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data"
+condaDir: "/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/envs/annotation_tutorial"
+
+# Parameters describing your assembly + annotation
+outDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/GAT_snakemake/results/tutorial_example"
+target: "example"
+species: "heterocephalus_glaber"
+assemblyFile: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/example_data/example_data/NMRchr28.fa"
+MaskedAssemblyFile: "none"
+MaskedAssemblyAnnotation: "none"
+rnaseqDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/example_data/example_data/RNAseq_alignment"
+isoseqDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/example_data/example_data/ISOseq_alignment"
+repeatBed: "none" # only required when inputting a masked assembly, otherwise this is made in step 1
+customGFF: "none" # if not none, then it should be the path to your gff file
+customRef: "FALSE" # is the custom gff a reference to be upgraded. Switch to "TRUE" if it is a reference.
+liftoffRef: "FALSE" # is the gff file from liftOff a reference assembly. Switch to "TRUE" if it is a reference. Note, if you have a custom reference gff then this will be over-written.
+
+# Parameters describing your reference assemblies + annotation
+
+refToga: "mouse"
+TogaDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39" # required to bind to singularity image
+refTogaFa: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna" # directory in /data -- adding species can be done with scripts in /utils
+refTogaBed: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed"
+refTogaIsoform: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.toga.tsv"
+
+refLiftOff: "mouse"
+refLiftOffFa: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna" # directory in /data -- adding species can be done with scripts in /utils
+refLiftOffGff: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.gffread.gff" # directory in /data -- adding species can be done with scripts in /utils
+
+orthofinderFA: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.nostop.protein.faa" # directory name in ~/data
+orthofinderTab: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.table.txt" # directory name in ~/data
+
+# Tool specific parameters
+mirmachineClade: "Mammalia"
