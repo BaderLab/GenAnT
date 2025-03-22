@@ -56,8 +56,24 @@ tutorialDir=/path-to/GenomeAnnotationTutorial
 ```
    
 3. A Snakemake pipeline
+
+GAT_Snakemake allows for automated control for the genome annotation tutorial. We expect the same directory structure and setup when using the tutorial in any other manner (i.e., same /data and /external directories, the same annotation_tutorial conda environment, and access to `singularity` as a module or in your path).
+
+To run the pipeline, you need to change the config.yaml file to match your directory structure. To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where `annotation_tutorial` lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GAT/" to the path where you cloned "GenomeAnnotationTutorial" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial).
+
+Assuming that you have singularity in your path, and `annotation_tutorial` activated:
+
+```
+   module load singularity
+   conda activate annotation_tutorial
+```
+Then, run Snakemake using the parameters of your hpc. This is what it looks like for ours: 
+
+```
+snakemake --jobs 750 --latency-wait 60 --cluster "qsub -cwd -V -o snakemake.output.log -e snakemake.error.log -pe smp {threads} -l h_vmem={params.memory_per_thread} {params.extra_cluster_opt} -l h_stack=32M -l h_rt={params.walltime} -P simpsonlab -b y" "$@"
+```
+
    
-   TBD.
 
 ### List of tools
 
