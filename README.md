@@ -64,7 +64,7 @@ To run the pipeline, you need to change the config.yaml file to match your direc
 Assuming that you have singularity in your path, and `annotation_tutorial` activated:
 
 ```
-   module load singularity
+   module load singularity # or module load apptainer or whatever you need to get singularity in your environment
    conda activate annotation_tutorial
 ```
 Then, run Snakemake using the parameters of your hpc. This is what it looks like for ours: 
