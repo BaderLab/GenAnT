@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Reccomended: 64G mem, 16 cores, 72h runtime
+# Recommended: 64G mem, 16 cores, 72h runtime
 # With parralelization (e.g., the snakemake workflow we're finalizing), this example runs in under 20h.
 
 # Install Script
@@ -12,13 +12,20 @@ module load singularity # if you do not have a singularity module on your cluste
 ##
 ### Values you need to change
 ##
-export sourceDir=/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/bin/activate
-export tutorialDir=/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial
-export condaDir=/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/envs/annotation_tutorial
+
+tutorialDir=$1 # e.g.. =/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial
+condaPath=$2 # e.g. /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3
+
+##
+### setting path to GAT and conda for your system
+##
+export sourceDir=$condaPath/bin/activate
+export $tutorialDir
+export condaDir=$condaPath/envs/annotation_tutorial
 
 ##
 ###
-## 
+##
 
 ##
 ### These values assume you have downloaded and processed mmus_GRC39 into data/references/mmus_GRC39
@@ -34,7 +41,6 @@ export condaDir=/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/envs/annot
 # GCF_000001635.27_GRCm39_genomic.fna \
 # GCF_000001635.27_GRCm39_genomic.gff
 ##
-
 
 export refToga=mouse # reference species name for TOGA
 export TogaDir=$tutorialDir/data/references/mmus_GRC39 # Needed to bind toga sif
@@ -56,6 +62,8 @@ export orthofinderTab=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_G
 ##
 ### Values you do not need to change to run the tutorial. Many of these values will need to be updated for your own work though
 ##
+
+
 
 export externalDir=$tutorialDir/external
 export dataDir=$tutorialDir/data
