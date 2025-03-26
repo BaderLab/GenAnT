@@ -81,3 +81,21 @@ risserlin's mikado is stable regardless of your conda env. python install. etc.
 singularity pull mikado_tutorial.sif docker://baderlab/mikado:latest
 
 Snakemake earl-grey: add `-r` parameter for EarlGrey into config options 
+
+
+Add long-read into the step-by-step educational tutorial (it's already in the pipelines):.
+
+- We use braker and stringtie to incororpate ISO-seq data.
+- Stringite runs in two modes
+	- If there is ISOseq for the tissue, but no RNA-seq, then run stringtie with the `-L` flag, otherwise it's basically the same.
+		- e.g., `$externalDir/stringtie/stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p 8 --conservative`
+	- If there is ISO-seq and RNA-seq for the tissue, run stringtie with the --mix flag.
+		e.g., `$externalDir/stringtie/stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p 8 --conservative`
+	- All three versions are in run_stringtie_flexible.sh
+- Braker runs in an extra mode for long-reads, and is identical for the script.
+	- The actual braker script is identical; the only change you need is to use the long-read docker (singularity) image instead.
+	- BRAKER_SIF=$externalDir/singularity_images/braker3_lr.sif 
+	- the output will be braker_lr.gffread.gff. 
+	- braker_sr and braker_lr can be integrated as their own items in mikado. We tested mikado vs. TSEBRA for integrating braker_sr and braker_lr and the resulting gff file was nearly identical, which is why we just use mikado here.
+
+
