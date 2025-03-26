@@ -42,8 +42,6 @@ These scripts are found in /scripts and runs each step of the tutorial.
 
 The `Execute_GAT_in_serial.sh` contains the variables required to run the tutorial as well as flow control to run each step in serial. 
 
-Assuming everything is properly installed and you have adjusted the two variables below. You can run the example data by submitting Execute_GAT_in_serial.sh as a job. We recommend ~72h runtime, 16 cores, and 64Gb of RAM for the tutorial data.
-
 The Snakemake pipeline brings this down to ~20h as it controls which scripts can be run in parallel. `Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
 
 The most time-consuming steps are EarlGrey and Braker (short read)/TOGA/Braker (long read), which are each in the 100-200h range. With a 3Gb mammalian genome, the remaining steps may take an additional ~50 hours combined. As such, we'd expect an end-to-end annotation with this tutorial to be performed in 2-3 weeks of runtime.
@@ -59,7 +57,7 @@ tutorialDir=/path-to/GenomeAnnotationTutorial
 
 GAT_Snakemake allows for automated control for the genome annotation tutorial. We expect the same directory structure and setup when using the tutorial in any other manner (i.e., same /data and /external directories, the same annotation_tutorial conda environment, and access to `singularity` as a module or in your path).
 
-To run the pipeline, you need to change the config.yaml file to match your directory structure. To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where `annotation_tutorial` lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GAT/" to the path where you cloned "GenomeAnnotationTutorial" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial).
+To run the pipeline, you need to change the config.yaml file to match your directory structure.
 
 Assuming that you have singularity in your path, and `annotation_tutorial` activated:
 
@@ -73,7 +71,38 @@ Then, run Snakemake using the parameters of your hpc. This is what it looks like
 snakemake --jobs 750 --latency-wait 60 --cluster "qsub -cwd -V -o snakemake.output.log -e snakemake.error.log -pe smp {threads} -l h_vmem={params.memory_per_thread} {params.extra_cluster_opt} -l h_stack=32M -l h_rt={params.walltime} -P simpsonlab -b y" "$@"
 ```
 
-   
+### Example data
+
+Assuming everything is properly installed and you have adjusted the two variables below. You can run the example data by submitting Execute_GAT_in_serial.sh as a job. We recommend ~72h runtime, 16 cores, and 64Gb of RAM for the tutorial data.
+
+The example data is pulled from zendodo. We assume that this `wget` command will be performed in /path-to-GAT/GenomeAnnotationTutorial (see /setup/GAT-InstallAndDownload.md for details)
+
+We include a chromosome from our naked mole-rat assembly (plus RNA-seq and ISO-seq data) to try this tutorial.
+
+```
+wget https://zenodo.org/records/14962941/files/example_data.tar.gz
+tar -xvzf example_data.tar.gz
+```
+
+Assuming everything is properly set up, running the tutorial without flow control involves submitting the execute script with two positional arguments:
+`bash Execute_GAT_in_serial.sh path-to-GAT path-to-Conda`
+For us this looks like
+
+```
+bash Execute_GAT_in_serial.sh \
+/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial \
+/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3
+```
+Even annotating one chromosome is relatively resource intensive, so we reccomend submitting this as a job (Recommended: 64G mem, 16 cores, 72h runtime)
+
+Lastly, this script has a `module load singularity`. If you access singularity differently (e.g., apptainer, conda environment etc.) then replace that line with what you need to have singularity accessible.
+
+Running the example data using the snakemake pipeline takes slightly more work:
+
+For `config.yaml` To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where `annotation_tutorial` lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GAT/" to the path where you cloned "GenomeAnnotationTutorial" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial).
+
+Otherwise, follow the steps in "3. A Snakemake pipeline".
+
 
 ### List of tools
 
