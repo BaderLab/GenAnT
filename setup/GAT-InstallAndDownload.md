@@ -14,7 +14,6 @@ Both the plug-and-chug and Snakemake workflows expect specific directory structu
 We provide scripts to streamline the installation process.
 
 ```
-
 # Clone the tutorial repo.
 
 git clone https://github.com/BaderLab/GenomeAnnotationTutorial.git
@@ -38,7 +37,6 @@ bash GAT-InstallAndDownload.sh /path-to-GenomeAnnotationTutorial
 # build blastDBs
 
 bash GAT-MakeBlastDB.sh /path-to-GenomeAnnotationTutorial
- 
 ```
 
 It may be easier to edit `GAT-MakeBlastDB.sh` to submit it as a job on your cluster.
@@ -60,24 +58,20 @@ and reference genomes, while `/external` will hold binaries and Singularity imag
 used in the tutorial and workflow.
 
 ```
-
 cd GenomeAnnotationTutorial
 mkdir -p data
 mkdir -p external
-
 ```
 
 We will eventually be installing multiple Singularity images. To prepare for this, we need to make sure Singularity will run without error in our environment. Having `$SINGULARITY_CACHEDIR` and `SINGULARITY_TMPDIR` will throw a failure to install images error for many non-admin accounts as their roots typically allow for ~10 or ~100Gb or space. To combat this, we can create new cache and temporary directories for Singularity somewhere in a space owned by the user, and reassign the variables.
 
 ```
-
 mkdir -p external/singularity_images
 mkdir -p external/singularity_images/singularitycache
 mkdir -p external/singularity_images/singularitytemp
 
 export SINGULARITY_CACHEDIR=/path-to/singularitycache
 export SINGULARITY_TMPDIR=/path-to/singularitytemp
-
 ```
 
 #### 1b - Conda environment
@@ -85,15 +79,12 @@ export SINGULARITY_TMPDIR=/path-to/singularitytemp
 This tutorial requires a series of conda packages. All of which are found on bioconda or conda-forge. These conda packages are listed below. Installing this combined environment can be performed using the following YML file:
   
 ```
-
 conda env create -f annotation_tutorial.yml
-
 ```
   
 The YML file is on the GitHub, but can also be copied from here:
 
 ```
-
 name: annotation_tutorial  # Name of the environment
 channels:             # Channels to search for packages
   - conda-forge
@@ -117,8 +108,7 @@ dependencies:         # List of packages and their versions
   - nextflow=24.10.4
   - regtools=1.0.0
   - seqkit=2.9.0
-
-  ```
+```
   
 #### 1c - Singularity images
 
@@ -126,16 +116,13 @@ This tutorial uses two Singularity images: one for `mikado`, two for `braker` (t
   
 
 ```
-
 cd external/singularity_images
-
 ```
 
 
 Install the relevant Singularity images.
 
 ```
-
 singularity build braker3.sif docker://teambraker/braker3:latest
 
 singularity build braker3_lr.sif docker://teambraker/braker3:isoseq
@@ -143,16 +130,13 @@ singularity build braker3_lr.sif docker://teambraker/braker3:isoseq
 singularity build cactus.v2.9.3.sif docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.3
 
 singularity build mikado_gat.sif docker://risserlin/mikado:ubuntu22_mikado2.3.2
-
 ```
 
 Optionally clear the Singularity and temporary cache to save space.
 
 ```
-
 rm -r singularitycache/*
 rm -r singularitytemp/*
-
 ```
 
 #### 1d - Binaries
@@ -166,7 +150,6 @@ We expect that these binaries are all installed within subdirectories of a direc
 The documentation of `TOGA` requires that you also install the binary for the Cactus aligner. We elected to use their Singularity image to promote the stability of this tutorial across version upgrades. As such, the `cactus` aligner is already installed at this point.
 
 ```
-
 # Navigate back to "external"
 cd ..
 
@@ -175,16 +158,13 @@ git clone https://github.com/hillerlab/TOGA.git
 cd TOGA
 python3 -m pip install -r requirements.txt --user
 ./configure.sh
-
 ```
 
 TOGA should be tested at this point as well. TOGA requires NextFlow, so the test will require a Conda environment with NextFlow (preferable our `annotation_tutorial` environment) Conda environment to be active
 
 ```
-
 conda activate annotation_tutorial
 ./run_test.sh micro
-
 ```
 
 ##### TOGA config
@@ -196,7 +176,6 @@ As such, if you are using a `slurm` cluster, you probably do not need to alter a
 The first script is `call_cesar_config_template.nf `
 
 ```
-
 // SLURM config file for CESAR jobs
 // since CESAR have various memory requirements, this
 // is just a template, TOGA will fill this itself
@@ -206,7 +185,6 @@ process.time = '24h'  // mostly 8h is enough, just for robustness
 process.memory = "${_MEMORY_}G"  // to be replaced
 process.cpus = 1  // CESAR utilizes a single core only
 executor.queueSize = 1000  // nextflow default is 100 - too few
-
 ```
 
 For SGE, we use the code below. I found that my SGE preferred the `process {}` and
@@ -298,7 +276,6 @@ required in this tutorial.
 If these binaries don't work (e.g., genePredToGtf throws an error), it could be that you have a very new version of ubuntu If so, redownload the binaries after removing `.v369` from the link for the most updated version. (e.g., wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/chainSwap)
 
 ```
-
 # Navigate back to "external"
 cd ..
 
@@ -329,7 +306,6 @@ for i in `ls` ; do chmod +x $i ; done
 
 # Navigate out of "kent"
 cd ..
-
 ```
 
 ##### StringTie 
@@ -337,12 +313,10 @@ cd ..
 The `StringTie` binary is required for individuals with RNA-seq data. Many different installation sources can be found at their website (https://ccb.jhu.edu/software/stringtie/), however we found the easiet approach was to clone their github repository.
 
 ```
-
 git clone https://github.com/gpertea/stringtie
 cd stringtie
 make release
 cd ..
-
 ```
 
 ##### Interproscan
@@ -350,7 +324,6 @@ cd ..
 Finally, interproscan is used for annotating functional domains for proteins
 
 ```
-
 mkdir my_interproscan
 cd my_interproscan
 wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.69-101.0/interproscan-5.69-101.0-64-bit.tar.gz
@@ -368,17 +341,14 @@ cd ../..
 
 # Must return *interproscan-5.69-101.0-64-bit.tar.gz: OK*
 # If not - try downloading the file again as it may be a corrupted copy
-
 ```
 
 Lastly, we use a postprocessing perl script for infernal to make a GFF file from the ncRNAs. This script is downloaded directly to `/external`.
 
 ```
-
 # Download perl script to convert output of infernal to tblout2gff
 wget https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl
 chmod +x infernal-tblout2gff.pl
-
 ```
 
 ### 2. Data packages
@@ -386,9 +356,7 @@ chmod +x infernal-tblout2gff.pl
 Some publicly available datasets (e.g., UniProt, Rfam) are required to complete the end to end tutorial. These datasets are downloaded into `GenomeAnnotationTutorial/data`.
 
 ```
-
 cd ../data
-
 ```
 
 #### uniprot_sprot
@@ -398,7 +366,6 @@ to cross-reference candidate transcripts against. This datbase is used in
 `Step 3: transcript selection`. We also remove duplicate fasta headings and generate a blastdb, which is required for the blast step in transcript selection. 
 
 ```
-
 mkdir -p uniprot_sprot
 
 cd uniprot_sprot
@@ -412,7 +379,6 @@ seqkit rmdup -s < uniprot_sprot.fasta > uniprot_sprot_nodup.fasta
 makeblastdb -in uniprot_sprot_nodup.fasta -dbtype prot -out uniprot_sprot_nodup.fasta -title "UniPro Sprot  database without duplicated sequences" -parse_seqids
 
 cd ..
-
 ```
 
 #### Rfam database
@@ -421,7 +387,6 @@ The Rfam database is required for finding ncRNA genes with known secondary
 structures and for identifying them into their RNA family. We also make a blastdb for this database for seeding.
 
 ```
-
 mkdir -p Rfam
 
 cd Rfam
@@ -445,10 +410,7 @@ seqkit rmdup -s < Rfam.fa > Rfam_nodup.fa
 
 makeblastdb -in Rfam_nodup.fa -dbtype nucl -out Rfam_nodup -title "Rfam database without duplicated sequences" -parse_seqids
 
-
-
 cd ..
-
 ```
 
 #### Vertrbrate OrthoDB (Odb) protein stequences
@@ -457,7 +419,6 @@ BRAKER uses the Odb database to help predict protein locations in an assembly.
 These sequences therefore must be downloaded in `/data`
 
 ```
-
 mkdir -p braker_protein
 cd braker_protein
 
@@ -466,7 +427,6 @@ wget https://bioinf.uni-greifswald.de/bioinf/partitioned_odb12/Vertebrata.fa.gz
 gunzip Vertebrata.fa.gz
 
 cd ..
-
 ```
 
 #### Example data
@@ -476,10 +436,8 @@ We include a chromosome from our naked mole-rat assembly (plus RNA-seq and ISO-s
 These data can be pulled from the zenodo repository associated with this tutorial from ~/data
 
 ```
-
 wget https://zenodo.org/records/14962941/files/example_data.tar.gz
 tar -xvzf example_data.tar.gz
-
 ```
 
 The last step in the setup is building a reference genome for a species. We provide a markdown to build this reference in "PreprocessReferenceSpecies.md". Please move to this markdown to continue building the workflow.
