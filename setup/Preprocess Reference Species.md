@@ -102,7 +102,7 @@ Covert GFF file into a BED12 file compatible with TOGA.
 Generate gene-keys.
 
 * An "isoforms.tsv" file for TOGA. This file is a key between gene ID and each transcript ID.
-* A "table.txt" file for OrthoFinder. This file is a key between the faa file heading and gene symbol.
+* A "table.txt" file for OrthoFinder. This file is a key between the predicted protein FASTA (FAA) file heading and gene symbol.
 * A "genekey.txt" file. This is a key between gene ID, transcript ID, and gene symbol.
 
 We do this using R.
@@ -110,12 +110,13 @@ We do this using R.
 ```
 library(rtracklayer)
 
+# Read in the GFF file using rtracklayer
 gff <- readGFF("GCF_009914755.1_T2T-CHM13v2.0_genomic.gff")
 
 gff_transcript <- gff_transcript <- gff[gff$type == "transcript",]
 
 # Get gene ID and transcript ID keys
-  # if this is a character already it doesn't change anything, but Rtracklayer sometimes loads "Parent" in as a list.
+# if this is a character already it doesn't change anything, but Rtracklayer sometimes loads "Parent" in as a list.
 
 gff_transcript$gene_id <- unlist(gff_transcript$Parent)
 gff_transcript$trans_id <- unlist(gff_transcript$ID)
