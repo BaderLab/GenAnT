@@ -5,16 +5,15 @@ date: "2025-03-10"
 output: html_document
 ---
 
-# i. Building a reference directory
+# Building a reference directory
 
-We use a reference genome three times in our tutorial. We use it to find gene models with LiftOff, to find gene models with TOGA, and to annotate gene symbols with OrthoFinder. The workflow below describes how to preprocess a reference genome from NCBI or from Ensembl so that the assembly is compatable with each tool in our tutorial. These files may also be directly included in the config for our pipeline. We use the mouse GRC39 assembly for this example.
+We use a reference genome three times in our tutorial. We use it to find gene models with LiftOff, to find gene models with TOGA, and to annotate gene symbols with OrthoFinder. The workflow below describes how to preprocess a reference genome from NCBI (RefSeq) or from Ensembl so that the assembly is compatable with each tool in our tutorial. These files may also be directly included in the config for our pipeline. We use the mouse GRC39 assembly for this example.
 
 ## From Refseq
 
-First travel to the NCBI FTP containing your species and annotation of interest.
+First travel to the NCBI FTP containing your species and annotation of interest. For the mouse genome, you would travel to the following URL:
 
 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39
-
 
 In `~/data/references` make the directory where you will build the reference species:
 
@@ -68,15 +67,13 @@ The directory: `~GenomeAnnotationTutorial/data/references/mmus_GRC39` has two fi
   ~ \
   GCF_000001635.27_GRCm39_genomic.fna \
   GCF_000001635.27_GRCm39_genomic.gff
-
 ```
-
 
 #### Inside Preprocessing Script 
 
 The script itself is here, and each line is explained:
 
-Preprocess the downloaded gff file with `GFFRead`. GFF files allow for some flexibility in format even in NCBI and Ensembl (e.g., custom annotations in model organisms), and `GFFRead` ensures their compatibility with LiftOff and TOGA.
+Preprocess the downloaded gff file with `GFFRead`. GFF files allow for some flexibility in format, even in NCBI and Ensembl (e.g., custom annotations in model organisms), and `GFFRead` ensures their compatibility with LiftOff and TOGA.
 
 ```
 gffread GCF_000001635.27_GRCm39_genomic.gff --keep-genes -o GCF_000001635.27_GRCm39_genomic.gffread.gff
@@ -88,7 +85,7 @@ Generate an amino acid FASTA from CDS regions (for OrthoFinder)
 gffread -y GCF_000001635.27_GRCm39_genomic.protein.faa -g GCF_000001635.27_GRCm39_genomic.fna GCF_000001635.27_GRCm39_genomic.gffread.gff
 ```
 
-Filters for gff's with pseudogenes containing premature stop codons. This is not always needed but the `.nostop.protein.faa` file will be more generalizable
+Filter for pseudogenes containing premature stop codons. This is not always needed but the `.nostop.protein.faa` file will be more generalizable.
 
 ```
 sed '/^>/!s/[.*]//g' GCF_000001635.27_GRCm39_genomic.protein.faa > GCF_000001635.27_GRCm39_genomic.nostop.protein.faa 
@@ -111,7 +108,6 @@ Generate gene-keys.
 We do this using R.
 
 ```
-
 library(rtracklayer)
 
 gff <- readGFF("GCF_009914755.1_T2T-CHM13v2.0_genomic.gff")
@@ -135,7 +131,6 @@ quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 
 write.table(key,file="GCF_009914755.1_T2T-CHM13v2.0_genomic.genekkey.tsv",
 quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
-
 ```
 
 The other is a key between gene name and protein ID.
