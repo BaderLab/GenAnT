@@ -56,12 +56,37 @@ mikado prepare \
  -p number_of_threads
 ```
 
+Our scripts perform these analyses with `12_mikado_configure_and_prepare.sh`. First, Our pipeline copies every `gff` file into `transcript_selection` once it is generated in "2-generating models".
+
+This script scans through the `transcript_selection` directory for non-empty gff files. It then runs our `scripts/make_mikado_input.R` script to generate the `mikado_input_sheet.txt` described above before running `mikado configure` and `mikado prepare`
+
+```
+tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+externalDir=$tutorialDir/external
+outDir=/path-to-output/
+customRef="none" # if you're building on a reference annotation
+liftoffRef="none" # if the liftoff annotation should consider a reference genome (e.g., you are doing an assembly/annotation upgrade for a species with an existing assembly/annotation)
+
+scripts/12_mikado_configure_and_prepare.sh \
+$outDir \
+$externalDir \
+$customRef \
+$liftoffRef
+
+```
+
+### Building transcript feature table
+
 Before running `mikado serialise`, additional work should be done to provide Mikado with more information about the transcripts now stored in the `mikado_prepared` files. The steps are as follows, and are especially important when working with RNA-seq-derived gene models:
 1. Validate splice junctions with [Portcullis](https://github.com/EI-CoreBioinformatics/portcullis)
 2. Determine sequence similarity with [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi)
 3. Identify open reading frames (ORFs) with [TransDecoder](https://github.com/TransDecoder/TransDecoder/wiki)
 
-#### Portcullis
+#### Splice junctions
+
+Splice junctions are crucial to defining CDS regions and intron-exon boundaries. In principle, a splice junction from RNA-seq is defined as a high quality read mapping to two parts of the same gene model. Extra filters (e.g., a canoncial splice site in the multimapping read) improves the confidence of a splice junction. Junctions and lncRNAs are two of the most strongly impacted features by the presence of RNAseq/ISOseq.
+
+##### Portcullis (RNA-seq)
 
 Validating splice junctions can be done with [Portcullis](https://github.com/EI-CoreBioinformatics/portcullis), which filters out false positive intron/exon boundaries which are often found in the outputs of RNA-seq alignment tools. Portcullis can be run on a merged BAM file of all of your aligned RNA-seq reads. So if you had aligned RNA-seq datasets with RNA-seq alignment tools, you would have ended up with a BAM file for each alignment performed. All of these BAM files must first be merged with [SAMtools](https://www.htslib.org/). Three are given as an example, but any number of BAM files can be merged.
 
@@ -82,6 +107,45 @@ portcullis full \
  name_of_genome.fasta \
  merged_bams.bam
 ```
+
+##### regtools (ISO-seq)
+
+Pulling splice junctions from ISO-seq data is very valuable, as a transcript contains mouse (if not all) junctions for a particular isofom. The nature of these data also makes junctions easier to find. We use `regtools` to pull splice junctions.
+
+ISO-seq bam files are merged in the same was as RNA-seq
+
+```
+samtools merge \
+ -@ number_of_threads \
+ merged.lr.bam \
+ bam_file_1.bam \
+ bam_file_2.bam \
+ bam_file_3.bam
+```
+
+Junctions are computed with
+
+```
+regtools junctions extract -s XS -o ./lr_junctions.bed merged.lr.bam
+```
+
+Assuming you have short and long read RNA-seq data, concatenate the junctions from regtools and porticullus to get the final set.
+```
+	cat 3-filt/portcullis_filtered.pass.junctions.bed lr_junctions.bed > junctions.final.us.bed
+```
+
+Using our scripts, junctions are computed with `scripts/get_junctions.sh`
+
+
+Assuming the directory strucutre built in our pipeline/snakemake, getting junctions is performed with:
+```
+
+outDir=/path-to-output/
+scripts/get_junctions.sh $outDir
+
+```
+
+
 
 #### BLAST+
 
