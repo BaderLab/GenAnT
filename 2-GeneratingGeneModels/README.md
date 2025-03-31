@@ -35,9 +35,28 @@ liftoff \
  -p number_of_threads
 ```
 
+Using the example data in our tutorial (`run_liftoff.sh`), the liftoff command looks like this:
+
+Building a reference directory for this tutorial is executed with `/setup/reference_directory_refseq.sh`
+
+```
+tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+
+refLiftOffGff=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.gffread.gff
+
+refLiftOffGff=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna
+
+outDir=/path-to-output-dir/
+
+gffutils-cli create $refLiftOffGff -o referencegff_db # builds reference db in output directory so you can use the same reference on multiple assemblies simultaneously.
+
+liftoff -db referencegff_db $outDir/assembly/assembly.softmasked.fa $refLiftOffFa -o ./liftoff.gff -u ./unmapped.liftoff.txt -copies
+
+```
+
 #### LiftOff: installing/running/troubleshooting
 
-- Some Docker containers exist and work well for LiftOff (e.g. `docker run staphb/liftoff liftoff`)
+- Some Docker containers exist and work well for LiftOff (e.g., `docker run staphb/liftoff liftoff`)
 - LiftOff also works well with a Conda environment (e.g. `conda create -n liftoff -c bioconda liftoff python=3`)
 
 #### The Tool to infer Orthologs from Genome Alignments (TOGA)
@@ -46,23 +65,36 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
 
 1. Align genomes with Cactus
 
-   Cactus takes a text configuration file as input, which is a two-species phylogenetic tree of the reference and target species. A template of such a file is as follows, replacing “target” and “ref” with the species names and files:
+   Cactus takes a species tree file as input, which is a two-species phylogenetic tree of the reference and target species. A template of such a file is as follows, replacing “target” and “ref” with the species names and files:
    ```
    (target:1.0,ref:1.0);
    target       /path-to-target/target.soft.fa
-   mouse      /path-to-reference/reference.soft.fa
+   ref      /path-to-reference/reference.soft.fa
    ```
-   
+
+We use the `scripts/make_cactus_tree.sh` script, which inputs file names and paths and creates the species tree for you. it assumes your softmasked.fasta is copied to `$outDir/assembly/assembly.softmasked.fa`
+
+```
+tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+outDir=/path-to-output-dir/
+target="NMR"
+refToga="mouse"
+refTogaFa=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna
+
+scripts/make_cactus_tree.sh $outDir $target $refToga $refTogaFa]
+
+```
+
    Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply be `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
 
    ```
    cactus $SCRATCH/tmp \
-   two_species_cactus_config.txt \
+   cactus_in.txt \ # species tree you made in the previous step
     target_ref.hal \
     --binariesMode local
    ```
 
-2. Convert HAL file to chain file
+1. Convert HAL file to chain file
 
    This is a multistep process also described by the ComparativeGenomicsToolkit [here](https://github.com/ComparativeGenomicsToolkit/hal/blob/chaining-doc/doc/chaining-mapping.md). The first step involves converting both the reference and target FASTA files to a compressed 2bit format. This can be done using additional tools that are accessible in the [CACTUS Github repository](https://github.com/ComparativeGenomicsToolkit/cactus) in this directory: `/path-to-cactus/external/cactus-bin-v2.2.3/bin`. We can set this as a variable to make the tools easier to access.
 
@@ -99,7 +131,21 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    ```
    $kentbin/axtChain -psl -linearGap=loose reference-to-target.psl reference.2bit target.2bit reference-to-target.chain
    ```
-   
+
+  Performing the CACTUS alignment and generating the chain file (2. and 3.) can be performed with the `scripts/cactus_align_and_chain_sif.sh`. We switched to a singularity image as we found it was easier to use across systems. This script is executed as:
+  ```
+  outDir=/path-to-output-dir/
+  tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+  externalDir=$tutorialDir/external
+  TogaDir=$tutorialDir/GenomeAnnotationTutorial/data/references/mmus_GRC39 # needed to bind directory to singularity
+  target="NMR"
+  refToga="mouse"
+  refTogaFa=/path-to-GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna
+
+
+  scripts/cactus_align_and_chain_sif.sh $outDir $externalDir $TogaDir $target $refToga
+
+  ```
 4. Perform homology-based annotation with TOGA
 
    Now that the input files have been prepared and processed, TOGA can be run with one line of UNIX code. The inputs to TOGA are the chain file created in the previous step, the 2bit files for both the reference and the target also created in the previous step, and transcript annotations from the reference species in [BED12](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) format. GTF files can be converted to BED12 files using tools available from [ucscGenomeBrowser](https://github.com/ucscGenomeBrowser/kent). This is a two step process: First, convert the GTF file to a genePred file by performing `gtfToGenePred annotation.gtf annotation.genePred`. Then, convert the genePred file to a BED12 file with `genePredToBed annotation.genePred annotation.bed`.
@@ -130,6 +176,28 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    ```
 
    This gives you a GFF file that we have called toga_query_annotation.gffread.gff to help you keep track that this is your GFF file from TOGA.
+
+   Using scripts within the annotation tutorial, TOGA is run with
+
+ ```
+  outDir=/path-to-output-dir/
+  tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+  externalDir=$tutorialDir/external
+  target="NMR"
+  refToga="mouse"
+  refTogaBed=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed 
+  refTogaIsoform=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.toga.tsv 
+
+  scripts/run_toga.sh $outDir $externalDir $target $refToga $refTogaBed $refTogaIsoform
+
+   ```
+
+We expect that the most typical instance for modern genome annotation is having a combination of RNA-seq and ISO-seq data, where there is not perfect overlap in tissues. A script wrapping combinations of RNA-seq and ISO-seq data is run with: `run_stringtie_flexible.sh`
+
+```
+scripts/run_stringtie_flexible.sh {config[outDir]} {config[externalDir]} {workflow.basedir}
+```
+
 
 #### TOGA and associated tools: installing/running/troubleshooting
 
@@ -203,7 +271,71 @@ stringtie \
  -p number_of_threads
 ```
 
+
+ISO-seq annotations are also performed with stringtie, and parameters are not drastically changed.
+
+We use `minimap2` and `samtools` to perform and filter ISO-seq alignments. We assume your ISO-seq files are in fastq format (generated from something like https://ccs.how/, https://isoseq.how/getting-started.html).
+
+
+```
+outDir=/path-to-output-dir/
+i=isoseq.tissue.fastq.gz
+
+b=`basename $i .fastq.gz`
+
+minimap2 -ax splice:hq -uf $outDir/assembly/assembly.fa $i > $b".sam" 
+
+samtools view -bSq 1 $b".sam" > $b".bam"
+
+samtools sort -o $b".sorted.bam" $b".bam"
+```
+
+Running `--stringtie` with ISO-seq data instead of RNA-seq requires in `-L` parameter
+
+```
+stringtie \
+ -L \
+ name_of_sorted_bam_alignment.bam \
+ -o stringtie_output.gtf \
+ -p number_of_threads
+```
+
+If you have RNA-seq and ISO-seq for the same tissue, transcripts can be generated by adding the `--mix` parameter.
+
+```
+			stringtie \
+   --mix tissue.RNAseq.bam tissue.ISOseq.bam \
+   -l output \
+   -o stringtie_out/"tissue.mix.gtf" \
+   -p 8 --conservative
+
+```
+
+Modern genome annotations usually have a combination of RNA-seq and ISO-seq data, and the tissues will not perfectly overlap betweend datatypes (e.g, you use public RNA-seq or can have more tissues due to cost constraints).
+
+Annotations are greatly improved with RNA-seq from multiple tissues, meaning that you'll probably have multiple StringTie outputs. These outputs are combined with stringtie --merge.
+
+```
+stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+```
+
+Our script assumes that the RNAseq data lives in $outDir/RNAseq_alignment and the ISOseq data lives in $outDir/ISOseq_alignment, and that experiments of the same tissue have the same bam file name. For example your `kidney` experiments would live in:
+* RNA-seq: `$outDir/RNAseq_alignment/kidney.bam`
+* ISO-seq: `$outDir/ISOseq_alignment/kidney.bam`
+`run_stringtie_flexible.sh` also deals with merging and directory structure.
+
+```
+outDir=/path-to-output-dir/
+tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+externalDir=$tutorialDir/external
+scripts/run_stringtie_flexible.sh $outDir $externalDir
+```
+
+
+
 The only features in the output GTF file are transcripts and exons, with no prediction of coding sequences (typically indicated by "CDS" in the third column of the GTF file). Because of this, the output cannot be easily converted into a protein sequence and tested with BUSCO. Although this is not ideal, testing the quality and completeness of a genome annotation with BUSCO is not necessary if it will be combined with additional annotation sets and filtered using [Mikado](https://mikado.readthedocs.io/en/stable/) (explained later). If you used poor-quality or very short RNA-seq data, however (not recommended), there is a risk of generating short, fragmented, monoexonic transcripts. You can check to see if your annotation has many short, monoexonic transcripts using a summary statistics calculator provided by Mikado, `mikado util stats annotation.gff output_summary.tsv`, where `annotation.gff` is replaced by whatever annotation you want the summary statistics for, and `output_summary.tsv` is whatever you name the output summary statistics file. You can compare your summary statistics to those of another mammalian genome annotated by RefSeq or Ensembl. If the statistics are similar, this indicates an annotation that is likely of higher quality. However, if you notice that the average number of exons per transcript is very low and the number of monoexonic transcripts is very high in the genome you are annotating, this indicates that many of the gene models may be short or fragmented, and should potentially be excluded from the final annotation set or run through a pass of very stringent filtering with Mikado (tool explained later, noisy RNA-seq e.g. https://mikado.readthedocs.io/en/stable/Tutorial/Adapting/#case-study-2-noisy-rna-seq-data).
+
+
 
 #### BRAKER3
 
