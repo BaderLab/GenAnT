@@ -68,6 +68,7 @@ externalDir=$tutorialDir/external
 outDir=/path-to-output/
 customRef="none" # if you're building on a reference annotation
 liftoffRef="none" # if the liftoff annotation should consider a reference genome (e.g., you are doing an assembly/annotation upgrade for a species with an existing assembly/annotation)
+scriptsDir=$tutorialDir/scripts
 
 scripts/12_mikado_configure_and_prepare.sh 
 
@@ -138,6 +139,7 @@ Using our scripts, junctions are computed with `scripts/get_junctions.sh`
 Assuming the directory structure built in our pipeline/snakemake, getting junctions is performed with:
 ```
 outDir=/path-to-output/
+scriptsDir=$tutorialDir/scripts
 scripts/get_junctions.sh
 ```
 
@@ -182,6 +184,7 @@ BLAST has considerable runtime, and it scales with the number of predicted trans
 
 E.g. (on our SGE).
 ```
+
 for i in *fasta ; do qsub -N $i -P simpsonlab -cwd -V -v I=$i scripts/run_looped_mikado_blast.sh ; done
 ```
 
@@ -274,6 +277,7 @@ tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
 externalDir=$tutorialDir/external
 datalDir=$tutorialDir/data
 outDir=/path-to-output/
+scriptsDir=$tutorialDir/scripts
 
 scripts/45_mikado_serialize_pick.sh
 ```
