@@ -4,6 +4,8 @@ The first step in genome annotation is to identify and mask repetitive regions. 
 
 Before repeat masking, it's best to check if your genome came with repeats already masked. You can do this by peaking into your genome file using `less genome.fa`, and check if you can see any Ns or lowercase letters.
 
+Note. the scripts in scripts/ expect that variables listed are in your path (e.g., with export). The snakemake pipeline has the equivalent scripts but with positional arguments.
+
 #### Earl Grey
 
 Repeat masking can be done with [Earl Grey](https://github.com/TobyBaril/EarlGrey). Earl Grey integrates multiple common repeat masking tools such as RepeatMasker, which maps repetitive elements from a database, and RepeatModeler, which identifies repeats de novo.  It also uses multiple tools such as cd-hit-est, LTR_finder, rcMergeRepeats, and custom scripts to identify, annotate, filter, and aggregate repeat regions genome wide. Earl Grey is a command-line tool that can be run with a single line of code in a Unix environment, and produces figure-quality summaries of a genome’s transposable element landscape in conjunction with repeats annotated in general feature format (GFF) which are required for downstream analysis. Earl Grey relies on databases of repeat elements, such as DFam, that are used to identify repeats in your genome. The user can specify what clade of species they are working with, which indicates which repeat database Earl Grey should use.
@@ -21,6 +23,13 @@ earlGrey \
 ```
 In our pipeline using the example data (a small chromosome from the naked molerat, this command looks as follows:
 
+```
+outDir=/path-to-output-directory/
+species="heterocephalus_glaber"
+scripts/run_earl_grey.sh
+```
+
+The main part of the script looks as follows
 ```
 outDir=/path-to-output-directory/
 species="heterocephalus_glaber"
