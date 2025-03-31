@@ -2,6 +2,8 @@
 
 Completing the previous steps yields gene models from multiple homology-based annotations and transcript-assembly-based annotations. Most gene models will be identified across annotations, however some gene models will be method-specific.
 
+Note. the scripts in scripts/ expect that variables listed are in your path (e.g., with export). The snakemake pipeline has the equivalent scripts but with positional arguments.
+
 #### Mikado
 
 [Mikado](https://github.com/EI-CoreBioinformatics/mikado) is a tool designed to evaluate, combine, and filter gene models across multiple annotations in a way that mimics manual assembly curation. Mikado takes different GFF files as input, and outputs a filtered GFF file that is more accurate than any of the input annotation or evidence files on their own.
@@ -67,11 +69,7 @@ outDir=/path-to-output/
 customRef="none" # if you're building on a reference annotation
 liftoffRef="none" # if the liftoff annotation should consider a reference genome (e.g., you are doing an assembly/annotation upgrade for a species with an existing assembly/annotation)
 
-scripts/12_mikado_configure_and_prepare.sh \
-$outDir \
-$externalDir \
-$customRef \
-$liftoffRef
+scripts/12_mikado_configure_and_prepare.sh 
 
 ```
 
@@ -140,7 +138,7 @@ Using our scripts, junctions are computed with `scripts/get_junctions.sh`
 Assuming the directory structure built in our pipeline/snakemake, getting junctions is performed with:
 ```
 outDir=/path-to-output/
-scripts/get_junctions.sh $outDir
+scripts/get_junctions.sh
 ```
 
 
@@ -214,7 +212,8 @@ Using our pipeline, TransDecoder is run with `scripts/run_transdecoder.sh`
 
 ```
 outDir=/path-to-output/
-bash scripts/run_transdecoder.sh $outDir
+bash scripts/run_transdecoder.sh
+
 ```
 
 #### 3. Mikado serialise
@@ -276,7 +275,7 @@ externalDir=$tutorialDir/external
 datalDir=$tutorialDir/data
 outDir=/path-to-output/
 
-scripts/45_mikado_serialize_pick.sh {config[outDir]} {config[dataDir]} {config[externalDir]}
+scripts/45_mikado_serialize_pick.sh
 ```
 
 
