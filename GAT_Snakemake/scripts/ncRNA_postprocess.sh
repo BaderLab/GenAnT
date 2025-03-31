@@ -1,6 +1,4 @@
 #!/bin/bash
-#$ -l h_vmem=14G,h_rt=10:00:00,h_stack=32M
-#$ -pe smp 16
 
 outDir=$1
 dataDir=$2
