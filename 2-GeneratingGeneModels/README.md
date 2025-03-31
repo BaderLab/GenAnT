@@ -142,7 +142,7 @@ RNA- and/or protein-sequence alignment data can be used to inform gene models. A
 
 #### Finding publicly available RNA-seq data
 
-If you can't generate your own RNA-seq data, there may be publically available data for your species you can use. One place where you can search for RNA-seq data is the [Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra). In the SRA search bar, type `"species name" AND "rna seq"` to find RNA-seq for your species (e.g. `"mus musculus" AND "rna seq"` if you were annotating the mouse genome). If you see an RNA-seq dataset that fits your criteria and that you would like to download, find the experiment accession number that is listed two lines below the link to the data (often begins with "SRX"). SRA Toolkit (downloadable at https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit) can use that accession number to download the raw FASTQ files for that dataset.
+If you can't generate your own RNA-seq data, there may be publicly available data for your species you can use. One place where you can search for RNA-seq data is the [Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra). In the SRA search bar, type `"species name" AND "rna seq"` to find RNA-seq for your species (e.g. `"mus musculus" AND "rna seq"` if you were annotating the mouse genome). If you see an RNA-seq dataset that fits your criteria and that you would like to download, find the experiment accession number that is listed two lines below the link to the data (often begins with "SRX"). SRA Toolkit (downloadable at https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit) can use that accession number to download the raw FASTQ files for that dataset.
 
 ```
 prefetch accession_number
@@ -150,7 +150,7 @@ prefetch accession_number
 fasterq-dump --split-files file_name/file_name.sra
 ```
 
-The output are the FASTQ files that were submitted for that experiment. For paired-end RNA-seq data, this often means that the output will be two FASTQ files, representing each end of the paired-end reads. Such paired files should be processed together downstream, for instance when being aligned to the genome. These FASTQ files can then be used for HISAT2 + StringTie2 or BRAKER3.
+The output are the FASTQ files that were submitted for that experiment. For paired-end RNA-seq data, this often means that the output will be two FASTQ files, representing each end of the paired-end reads. Such paired files should be processed together downstream, for instance, when being aligned to the genome. These FASTQ files can then be used for HISAT2 + StringTie2 or BRAKER3.
 
 #### HISAT2 + StringTie2
 
@@ -163,7 +163,7 @@ hisat2-build \
  base_name_of_genome_index
 ```
 
-Now you can Run HISAT2 to align the RNA-seq reads to the genome you are annotating. The input required is the genome index created by `hisat2-build` and the input RNA-seq files in FASTQ format (or FASTA format if specified with `-f`). The `--dta` flag reports alignments tailored for transcript assemblers (as in this case). The `-1` and `-2` indicate the mates for paired-end RNA-seq. HISAT2 outputs a SAM alignment file.
+Now you can run HISAT2 to align the RNA-seq reads to the genome you are annotating. The input required is the genome index created by `hisat2-build` and the input RNA-seq files in FASTQ format (or FASTA format if specified with `-f`). The `--dta` flag reports alignments tailored for transcript assemblers (as in this case). The `-1` and `-2` indicate the mates for paired-end RNA-seq. HISAT2 outputs a SAM alignment file.
 
 ```
 hisat2-align \
@@ -175,7 +175,7 @@ hisat2-align \
  -S name_of_sam_alignment.sam
 ```
 
-Now that the reads are aligned, StringTie2 can be used to generate gene models (this language is used for simplicity - StringTie2 finds "transcripts" rather than "genes" since it is based on aligning RNA-seq to the genome, but the concept is similar to gene model generation). However, StringTie2 takes BAM files as input, which are a binary version of SAM files. Therefore you must first convert your SAM file(s) to BAM file(s) with [SAMtools](http://www.htslib.org/). The only input is the SAM file created with HISAT2. `-S` specifies SAM input, `-h` includes the header in the SAM output, `-u` indicates uncompressed BAM output (saves time when converting SAM to BAM).
+Now that the reads are aligned, StringTie2 can be used to generate gene models (this language is used for simplicity - StringTie2 finds "transcripts" rather than "genes" since it is based on aligning RNA-seq to the genome, but the concept is similar to gene model generation). However, StringTie2 takes BAM files as input, which are a binary version of SAM files. Therefore, you must first convert your SAM file(s) to BAM file(s) with [SAMtools](http://www.htslib.org/). The only input is the SAM file created with HISAT2. `-S` specifies SAM input, `-h` includes the header in the SAM output, `-u` indicates uncompressed BAM output (saves time when converting SAM to BAM).
 
 ```
 samtools view \
@@ -203,13 +203,15 @@ stringtie \
  -p number_of_threads
 ```
 
-The only features in the output GTF file are transcripts and exons, with no prediction of coding sequences (typically indicated by "CDS" in the third column of the GTF file). Because of this, the output cannot be easily converted into a protein sequence and tested with BUSCO. Although this is not ideal, testing the quality and completeness of a genome annotation with BUSCO is not necessary if it will be combined with additional annotation sets and filtered using [Mikado](https://mikado.readthedocs.io/en/stable/) (explained later). If you used poor-quality or very short RNA-seq data, however (not recommended), there is a risk of generating short, fragmented, monoexonic transcripts. You can check to see if your annotation has many short, monoexonic transcripts using a summary statistics calculator provided by Mikado, `mikado util stats annotation.gff output_summary.tsv`, where `annotation.gff` is replaced by whatever annotation you want the summary statistics for, and `output_summary.tsv` is whatever you name the output summary statistics file. You can compare your summary statistics to that of another mammalian genome annotated by RefSeq or Ensembl. If the statistics are similar, this indicates an annotation that is likely of higher quality. However, if you notice that the average number of exons per transcript is very low and the number of monoexonic transcripts is very high in the genome you are annotating, this indicates that many of the gene models may be short or fragmented, and should potentially be excluded from the final annotation set or run through a pass of very stringent filtering with Mikado (tool explained later, noisy RNA-seq e.g. https://mikado.readthedocs.io/en/stable/Tutorial/Adapting/#case-study-2-noisy-rna-seq-data).
+The only features in the output GTF file are transcripts and exons, with no prediction of coding sequences (typically indicated by "CDS" in the third column of the GTF file). Because of this, the output cannot be easily converted into a protein sequence and tested with BUSCO. Although this is not ideal, testing the quality and completeness of a genome annotation with BUSCO is not necessary if it will be combined with additional annotation sets and filtered using [Mikado](https://mikado.readthedocs.io/en/stable/) (explained later). If you used poor-quality or very short RNA-seq data, however (not recommended), there is a risk of generating short, fragmented, monoexonic transcripts. You can check to see if your annotation has many short, monoexonic transcripts using a summary statistics calculator provided by Mikado, `mikado util stats annotation.gff output_summary.tsv`, where `annotation.gff` is replaced by whatever annotation you want the summary statistics for, and `output_summary.tsv` is whatever you name the output summary statistics file. You can compare your summary statistics to those of another mammalian genome annotated by RefSeq or Ensembl. If the statistics are similar, this indicates an annotation that is likely of higher quality. However, if you notice that the average number of exons per transcript is very low and the number of monoexonic transcripts is very high in the genome you are annotating, this indicates that many of the gene models may be short or fragmented, and should potentially be excluded from the final annotation set or run through a pass of very stringent filtering with Mikado (tool explained later, noisy RNA-seq e.g. https://mikado.readthedocs.io/en/stable/Tutorial/Adapting/#case-study-2-noisy-rna-seq-data).
 
 #### BRAKER3
 
-If you don't have access to RNA-seq data or your RNA-seq reads are short (single-end short reads or paired-end reads shorter than 2x100bp), [BRAKER3](https://github.com/Gaius-Augustus/BRAKER) can be used to generate an annotation. BRAKER3 integrates RNA-seq alignment information with protein data and *ab initio* gene prediction. *Ab initio* gene predictors are mathematical models that are fed existing gene models to train their algorithms (i.e. the algorithms learn which aspects of genome structure are associated with different gene model features), so that they can then discover new gene models in genome sequences. The RNA sequences come from the species being annotated, whereas the protein sequences are typically from an online database of homologous sequences, like [OrthoDB](https://www.orthodb.org/). Internally, BRAKER3 uses HISAT2 to align the short RNA-seq reads to the genome, StringTie2 to create candidate gene models from these alignments, and [ProtHint](https://github.com/gatech-genemark/ProtHint) to predict CDS regions using these protein alignments. These data are then used as “hints” i.e. (estimations of CDS region and intron placements) when generating *ab initio* gene models with [GeneMark-ETP](https://github.com/gatech-genemark/GeneMark-ETP) and [Augustus](https://github.com/Gaius-Augustus/Augustus). Finally, BRAKER3 can also identify tRNAs, snoRNAs, and UTRs.
+If you don't have access to RNA-seq data or your RNA-seq reads are short (single-end short reads or paired-end reads shorter than 2x100bp), [BRAKER3](https://github.com/Gaius-Augustus/BRAKER) can be used to generate an annotation. BRAKER3 integrates RNA-seq alignment information with protein data and *ab initio* gene prediction. *Ab initio* gene predictors are mathematical models that are fed existing gene models to train their algorithms (i.e., the algorithms learn which aspects of genome structure are associated with different gene model features), so that they can then discover new gene models in genome sequences. The RNA sequences come from the species being annotated, whereas the protein sequences are typically from an online database of homologous sequences, like [OrthoDB](https://www.orthodb.org/). Internally, BRAKER3 uses HISAT2 to align the short RNA-seq reads to the genome, StringTie2 to create candidate gene models from these alignments, and [ProtHint](https://github.com/gatech-genemark/ProtHint) to predict CDS regions using these protein alignments. These data are then used as “hints” i.e., estimations of CDS region and intron placements) when generating *ab initio* gene models with [GeneMark-ETP](https://github.com/gatech-genemark/GeneMark-ETP) and [Augustus](https://github.com/Gaius-Augustus/Augustus). Finally, BRAKER3 can also identify tRNAs, snoRNAs, and UTRs.
 
-The input to BRAKER3 is the soft-masked genome you wish to annotate (`your_genome.fasta`), the RNA sequences you wish to align, and protein sequence database (`orthodb.fa`). If you generated the previous annotation using HISAT2 + StringTie, you would have already aligned RNA-seq to the genome which would otherwise be done internally by BRAKER3. Therefore, the sorted BAM file(s) that you used as input to StringTie2 can also be used as input for BRAKER3 (e.g. `rna1.bam,rna2.bam` with more comma-separated files listed if you have additional BAM files). `name_of_your_species` is whatever name you want to call you species to distinguish the output; `number_of_cores` is the same as the number of threads used for other tools (they are slightly different ways to describe essentially the same thing); and `--gff3` indicates that the desired output is a GFF3 file.
+The input to BRAKER3 is the soft-masked genome you wish to annotate (`your_genome.fasta`), the RNA sequences you wish to align, and the protein sequence database (`orthodb.fa`). If you generated the previous annotation using HISAT2 + StringTie, you would have already aligned RNA-seq to the genome, which would otherwise be done internally by BRAKER3. Therefore, the sorted BAM file(s) that you used as input to StringTie2 can also be used as input for BRAKER3 (e.g. `rna1.bam,rna2.bam` with more comma-separated files listed if you have additional BAM files). `name_of_your_species` is whatever name you want to call you species to distinguish the output; `number_of_cores` is the same as the number of threads used for other tools (they are slightly different ways to describe essentially the same thing); and `--gff3` indicates that the desired output is a GFF3 file.
+
+In the context of our tutorial, the `orthodb.fa` used is the `Vertebrata.fa` file from orthoDb. (see https://github.com/BaderLab/GenomeAnnotationTutorial/blob/main/setup/GAT-InstallAndDownload.md for details)
 
 ```
 singularity exec braker3.sif braker.pl \
@@ -217,11 +219,26 @@ singularity exec braker3.sif braker.pl \
  --species=name_of_your_species \
  --genome=your_genome.fasta \
  --bam=rna1.bam,rna2.bam \
- --prot_seq=orthodb.fa \
+ --prot_seq=~/GenomeAnnotationTutorial/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
  --gff3
 ```
 
 If you do not have RNA-seq data and wish to run BRAKER3 in "protein mode", simply remove the `--bam` flag specifying the RNA-seq data.
+
+Running Braker3 with ISO-seq data uses the same syntax as with traditional RNA-seq data, but it uses a different singularity image. Namely, you use `braker3_lr.sif` from  `docker://teambraker/braker3:isoseq` instead of `braker3.sif` from `docker://teambraker/braker3:latest`
+
+As such, braker3 with ISO-seq is executed with:
+
+```
+singularity exec braker3_lr.sif braker.pl \
+ --cores=number_of_cores \
+ --species=name_of_your_species \
+ --genome=your_genome.fasta \
+ --bam=iso1.bam,iso2.bam \
+ --prot_seq=~/GenomeAnnotationTutorial/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
+ --gff3
+```
+In step 3, braker.gff and braker_lr.gff are separate gff files input into `mikado`. In our testing, merging braker and braker_lr with mikado provides a nearly identical GFF file to if you integrate the same files with TSEBRA.
 
 #### BRAKER3: installing/running/troubleshooting
 
