@@ -215,7 +215,7 @@ In the context of our tutorial, the `orthodb.fa` used is the `Vertebrata.fa` fil
 
 ```
 singularity exec braker3.sif braker.pl \
- --cores=number_of_cores \
+ --threads=number_of_threads \
  --species=name_of_your_species \
  --genome=your_genome.fasta \
  --bam=rna1.bam,rna2.bam \
@@ -231,7 +231,7 @@ As such, braker3 with ISO-seq is executed with:
 
 ```
 singularity exec braker3_lr.sif braker.pl \
- --cores=number_of_cores \
+ --threads=number_of_threads \
  --species=name_of_your_species \
  --genome=your_genome.fasta \
  --bam=iso1.bam,iso2.bam \
