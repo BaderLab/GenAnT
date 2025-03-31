@@ -14,9 +14,9 @@ unlink mikado_prepared.fasta
 
 
 # when local
-for i in *fasta ; do bash $tutorialDir/scripts/run_looped_mikado_blast_local.sh $i ; done
+# for i in *fasta ; do bash $tutorialDir/scripts/run_looped_mikado_blast_local.sh $i ; done
 
 # when subbed
 
-# for i in *fasta ; do qsub -N $i -P simpsonlab -cwd -V -v I=$i $outDir/scripts/run_looped_mikado_blast.sh ; done
+for i in *fasta ; do qsub -N $i -P simpsonlab -cwd -V -v I=$i $outDir/scripts/run_looped_mikado_blast.sh ; done
 
