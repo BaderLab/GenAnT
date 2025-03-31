@@ -2,6 +2,8 @@
 
 Non-coding RNAs do not contain highly conserved exons and protein domains typically seen in mammalian protein-coding genes. Accordingly, identifying non-coding genes requires algorithms that do not rely on the same genomic features used in the gene-model identification algorithms described in steps 1-3 (e.g. ORF evaluation, intron-exon ratio etc.). Instead of the evaluation of ORFs to determine if the coding-gene model is functional, non-coding gene models are evaluated for their potential functionality based on whether the predicted secondary structure of that non-coding RNA matches a previously identified secondary structure.
 
+Note. the scripts in scripts/ expect that variables listed are in your path (e.g., with export). The snakemake pipeline has the equivalent scripts but with positional arguments.
+
 ### Identifying short non-coding structures with Infernal
 
 Many non-coding annotations can be generated using [the RNA family (Rfam) database](https://rfam.org/), an open-access, and maintained database of non-coding RNAs. The primary tool used in non-coding gene annotation and classification is [INFERence of RNA ALignment (Infernal)](http://eddylab.org/infernal/). Briefly, Infernal builds covariance models of RNA molecules, to incorporate sequence homology and predicted RNA secondary structure in the annotation and classification on non-coding molecules in the genome. To reduce the runtime and memory requirement of this process, researchers typically pre-select sequences (seed) based on sequence homology to a non-coding database, RNA-seq alignments, and regions identified as “non-coding” in GFF post processing algorithms (e.g. Mikado).
@@ -175,6 +177,16 @@ gunzip family.txt.gz
 
 The easiest way to use this table is to read it into R, in addition to the GFF file from Infernal, and use pattern matching to assign the different feature types to the ncRNAs output by Infernal. We have provided an R notebook that performs these modifications called `rfamConversion.Rmd` which can be found in this folder. The notebook outputs a reformatted GFF called `infernal.types.gff`.
 
+
+In our scripts, ncRNA annotation from blast seeding to infernal is performed with `ncRNA_analysis.sh`, which is essentially a wrapper of the code above. Given the directory strucure generated with our pipeline, this is executed with:
+
+```
+tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+dataDir=$tutorialDir/data
+outDir=/path-to-output-dir/
+scripts/ncRNA_analysis.sh
+```
+
 ### Identifying miRNAs with MirMachine
 
 Micro RNAs (miRNAs) are not found with Infernal using the above steps, but can instead be identified using [MirMachine](https://github.com/sinanugur/MirMachine). MirMachine also relies on Infernal, but has clade-specific miRNA-specific secondary structures obtained from [MirGeneDB](https://mirgenedb.org/). To run, MirMachine needs to know the clade (`-n Mammalia`); the species name indicated by `-s`; and the softmasked genome FASTA sequence (`--genome`). We will also specify the model that MirMachine is using, which in this case is "deutero" (`-m deutero`) since mammals are within the group of deuterostome animals. Note that MirMachine is a snakemake pipeline, and if snakemake isn't installed, a cryptic error will be thrown.
@@ -196,6 +208,16 @@ Now to clearly have these features labeled as ncRNAs when they are combined into
 
 ```
 sed -i 's/sequence_with_30nt.*/gbkey=ncRNA/g' name_of_species.PRE.id.gff
+```
+
+In our pipelines, these miRMachine scripts are performed with `run_mirmachine.sh`
+
+```
+outDir=outDir=/path-to-output-dir/
+species="heterocephalus_glaber"
+
+scripts/run_mirmachine.sh # note, this is actually run within other scripts so you may need to add outDir=$1 and species=$2 to the top of run_mirmachine.sh if you want to do it on your own and use positional arguments.
+
 ```
 
 ### Combining ncRNA gene models
@@ -303,5 +325,14 @@ Finally, we can sort this file by coordinate using BEDTools.
 bedtools sort -i full_annotation.type_final.gff > full_annotation.gff
 ```
 
+Assuming Infernal and miRmachine are run, the `scripts/ncRNA_postprocess.sh` script runs the above instructions as a liner. 
+```
+outDir=/path-to-output-dir/
+tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
+dataDir=$tutorialDir/data
+externalDir=$tutorialDir/external
+
+scripts/ncRNA_postprocess.sh
+```
 
 
