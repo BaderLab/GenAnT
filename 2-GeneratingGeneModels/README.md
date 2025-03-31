@@ -6,6 +6,8 @@ We thoroughly describe two complementary approaches to generate high-quality gen
 
 It is important to note that resulting annotations vary depending on (1) the quality of the genome sequence being annotated, (2) the quality of the evidence provided to inform the annotation (e.g. RNA-seq, homology), and (3) the quality of the bioinformatic tool applied. Therefore, it is best to perform many different annotations, test each one for quality (described in box 1), and choose the best results that can be used in step three, which involves integrating gene models into a single, complete set. Although tools may change over time, homology- and alignment-based annotations should both be generated, tested, and combined.
 
+Note. the scripts in scripts/ expect that variables listed are in your path (e.g., with export). The snakemake pipeline has the equivalent scripts but with positional arguments.
+
 ### Homology-based annotation
 
 Homology-based genome annotation is the derivation of gene models in your species from homologous gene models found in other species. Most gene structures and sequences are conserved across related species, making homologous alignments from a reference species with high-quality gene structures an accurate and computationally efficient method to annotate your species. Many tools are capable of performing homology-based annotation, but we have had the most luck with [LiftOff](https://github.com/agshumate/Liftoff) and [the Tool to infer Orthologs from Genome Alignments (TOGA)](https://github.com/hillerlab/TOGA).
@@ -81,7 +83,7 @@ target="NMR"
 refToga="mouse"
 refTogaFa=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna
 
-scripts/make_cactus_tree.sh $outDir $target $refToga $refTogaFa]
+scripts/make_cactus_tree.sh
 
 ```
 
@@ -143,7 +145,7 @@ scripts/make_cactus_tree.sh $outDir $target $refToga $refTogaFa]
   refTogaFa=/path-to-GenomeAnnotationTutorial/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna
 
 
-  scripts/cactus_align_and_chain_sif.sh $outDir $externalDir $TogaDir $target $refToga
+  scripts/cactus_align_and_chain_sif.sh
 
   ```
 4. Perform homology-based annotation with TOGA
@@ -188,14 +190,14 @@ scripts/make_cactus_tree.sh $outDir $target $refToga $refTogaFa]
   refTogaBed=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed 
   refTogaIsoform=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.toga.tsv 
 
-  scripts/run_toga.sh $outDir $externalDir $target $refToga $refTogaBed $refTogaIsoform
+  scripts/run_toga.sh
 
    ```
 
 We expect that the most typical instance for modern genome annotation is having a combination of RNA-seq and ISO-seq data, where there is not perfect overlap in tissues. A script wrapping combinations of RNA-seq and ISO-seq data is run with: `run_stringtie_flexible.sh`
 
 ```
-scripts/run_stringtie_flexible.sh {config[outDir]} {config[externalDir]} {workflow.basedir}
+scripts/run_stringtie_flexible.sh
 ```
 
 
@@ -328,7 +330,7 @@ Our script assumes that the RNAseq data lives in $outDir/RNAseq_alignment and th
 outDir=/path-to-output-dir/
 tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
 externalDir=$tutorialDir/external
-scripts/run_stringtie_flexible.sh $outDir $externalDir
+scripts/run_stringtie_flexible.sh
 ```
 
 
