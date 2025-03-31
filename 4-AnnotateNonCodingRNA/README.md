@@ -184,6 +184,7 @@ In our scripts, ncRNA annotation from blast seeding to infernal is performed wit
 tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
 dataDir=$tutorialDir/data
 outDir=/path-to-output-dir/
+scriptsDir=$tutorialDir/scripts
 scripts/ncRNA_analysis.sh
 ```
 
@@ -215,6 +216,7 @@ In our pipelines, these miRMachine scripts are performed with `run_mirmachine.sh
 ```
 outDir=outDir=/path-to-output-dir/
 species="heterocephalus_glaber"
+scriptsDir=$tutorialDir/scripts
 
 scripts/run_mirmachine.sh # note, this is actually run within other scripts so you may need to add outDir=$1 and species=$2 to the top of run_mirmachine.sh if you want to do it on your own and use positional arguments.
 
@@ -331,6 +333,7 @@ outDir=/path-to-output-dir/
 tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
 dataDir=$tutorialDir/data
 externalDir=$tutorialDir/external
+scriptsDir=$tutorialDir/scripts
 
 scripts/ncRNA_postprocess.sh
 ```
