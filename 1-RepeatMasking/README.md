@@ -19,9 +19,26 @@ earlGrey \
  -d yes \
  -t number_of_threads
 ```
+In our pipeline using the example data (a small chromosome from the naked molerat, this command looks as follows:
+
+```
+outDir=/path-to-output-directory/
+species="heterocephalus_glaber"
+
+	earlGrey \
+-g $outDir/assembly/assembly.fa \
+ -s $species \
+-o . \
+-t 50 \
+-r rodentia \
+-d yes
+
+
+```
+
 #### Earl Grey: installing/running/troubleshooting
 
 - We have had success running Earl Grey on a desktop and high performance compute cluster
-- Earl Grey can easily be installed using conda (e.g. `conda create -n earlgrey -c conda-forge -c bioconda earlgrey=4.4.0`); an error causing Earl Grey to crash mid-run required an update to Numpy (`pip install numpy --upgrade`)
+- Earl Grey can easily be installed using conda (e.g. `conda create -n earlgrey -c conda-forge -c bioconda earlgrey=5.1.0`); an error causing Earl Grey to crash mid-run required an update to Numpy (`pip install numpy --upgrade`)
 - Earl Grey takes multiple days to run (be prepared for up to a week)
 - Earl Grey does not like spaces in any directory names
