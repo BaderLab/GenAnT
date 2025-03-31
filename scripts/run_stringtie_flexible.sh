@@ -95,7 +95,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -L -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
 
 	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
 
