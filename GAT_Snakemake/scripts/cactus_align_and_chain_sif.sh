@@ -1,6 +1,4 @@
 #!/bin/bash
-#$ -l h_vmem=24G,h_rt=200:00:00,h_stack=32M
-#$ -pe smp 16
 
 # {params.outDir} {params.externalDir} {params.TogaDir} {params.target} {params.refToga}
 outDir=$1
