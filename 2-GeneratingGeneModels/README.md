@@ -18,9 +18,13 @@ Before performing homology-based annotation, one needs to decide which genome to
 
 High-quality genomes tend to have smaller contig or scaffold numbers (i.e. the genome sequence is divided into larger chunks), ideally close to the number of chromosomes found in the species, smaller L50s (the smallest number of contigs that make up half of the genome sequence), and larger N50s (the smallest contig length that half of the genome sequence is contained in, of the largest contigs). High-quality annotations can be assumed if the genome is annotated by RefSeq or ENSEMBL. RefSeq annotations are also evaluated for quality using BUSCO, where a curated set of single-copy orthologs is compared to the gene models identified in the annotation; a high quality annotation is indicated by a single-copy ortholog detection rate close to 100%, and missing or fragment orthologs close to 0%. We recommend the user searching these databases for a few of the most closely-related species, comparing these genome statistics, and selecting the assembly and annotation (or multiple) with the most favorable statistics.
 
-As an example, a user can search for RefSeq genomes here: https://www.ncbi.nlm.nih.gov/datasets/genome/. Once you find a genome that you are interested in that also has an item in the "RefSeq" column, click on the link to the assembly (e.g. mouse assembly: https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001635.27/). On the assembly page, there is a link to the FTP page where the genome sequencing and annotation files can be found (e.g. mouse FTP: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/).
+Our scripts and instructions to download and prepare a reference genome are found in /setup.
 
-Genomes can be downloaded directly from the command line using the command `wget`. The command to download the mouse genome FASTA file would be: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz`, and the command to get the annotation in GFF format is: `wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz`. Typically the FASTA and GFF files are all that are required for genome liftover. `.gz` files can be unzipped with `gunzip name_of_file.gz`.
+for a RefSeq genome, the instructions are here:
+```
+reference_directory_refseq.md
+```
+and can be executed with it's paired script `reference_directory_refseq.sh`
 
 #### LiftOff
 
@@ -74,7 +78,7 @@ TOGA accurately annotated genes across vertebrates with higher rates of divergen
    ref      /path-to-reference/reference.soft.fa
    ```
 
-We use the `scripts/make_cactus_tree.sh` script, which inputs file names and paths and creates the species tree for you. it assumes your softmasked.fasta is copied to `$outDir/assembly/assembly.softmasked.fa`
+We use the `scripts/make_cactus_tree.sh` script, which inputs file names and paths and creates the species tree for you. It assumes your softmasked.fasta is copied to `$outDir/assembly/assembly.softmasked.fa`
 
 ```
 tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
@@ -84,10 +88,9 @@ refToga="mouse"
 refTogaFa=$tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna
 
 scripts/make_cactus_tree.sh
-
 ```
 
-   Since the FASTA files of each species are listed in the config file, these do not need to be specified as addition input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply be `/tmp`, whereas a high performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
+   Since the FASTA files of each species are listed in the config file, these do not need to be specified as additional input to CACTUS. Note that each FASTA file is expected to be soft-masked. CACTUS outputs a file ending in `.hal`, which stores information about the alignment. CACTUS requires you to specify a temporary directory where CACTUS stores large quantities of files while it's running. This temporary directory will change depending on what system you are using to run CACTUS. On a local desktop, a temporary directory may simply be `/tmp`, whereas a high-performance compute cluster may have a designated temporary directory to use, such as `$SCRATCH/tmp`. CACTUS can then be run as follows:
 
    ```
     cactus \
@@ -99,7 +102,7 @@ scripts/make_cactus_tree.sh
     --maxCores 32 \
     --maxMemory 64G \
     --realTimeLogging \
-    --batchSystem single_machine # can remove if you have cactus working on your system for other projects, but is only required to switchfor alignments of >2 species.
+    --batchSystem single_machine # can remove if you have cactus working on your system for other projects, but is only required to switch for alignments of >2 species.
    ```
 
 1. Convert HAL file to chain file
