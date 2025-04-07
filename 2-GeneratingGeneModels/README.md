@@ -172,7 +172,7 @@ scripts/make_cactus_tree.sh
    --isoforms isoforms.tsv
    ```
 
-   The output of TOGA contains many informative files that describe the performance of the annotation, with the main output being query_annotations.bed. This is a BED12 formatted file that contains the annotations with their predicted orthologs. In order to continue with this file, it will have to be converted to GTF format. This can be done using tools from the [comparative genomics toolkit](https://github.com/ComparativeGenomicsToolkit). First, convert the BED file to a Gene Prediction or "GenePred" file, a table file format often used with the UCSC Genome Browser. This serves as a temporary format that can then be converted to a GTF file using another tool in the toolkit. The code is as follows:
+   The output of TOGA contains many informative files that describe the performance of the annotation, with the main output being query_annotations.bed. This is a BED12 formatted file that contains the annotations with their predicted orthologs. In order to continue with this file, it will have to be converted to GTF and then gff format. This can be done using tools from the [comparative genomics toolkit](https://github.com/ComparativeGenomicsToolkit). First, convert the BED file to a Gene Prediction or "GenePred" file, a table file format often used with the UCSC Genome Browser. This serves as a temporary format that can then be converted to a GTF file using another tool in the toolkit. Lastly, we use gffread to convert this output into a consistently formatted gff3 file for `3-CombineAndFilter` The code is as follows:
 
    ```
    bedToGenePred toga_output_directory/query_annotation.bed toga_output_directory/query_annotation.genePred
