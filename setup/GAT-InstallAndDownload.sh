@@ -18,8 +18,6 @@
 
 cd $1
 
-cd GenomeAnnotationTutorial
-
 mkdir -p data
 mkdir -p external
 
