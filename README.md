@@ -45,7 +45,7 @@ The `Execute_GAT_in_serial.sh` contains the variables required to run the tutori
 `Execute_GAT_in_serial` starts by pointing you to where you downloaded GAT, so it should be executed with
 
 ```
-bash GAT-InstallAndDownload.sh ~/ # where ~ is /path-to-GAT/
+bash GAT-InstallAndDownload.sh ~/GenomeAnnotationTutorial # where ~ is /path-to-GAT/
 ```
 
 The Snakemake pipeline brings this down to ~20h as it controls which scripts can be run in parallel. `Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
