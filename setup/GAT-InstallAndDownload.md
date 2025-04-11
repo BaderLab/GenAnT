@@ -91,7 +91,6 @@ channels:             # Channels to search for packages
   - bioconda
   - defaults
 dependencies:         # List of packages and their versions
-  - earlgrey=5.1.0  # check if that's still on bioconda -- blast comes from here otherwise there's an issue
   - liftoff=1.6.3
   - infernal=1.1.2
   - busco=5.7.1
@@ -103,7 +102,6 @@ dependencies:         # List of packages and their versions
   - mirmachine=0.2.13
   - orthofinder=3.0.1b1
   - hisat2=2.2.1 
-  - augustus=3.5.0
   - gffread=0.12.7
   - nextflow=24.10.4
   - regtools=1.0.0
@@ -130,6 +128,9 @@ singularity build braker3_lr.sif docker://teambraker/braker3:isoseq
 singularity build cactus.v2.9.3.sif docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.3
 
 singularity build mikado_gat.sif docker://risserlin/mikado:ubuntu22_mikado2.3.2
+
+singularity build earlgrey.sif docker://tobybaril/earlgrey_dfam3.7
+
 ```
 
 Optionally clear the Singularity and temporary cache to save space.
@@ -350,6 +351,13 @@ Lastly, we use a postprocessing perl script for infernal to make a GFF file from
 wget https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl
 chmod +x infernal-tblout2gff.pl
 ```
+
+##### Augustus
+
+To run Braker, you need access to the `Augustus/config/species` direcotry in config. This direcotry is in the `braker.sif` but in our testing there are lots of instances where executing braker.pl does not go to `Augustus/config/species` automatically. You can pull this directory out of the `.sif`, install Augustus with `conda`, or just clone the `Augustus git`. The easiest way is to just clone Augustus into external. You don't have to `make` anything, since we just need the directory for Braker.
+
+`git clone https://github.com/Gaius-Augustus/Augustus.git`
+
 
 ### 2. Data packages
 

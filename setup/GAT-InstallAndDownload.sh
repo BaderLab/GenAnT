@@ -40,13 +40,17 @@ singularity build braker3.sif docker://teambraker/braker3:latest
 echo "braker3 - long read"
 singularity build braker3_lr.sif docker://teambraker/braker3:isoseq
 
-echo "braker3 - cactus"
+echo "toga - cactus"
 
 singularity build cactus.v2.9.3.sif docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.3
 
 echo "mikado_gat"
 
 singularity build mikado_gat.sif docker://risserlin/mikado:ubuntu22_mikado2.3.2
+
+echo "earl grey"
+
+singularity build earlgrey.sif docker://tobybaril/earlgrey_dfam3.7
 
 cd ../../
 
@@ -132,6 +136,10 @@ cd ../../external
 # Download perl script to convert output of infernal to tblout2gff
 wget https://raw.githubusercontent.com/nawrockie/jiffy-infernal-hmmer-scripts/master/infernal-tblout2gff.pl
 chmod +x infernal-tblout2gff.pl
+
+echo "cloning the Augustus repo to have easy access to the config/species directory"
+
+git clone https://github.com/Gaius-Augustus/Augustus.git
 
 
 ##
