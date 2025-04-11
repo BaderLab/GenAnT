@@ -1,11 +1,5 @@
 #!/bin/bash
 
-outDir=$1
-externalDir=$2
-target=$3
-condaDir=$4
-dataDir=$5
-
 mkdir -p $outDir/braker_sr
 
 cd $outDir/braker_sr
@@ -19,9 +13,9 @@ bams2=$(echo $bams | sed 's/ //g')
 
 assembly=$outDir/assembly/assembly.softmasked.fa # /mHetGlaV3.soft.fa
 protDir=$dataDir/braker_protein # /Vertebrata.fa
-configPath=$condaDir/config
+configPath=$externalDir/Augustus/config
 
-BRAKER_SIF=$externalDir/singularity_images/braker3.sif
+BRAKER_SIF=$externalDir/singularity_images/braker3.sif 
 
 SINGULARITY_CACHEDIR=$outDir/braker_sr/cache
 SINGULARITY_TMPDIR=$outDir/braker_sr/tmp

@@ -1,11 +1,5 @@
 #!/bin/bash
 
-outDir=$1
-externalDir=$2
-target=$3
-condaDir=$4
-dataDir=$5
-
 mkdir -p $outDir/braker_noRNA
 
 cd $outDir/braker_noRNA
@@ -16,7 +10,7 @@ prefix=$target
 
 assembly=$outDir/assembly/assembly.softmasked.fa # /mHetGlaV3.soft.fa
 protDir=$dataDir/braker_protein # /Vertebrata.fa
-configPath=$condaDir/config
+configPath=$externalDir/Augustus/config
 
 BRAKER_SIF=$externalDir/singularity_images/braker3.sif 
 
@@ -31,6 +25,3 @@ wd=$outDir/braker_noRNA
 singularity exec --bind ${bamDir},${wd},${PWD},${assembly},${protDir},${configPath} ${BRAKER_SIF} braker.pl --AUGUSTUS_CONFIG_PATH=$configPath --genome=$assembly --prot_seq=$protDir/Vertebrata.fa --workingdir=${wd} --species=$prefix$species_suffix --threads 16  &> $wd/brakerNoRNAseq.log
 
 gffread $wd/braker.gtf --keep-genes -o $outDir/transcript_selection/braker.noRNA.gffread.gff
-
-
-# singularity exec --bind ${bamDir},${wd},${PWD},${assembly},${protDir},${configPath} ${BRAKER_SIF} fix_gtf_ids.py --gtf $wd/braker.gtf --out braker.fix.gtf
