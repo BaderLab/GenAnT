@@ -4,7 +4,6 @@ channels:             # Channels to search for packages
   - bioconda
   - defaults
 dependencies:         # List of packages and their versions
-  - earlgrey=5.1.0 
   - liftoff=1.6.3
   - infernal=1.1.2
   - busco=5.7.1
@@ -16,7 +15,6 @@ dependencies:         # List of packages and their versions
   - mirmachine=0.2.13
   - orthofinder=3.0.1b1
   - hisat2=2.2.1 
-  - augustus=3.5.0
   - gffread=0.12.7
   - nextflow=24.10.4
   - regtools=1.0.0
