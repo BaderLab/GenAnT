@@ -6,7 +6,15 @@ if [[ $MaskedAssemblyFile = "none" ]] ; then
 
 	mkdir -p earl_grey ; cd earl_grey
 
-	earlGrey -g $outDir/assembly/assembly.fa -s $species -o . -t 50 -r rodentia -d yes
+	SINGULARITY_CACHEDIR=$outDir/earl_grey/cache
+	SINGULARITY_TMPDIR=$outDir/earl_grey/tmp
+	EARLGREY_SIF=$externalDir/singularity_images/earlgrey.sif
+
+
+	mkdir -p $SINGULARITY_CACHEDIR
+	mkdir -p $SINGULARITY_TMPDIR
+
+	singularity exec --bind ${outDir} ${EARLGREY_SIF} earlGrey -g $outDir/assembly/assembly.fa -s $species -o . -t 50 -r rodentia -d yes
 
 	cd $outDir
 

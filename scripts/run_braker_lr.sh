@@ -13,7 +13,7 @@ bams2=$(echo $bams | sed 's/ //g')
 
 assembly=$outDir/assembly/assembly.softmasked.fa # /mHetGlaV3.soft.fa
 protDir=$dataDir/braker_protein # /Vertebrata.fa
-configPath=$condaDir/config
+configPath=$externalDir/Augustus/config
 
 BRAKER_SIF=$externalDir/singularity_images/braker3_lr.sif 
 
