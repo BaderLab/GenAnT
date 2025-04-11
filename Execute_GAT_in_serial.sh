@@ -21,7 +21,6 @@ condaPath=$2 # e.g. /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3
 ##
 export sourceDir=$condaPath/bin/activate
 export tutorialDir=$tutorialDir
-export condaDir=$condaPath/envs/annotation_tutorial
 
 ##
 ###
