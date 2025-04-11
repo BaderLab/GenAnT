@@ -76,24 +76,8 @@ rule mask_assembly:
         walltime="150:00:00"
     shell:
         """
-        cd {config[outDir]}
+        scripts/run_earl_grey.sh {config[outDir]} {config[externalDir]} {config[species]} {config[MaskedAssemblyFile]} {config[MaskedAssemblyAnnotation]}
 
-        if [[ {config[MaskedAssemblyFile]} = "none" ]] ; then
-
-            mkdir -p earl_grey ; cd earl_grey
-
-            earlGrey -g {input} -s {config[species]} -o . -t 36 -r rodentia -d yes # - add path variables here (?)- 
-
-            cd {config[outDir]}
-
-            cp earl_grey/{config[species]}"_EarlGrey"/{config[species]}"_summaryFiles/"{config[species]}.softmasked.fasta {output}
-            cp earl_grey/{config[species]}"_EarlGrey"/{config[species]}"_summaryFiles/"{config[species]}.filteredRepeats.bed {config[outDir]}/assembly/assembly.filteredRepeats.bed
-
-        else
-
-            cp {config[MaskedAssemblyFile]} {output}
-            cp {config[MaskedAssemblyAnnotation]} {config[outDir]}/assembly/assembly.filteredRepeats.bed
-        fi
         """
 
 ##

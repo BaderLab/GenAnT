@@ -1,7 +1,6 @@
 sourceDir: "/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/bin/activate"
 externalDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/external"
 dataDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/data"
-condaDir: "/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/envs/annotation_tutorial"
 
 # Parameters describing your assembly + annotation
 outDir: "/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial/GAT_snakemake/results/tutorial_example"

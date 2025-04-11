@@ -1,7 +1,6 @@
 sourceDir: "/path-to-conda/miniconda3/bin/activate"
 externalDir: "/path-to-GAT/GenomeAnnotationTutorial/external"
 dataDir: "/path-to-GAT/GenomeAnnotationTutorial/data"
-condaDir: "/path-to-conda/miniconda3/envs/annotation_tutorial"
 
 # Parameters describing your assembly + annotation
 outDir: "/path-to-GAT/GenomeAnnotationTutorial/GAT_Snakemake/results/tutorial_example"
