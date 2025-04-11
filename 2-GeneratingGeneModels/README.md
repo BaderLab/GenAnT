@@ -387,8 +387,11 @@ singularity exec braker3_lr.sif braker.pl \
 ```
 In step 3, braker.gff and braker_lr.gff are separate gff files input into `mikado`. In our testing, merging braker and braker_lr with mikado provides a nearly identical GFF file to if you integrate the same files with TSEBRA.
 
+Running braker through our tutorial is performed with the `scripts/run_braker*.sh` scripts.
+
 #### BRAKER3: installing/running/troubleshooting
 
 - In our experience, BRAKER is most easily installed and implemented using the Singularity container that the BRAKER authors maintain: `singularity build braker3.sif docker://teambraker/braker3:latest`
 - If installing Braker through other methods (e.g. a conda environment) then the `singularity exec braker3.sif` in the command is unnecessary
+- You likely need to specify where the `augustus config directory` is. Installing the tutorial with `setup` would have this directory in `~/GenomeAnnotationTutorial/external/Augustus/config`. 
 - We have found that the GFF file output by BRAKER3 has some formatting issues that can be fixed by running GFFRead, e.g. `gffread braker.gtf --keep-genes -o braker.gffread.gff`
