@@ -1,5 +1,12 @@
 #!/bin/bash
 
+outDir=$1
+externalDir=$2
+target=$3
+condaDir=$4
+dataDir=$5
+
+
 mkdir -p $outDir/braker_noRNA
 
 cd $outDir/braker_noRNA
