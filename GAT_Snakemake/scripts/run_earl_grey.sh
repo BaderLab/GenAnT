@@ -1,5 +1,11 @@
 #!/bin/bash
 
+outDir=$1
+externalDir=$2
+species=$3
+MaskedAssemblyFile=$4
+MaskedAssemblyAnnotation=$5
+
 cd $outDir
 
 if [[ $MaskedAssemblyFile = "none" ]] ; then
