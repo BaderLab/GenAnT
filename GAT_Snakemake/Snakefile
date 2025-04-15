@@ -176,7 +176,7 @@ rule braker_noRNA:
 
             echo "We did not find short read or long read RNA-seq data (aligned bam files)"
 
-            scripts/run_braker_noRNAseq.sh {config[outDir]} {config[externalDir]} {config[target]} {config[condaDir]} {config[dataDir]}
+            scripts/run_braker_noRNAseq.sh {config[outDir]} {config[externalDir]} {config[target]} {config[dataDir]}
 
             echo "" > {config[outDir]}/transcript_selection/braker.sr.gffread.gff # dummy variable for later
             echo "" > {config[outDir]}/transcript_selection/braker.lr.gffread.gff # dummy variable for later
@@ -206,7 +206,7 @@ rule braker_sr:
         """
         if [[ $(ls -A {config[outDir]}/RNAseq_alignment | wc -l) -gt 0 ]] ; then
             echo "We detected short read RNAseq"
-            scripts/run_braker_sr.sh {config[outDir]} {config[externalDir]} {config[target]} {config[condaDir]} {config[dataDir]}
+            scripts/run_braker_sr.sh {config[outDir]} {config[externalDir]} {config[target]} {config[dataDir]}
         fi
 
         if [[ $(ls -A {config[outDir]}/ISOseq_alignment | wc -l) -eq 0 ]] ; then
@@ -232,7 +232,7 @@ rule braker_lr:
         """
         if [[ $(ls -A {config[outDir]}/ISOseq_alignment | wc -l) -gt 0 ]] ; then
             echo "We detected ISOseq"
-            scripts/run_braker_lr.sh {config[outDir]} {config[externalDir]} {config[target]} {config[condaDir]} {config[dataDir]}
+            scripts/run_braker_lr.sh {config[outDir]} {config[externalDir]} {config[target]} {config[dataDir]}
         fi
 
         if [[ $(ls -A {config[outDir]}/RNAseq_alignment | wc -l) -eq 0 ]] ; then
