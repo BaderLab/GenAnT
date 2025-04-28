@@ -32,6 +32,55 @@ For each annotation generated in steps 3, 4, 6, and 7, we recommend converting t
 
 We provide three ways to use this tutorial to cater towards different preferences and computational set-ups.
 
+#### Installation.
+
+Our programmatic approach to end-to-end genome annotation requires that specific external programs and databases be added to GenomeAnnotationTutorial. This installation process is detailed in `setup` but summarized here.
+
+```
+# Clone the tutorial repo.
+
+git clone https://github.com/BaderLab/GenomeAnnotationTutorial.git
+
+cd GenomeAnnotationTutorial
+
+# Create the conda environment from the repo
+
+conda env create -f annotation_tutorial.yml
+
+conda activate annotation_tutorial
+
+module load singularity # replace with however you activate singulairty on your system (e.g., module load apptainer etc.)
+
+# make sure that SINGULARITY_CACHEDIR and SINGULARITY_TMPDIR are not attached to root.
+# export SINGULARITY_CACHEDIR=/path-to/singularitycache
+# export SINGULARITY_TMPDIR=/path-to/singularitytemp
+
+# run install and download script. This requires the internet.
+
+bash GAT-InstallAndDownload.sh /path-to-GenomeAnnotationTutorial 
+
+# build blastDBs
+
+bash GAT-MakeBlastDB.sh /path-to-GenomeAnnotationTutorial
+```
+
+You will also use the preprocess reference species script to build genome directories for species that you want to use to transfer gene models to the target species (e.g., mouse, human). This is fully documented in `setup/Preprocess Reference Species.md`. Briefly, using mouse as an example, this process is done with. the `preprocess_reference_from_refseq.sh` (or `preprocess_reference_from_embl.sh` script in `/setup`
+
+In `/path-to-GenomeAnnotationTutorial/GenomeAnnotationTutorial/data/references`:
+
+```
+mkdir -p mmus_GRC39 ; cd mmus_GRC39
+
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz
+for i in *.gz ; do gunzip $i ; echo $i ; done
+  bash preprocess_reference_from_refseq.sh \
+  ~/data/references/human_T2T_NCBI \
+  ~ \
+  GCF_000001635.27_GRCm39_genomic.fna \
+  GCF_000001635.27_GRCm39_genomic.gff
+```
+
 #### 1. A customizable step-by-step set of instructions
    
    These instructions can be found in the folders labeled by step (e.g. "1-RepeatMasking") which contain README files of instructions on how to use the various tools. Explanations are accompanied by pseudocode and screenshots of what to expect (screenshots in progress), and R notebooks performing intermediate formatting steps are available when required. Installation instructions for all of the required tools can be found in `setup/InstallAndDownload.md`, which also contains instructions on database downloads. Once installations are complete, you can move onto `PreprocessReferenceSpecies.md` which downloads and processes the files from particular reference species that will be used in the pipeline. Finally, you can begin the step-by-step workflow by navigating to "1-RepeatMasking" and continue through all the steps. The step-by-step workflow is meant as an instructional tutorial, and uses general file names that you may wish to modify. It also assumes that you will be responsible for the organization of files and directories used in the workflow.
@@ -44,8 +93,12 @@ The `Execute_GAT_in_serial.sh` contains the variables required to run the tutori
 
 `Execute_GAT_in_serial` starts by pointing you to where you downloaded GAT, so it should be executed with
 
+
 ```
 bash GAT-InstallAndDownload.sh ~/GenomeAnnotationTutorial # where ~ is /path-to-GAT/
+```
+Once these external progarms and datasets are downloaded, build blastdb's with
+```
 ```
 
 The Snakemake pipeline brings this down to ~20h as it controls which scripts can be run in parallel. `Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
