@@ -184,8 +184,8 @@ wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
 cmpress Rfam.cm
 
 # Add Rfam family file for annotations
-https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/database_files/family.txt.gz
-wget family.txt
+wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/database_files/family.txt.gz
+gunzip family.txt
 
 cd ../
 
