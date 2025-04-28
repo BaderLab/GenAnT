@@ -90,31 +90,26 @@ for i in *.gz ; do gunzip $i ; echo $i ; done
 These scripts are found in /scripts and runs each step of the tutorial.
 
 The `Execute_GAT_in_serial.sh` contains the variables required to run the tutorial as well as flow control to run each step in serial. 
-
-`Execute_GAT_in_serial` starts by pointing you to where you downloaded GAT, so it should be executed with
+```
+bash GAT-InstallAndDownload.sh /path-to/GenomeAnnotationTutorial /path-to/miniconda3/ # The two "/path-to/"'s can be different
+# e.g.. =/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial
+# e.g. /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3
 
 
 ```
-bash GAT-InstallAndDownload.sh ~/GenomeAnnotationTutorial # where ~ is /path-to-GAT/
-```
-Once these external progarms and datasets are downloaded, build blastdb's with
-```
-```
-
-The Snakemake pipeline brings this down to ~20h as it controls which scripts can be run in parallel. `Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
 
 The most time-consuming steps are EarlGrey and Braker (short read)/TOGA/Braker (long read), which are each in the 100-200h range. With a 3Gb mammalian genome, the remaining steps may take an additional ~50 hours combined. As such, we'd expect an end-to-end annotation with this tutorial to be performed in 2-3 weeks of runtime.
 
-Assuming the tutorial and reference directories are properly put together, executing each script on your own should only take a few hours of hands-on human time (e.g., setup, submitting groups of scripts that should be run in parallel, making sure that each step has the expected output). By nature, when the Snakemake is ready, annotations should take no human time after setting up the config file for each assembly.
+Assuming the tutorial and reference directories are properly put together, executing each script on your own should only take a few hours of hands-on human time (e.g., setup, submitting groups of scripts that should be run in parallel, making sure that each step has the expected output). 
 
-```
-sourceDir=/path-to/miniconda3/
-tutorialDir=/path-to/GenomeAnnotationTutorial
-```
+`Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
+
    
 #### 3. A Snakemake pipeline
 
 GAT_Snakemake allows for automated control for the genome annotation tutorial. We expect the same directory structure and setup when using the tutorial in any other manner (i.e., same /data and /external directories, the same annotation_tutorial conda environment, and access to `singularity` as a module or in your path).
+
+By nature, when the Snakemake is ready, annotations should take no human time after setting up the config file for each assembly. It will be 5-10x faster than running everything in serial and will save a few days when doing flow control manually.
 
 To run the pipeline, you need to change the config.yaml file to match your directory structure.
 
@@ -166,9 +161,9 @@ Otherwise, follow the steps in "3. A Snakemake pipeline".
 ### List of tools
 
 The tools used in this tutorial are listed below:
-- Installed with Conda: [Earl Grey v5.1.0](https://github.com/TobyBaril/EarlGrey), [LiftOff v1.6.3](https://github.com/agshumate/Liftoff), [Infernal v1.1.2](http://eddylab.org/infernal/), [BUSCO v5.7.1](https://busco.ezlab.org/), [TransDecoder v5.7.1](https://github.com/TransDecoder/TransDecoder), [Portcullis v1.2.4](https://github.com/EI-CoreBioinformatics/portcullis), [Minimap2 v2.28](https://github.com/lh3/minimap2), [Diamond v2.1.10](https://github.com/bbuchfink/diamond), [BedTools v2.31.1](https://github.com/arq5x/bedtools2), [MirMachine v0.2.13](https://github.com/sinanugur/MirMachine), [NextFlow v24.10.4](https://www.nextflow.io/), [OrthoFinder v3.0.1b1](https://github.com/davidemms/OrthoFinder), [HISAT2 v2.2.1](https://daehwankimlab.github.io/hisat2/), [Augustus v3.5.0](https://bioinf.uni-greifswald.de/augustus/), [GFFRead v0.12.7](https://github.com/gpertea/gffread), [RegTools v1.0.0](https://regtools.readthedocs.io/en/latest/)
-- Singularity images: [BRAKER3](https://github.com/Gaius-Augustus/BRAKER), [CACTUS v2.9.3](https://github.com/ComparativeGenomicsToolkit/cactus)
-- Binaries: [TOGA v1.1.8.dev](https://github.com/hillerlab/TOGA), [kent utilities v362](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [StringTie v2.2.3](https://github.com/gpertea/stringtie), [InterProScan v1.8.0_412](https://www.ebi.ac.uk/interpro/about/interproscan/), [Mikado v2.3.2](https://github.com/EI-CoreBioinformatics/mikado)
+- Installed with Conda: [LiftOff v1.6.3](https://github.com/agshumate/Liftoff), [Infernal v1.1.2](http://eddylab.org/infernal/), [BUSCO v5.7.1](https://busco.ezlab.org/), [TransDecoder v5.7.1](https://github.com/TransDecoder/TransDecoder), [Portcullis v1.2.4](https://github.com/EI-CoreBioinformatics/portcullis), [Minimap2 v2.28](https://github.com/lh3/minimap2), [Diamond v2.1.10](https://github.com/bbuchfink/diamond), [BedTools v2.31.1](https://github.com/arq5x/bedtools2), [MirMachine v0.2.13](https://github.com/sinanugur/MirMachine), [NextFlow v24.10.4](https://www.nextflow.io/), [OrthoFinder v3.0.1b1](https://github.com/davidemms/OrthoFinder), [HISAT2 v2.2.1](https://daehwankimlab.github.io/hisat2/), [Augustus v3.5.0](https://bioinf.uni-greifswald.de/augustus/), [GFFRead v0.12.7](https://github.com/gpertea/gffread), [RegTools v1.0.0](https://regtools.readthedocs.io/en/latest/)
+- Singularity images: [BRAKER3](https://github.com/Gaius-Augustus/BRAKER), [CACTUS v2.9.3](https://github.com/ComparativeGenomicsToolkit/cactus), [Earl Grey v5.1.0](https://github.com/TobyBaril/EarlGrey), [Mikado v2.3.2](https://github.com/EI-CoreBioinformatics/mikado)
+- Binaries: [TOGA v1.1.8.dev](https://github.com/hillerlab/TOGA), [kent utilities v362](http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/), [StringTie v2.2.3](https://github.com/gpertea/stringtie), [InterProScan v1.8.0_412](https://www.ebi.ac.uk/interpro/about/interproscan/)
 - Data packages: [Uniprot Swiss-Prot database](https://www.uniprot.org/), [RFam database](https://rfam.org/), [OrthoDB database](https://bioinf.uni-greifswald.de/bioinf/partitioned_odb12/)
 
 Instructions on how to install these tools can be found in the `InstallAndDownload.md` script in the set-up directory.
