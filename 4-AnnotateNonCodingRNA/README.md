@@ -10,31 +10,9 @@ Many non-coding annotations can be generated using [the RNA family (Rfam) databa
 
 #### Seeding by BLASTing against Rfam
 
-To perform one round of seeding (i.e. identifying genomic regions likely to contain non-coding RNA molecules), you can first BLAST your unmasked genome FASTA file against the Rfam database of non-coding RNAs. The step-by-step process is explained [here](https://docs.rfam.org/en/latest/sequence-extraction.html), but we've also outlined our process. Start by downloading and unzipping the Rfam database:
+To perform one round of seeding (i.e. identifying genomic regions likely to contain non-coding RNA molecules), you can first BLAST your unmasked genome FASTA file against the Rfam database of non-coding RNAs. The step-by-step process is explained [here](https://docs.rfam.org/en/latest/sequence-extraction.html), but we've also outlined our process. Start by downloading and unzipping the Rfam database. These databases are set up in the Installation.
 
-```
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/fasta_files/Rfam.fa.gz
-gunzip Rfam.fa.gz
-```
-
-Then filter duplicate non-coding RNAs stored within the database, as duplicates can interrupt generating the BLAST database that you'll need to build in order to BLAST against it. There are many ways of doing this; we used [SeqKit](https://bioinf.shenwei.me/seqkit/).
-
-```
-seqkit rmdup Rfam.fa > Rfam.rmdup.fa
-```
-
-After the duplicates are removed, you can now create a BLAST database which requires the deduplicated Rfam database as input. `-input_type fasta` specifies that the database is a FASTA file; `-dbtype nucl` indicates that the database is made of nucleotides; `-title Rfam_ncRNA` is a recognizable title for the database; `-parse_seqids` is required to keep the original sequence identifiers; `-out Rfam_ncRNA` is the output base name for the database, and is often the same as the title. This is another command that won't work if you have spaces in your working directory.
-
-```
-makeblastdb -in Rfam.rmdup.fa \
--input_type fasta \
--dbtype nucl \
--title Rfam_ncRNA \
--parse_seqids \
--out Rfam_ncRNA
-```
-
-Next, BLAST your unmasked genome FASTA file against the Rfam BLAST database. `-db Rfam_ncRNA` points to the base name of the BLAST database; `-query genome.fasta` points to your genome sequence; `-evalue 1e-6` describes the number of hits expected by chance; `-max_hsps 6` indicates a maximum of 6 alignments for any query-subject pair; `-max_target_seqs 6` indicates that a maximum of 6 aligned sequences are to be kept; `-outfmt 6` specifies the type of output from BLAST; `-out assembly.rfam.blastn` is the name of the output file. This command outputs all of the BLAST alignments found in the search that match all of the given criteria.
+BLAST your genome FASTA file against the Rfam BLAST database. `-db Rfam_ncRNA` points to the base name of the BLAST database; `-query genome.fasta` points to your genome sequence; `-evalue 1e-6` describes the number of hits expected by chance; `-max_hsps 6` indicates a maximum of 6 alignments for any query-subject pair; `-max_target_seqs 6` indicates that a maximum of 6 aligned sequences are to be kept; `-outfmt 6` specifies the type of output from BLAST; `-out assembly.rfam.blastn` is the name of the output file. This command outputs all of the BLAST alignments found in the search that match all of the given criteria.
 
 ```
 blastn -db Rfam_ncRNA \ 
@@ -136,19 +114,7 @@ bedtools getfasta -fi genome.fasta -bed assembly_ncRNA_seed.s.bed -fo assembly_n
 
 #### Using Infernal to annotate non-coding genes
 
-Once the probably DNA sequences that encode ncRNAs have been found (now located in `assembly_ncRNA_seed.fasta`), these can be searched against a database of covariance models (i.e. statistical models of RNA secondary structure and sequence consensus). Searching against these covariance models will help determine the identity of the non-coding genes. First, download the database of covariance models from Rfam, and unzip the file:
-
-```
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
-gunzip Rfam.cm.gz
-```
-
-You will also need information from Rfam.clanin, which lists which models belong to the same "clan" (i.e. a group of homologous models, like LSU rRNA archaea and LSU rRNA bacteria). Download and compress this file.
-
-```
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.clanin
-cmpress Rfam.cm
-```
+Once the probably DNA sequences that encode ncRNAs have been found (now located in `assembly_ncRNA_seed.fasta`), these can be searched against a database of covariance models (i.e. statistical models of RNA secondary structure and sequence consensus). Searching against these covariance models will help determine the identity of the non-coding genes. First, download the database of covariance models from Rfam. This is part of the installation.
 
 Then, run Infernal using the cmscan function, which searches each sequence against the covariance model database. `-Z 1` indicates that the e-values are calculated as if the search space size is 1 megabase; `--cut_ga` is a flag to turn on using the GA (gathering) bit scores in the model to set inclusion thresholds, which are generally considered reliable for defining family membership; `--rfam` is a flag for using a strict filtering strategy for large databases (> 20 Gb) which accelerates the search at a potential cost to sensitivity; `--nohmmonly` specifies that the command must use the covariance models; `--tblout assembly_genome.tblout` is the output summary file of hits in tabular format; `-o assembly_genome.cmscan` is the main output file; `--verbose` indicates to include extra statistics in the main output; `--fmt 2` adds additional fields to the tabular output file, including information about overlapping hits; `--clanin Rfam.clanin` points to the clan information file; the final two positional arguments, `Rfam.cm` and `assembly_ncRNA_seed.fasta`, point to the covariance model database and FASTA file of sequences respectively. This step will take quite a while.
 
@@ -168,12 +134,7 @@ Finally, the tabular output of infernal can be converted to a GFF file. The [per
 perl infernal-tblout2gff.pl --cmscan --fmt2 assembly_genome.tblout > infernal.gff
 ```
 
-Looking at `infernal.gff`, you will see that the type of ncRNA that Infernal has identified in column three. tRNAs are easily recognizable, but all other ncRNAs are labeled with a more cryptic RFam identifier, like "SSU_rRNA_bacteria", "U6", etc. In order to better interpret these results, we will want to reformat the GFF so that the feature types are more recognizable. We can do that by first downloading a table that contains the different RFam identifiers and their respective feature types.
-
-```
-wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/database_files/family.txt.gz
-gunzip family.txt.gz
-```
+Looking at `infernal.gff`, you will see that the type of ncRNA that Infernal has identified in column three. tRNAs are easily recognizable, but all other ncRNAs are labeled with a more cryptic RFam identifier, like "SSU_rRNA_bacteria", "U6", etc. In order to better interpret these results, we will want to reformat the GFF so that the feature types are more recognizable. We can do that by first downloading a table that contains the different RFam identifiers and their respective feature types. The Rfam family download is part of installation.
 
 The easiest way to use this table is to read it into R, in addition to the GFF file from Infernal, and use pattern matching to assign the different feature types to the ncRNAs output by Infernal. We have provided an R notebook that performs these modifications called `rfamConversion.Rmd` which can be found in this folder. The notebook outputs a reformatted GFF called `infernal.types.gff`.
 
