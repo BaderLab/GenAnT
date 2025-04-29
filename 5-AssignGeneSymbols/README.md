@@ -18,25 +18,7 @@ gffread -y target_proteins.faa -g target_genome.softmasked.fasta -S full_annotat
 
 Let's say you wish to compare the protein sequences of your target species to that of human. Download the human FASTA and GFF files using `wget` and unzip these files. We're going to rename these files as `reference.fna` and `reference.gff` to make them easier to refer to.
 
-```
-wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
-#
-gunzip GCF_000001405.40_GRCh38.p14_genomic.fna.gz
-#
-mv GCF_000001405.40_GRCh38.p14_genomic.fna reference.fna
-#
-wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/reference/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.gff.gz
-#
-gunzip GCF_000001405.40_GRCh38.p14_genomic.gff.gz
-#
-mv GCF_000001405.40_GRCh38.p14_genomic.gff reference.gff
-```
-
-Use these files to generate protein sequences with GFFRead, just as you did with your target genome.
-
-```
-gffread -y reference_proteins.faa -g reference.fna -S reference.gff
-```
+These reference files are downloaded when building the reference species directory.
 
 OrthoFinder only requires a directory with files of protein sequences as input. So let's create a directory called `protein_seqs` and put the protein sequence files there using `mv`.
 
