@@ -19,8 +19,8 @@ configPath=$externalDir/Augustus/config
 
 BRAKER_SIF=$externalDir/singularity_images/braker3.sif 
 
-SINGULARITY_CACHEDIR=$outDir/braker_noRNA/cache
-SINGULARITY_TMPDIR=$outDir/braker_noRNA/tmp
+SINGULARITY_CACHEDIR=$outDir/braker_noRNA/cachedir
+SINGULARITY_TMPDIR=$outDir/braker_noRNA/tmpdir
 
 mkdir -p $SINGULARITY_CACHEDIR
 mkdir -p $SINGULARITY_TMPDIR
