@@ -75,8 +75,8 @@ wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_G
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz
 for i in *.gz ; do gunzip $i ; echo $i ; done
   bash preprocess_reference_from_refseq.sh \
-  ~/data/references/human_T2T_NCBI \
-  ~ \
+  ~/data/references/human_T2T_NCBI \ # path to the reference genome directory
+  ~ \ #  path to GenomeAnnotationTutorial ( `GenomeAnnotationTutorial` included)
   GCF_000001635.27_GRCm39_genomic.fna \
   GCF_000001635.27_GRCm39_genomic.gff
 ```
