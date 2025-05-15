@@ -17,7 +17,7 @@ prefix <- gsub(".gff","",gffname)
 
 gff <- readGFF(gffname)
 
-gff_transcript <- gff_transcript <- gff[gff$type == "transcript",]
+gff_transcript <- gff_transcript <- gff[gff$type == "transcript" | gff$type == "mRNA" ,]
 
 # Get gene ID and transcript ID keys
 # if this is a character already it doesn't change anything, but Rtracklayer sometimes loads "Parent" in as a list.
