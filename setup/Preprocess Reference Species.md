@@ -136,6 +136,13 @@ quote=FALSE,row.names=FALSE,col.names=TRUE,sep="\t")
 
 The other is a key between gene name and protein ID.
 
+The final step (and it's only needed for specific GFF files) is to remove transcripts that are not compatible with kentutils. In our practice this is specific custom annotations in model organisms (e.g., grc39 -mouse-, dm6 -drosophila melanogaster- genomes.
+
+```
+awk 'FNR==NR { if (NR > 1) keep[$2]; next } $4 in keep' GCF_009914755.1_T2T-CHM13v2.0_genomic.isoforms.tsv GCF_009914755.1_T2T-CHM13v2.0_genomic.bed > GCF_009914755.1_T2T-CHM13v2.0_genomic.toga.bed
+
+```
+
 
 ## From ENSEMBL
 
