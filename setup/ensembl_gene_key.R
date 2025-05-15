@@ -17,7 +17,18 @@ prefix <- gsub(".gff3","",gffname)
 
 gff <- readGFF(gffname)
 
+gff_transcript <- gff_transcript <- gff[gff$type == "transcript" | gff$type == "mRNA",]
+
+
 gff_transcript <- gff_transcript <- gff[gff$type == "transcript",]
+
+key <- gff_transcript[,c("Parent","ID","Name")]
+colnames(key) <- c("geneID","transcriptID","geneSymbol")
+
+
+key$geneSymbol <- sub("-(?!.*-).*", "", key$geneSymbol,perl = TRUE)
+
+key <- apply(key,2,unlist)
 
 key <- gff_transcript[,c("gene_id","transcript_id","gene_name")]
 colnames(key) <- c("geneID","transcriptID","geneSymbol")
