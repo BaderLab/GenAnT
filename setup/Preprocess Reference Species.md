@@ -9,9 +9,14 @@ output: html_document
 
 We use a reference genome three times in our tutorial. We use it to find gene models with LiftOff, to find gene models with TOGA, and to annotate gene symbols with OrthoFinder. The workflow below describes how to preprocess a reference genome from NCBI (RefSeq) or from Ensembl so that the assembly is compatable with each tool in our tutorial. These files may also be directly included in the config for our pipeline. We use the mouse GRC39 assembly for this example.
 
+## General fasta and gff format:
+While below build reference directories for NCBI and Ensembl, any reference assembly and annotation will do. For each internal tool to work, please follow the guidelines below:
+1. Do not have spaces and special characters (e.g., "|") in the geneID, transcriptID or chromosome name. TOGA and braker will both fail. TOGA fails outright and Braker "cleans" the genome assembly to converting spaces to underscores, meaning your RNAseq data wont match your genome assembly anymore.
+2. For liftoff and TOGA, your gff file will be pre-processed with gffread. Make sure that the gene ID and transcript ID within the gffread processed gff file matches the gene ID and transcript ID that you want. It can sometimes get confused. If it does not match, simply load the gffread.gff file into R with rtracklayer and switch the column out for the ID's that you'd like.
+
 ## From Refseq
 
-First travel to the NCBI FTP containing your species and annotation of interest. For the mouse genome, you would travel to the following URL:
+First, travel to the NCBI FTP containing your species and annotation of interest. For the mouse genome, you would travel to the following URL:
 
 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39
 
