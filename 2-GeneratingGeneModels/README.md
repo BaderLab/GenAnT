@@ -215,8 +215,15 @@ scripts/run_stringtie_flexible.sh
 
 #### TOGA and associated tools: installing/running/troubleshooting
 
-- TOGA may not work if run on a desktop; most genomes are large enough that they require a high performance compute cluster
-- Cactus and TOGA can easily be installed with Conda
+- TOGA is arguably the trickiest tool to install in our tutorial, as it relies on multiple modalities of installation (singularity for cactus, conda for nextflow, python for TOGA, and precompiled binaries for the kent utils). We go through the installation process in detail in "https://github.com/BaderLab/GenomeAnnotationTutorial/blob/main/setup/GAT-InstallAndDownload.md".
+- Further, we do not think that TOGA can work on a desktop without considerable manual configuration. 
+- CACTUS with two species is fairly straightforward as, it can be run on the "local" mode (like we have in our scripts). CACTUS' runtime will be contignent on the complexity of each genome and the relatedness of each species. For example, running CACTUS on two African mole-rat species (~20Mya diverged) took less than 48 hours, while CACTUS from mouse to naked mole-rat could range from 80-120 hours depending on the node in our cluster. If the cactus job dies for whatever reason, it will not restart until you delete the "jobstore" directory. cactus ran sucessfully if a .hal file is generated. It should be relatively large (e.g., 100Mb --> 5Gb for mammals). Its size scales on the relatedness of the species (more related is smaller).
+- After a hal file is generated, a series of kent utilies are employed to generate a chain file, which is a key input for TOGA. kentutilities are very robust and are very unlikely to cause an issue. The only issue we've seen thus far is if the user forgets to make the binaries executable with `chmod +x`. This step is part of the setup scripts.
+- In our experience, TOGA errors are most commonly associated with one of four sources.
+  1) The reference annotations: TOGA requires a transcript bed12 file and an "isoforms" file (i.e., a key for the geneID and the Isoform ID as input). TOGA requires a perfect overlap in transcript IDs between the bed12 and isoform tsv file. This can come up in model organism annotations or personal custom annotations, as annotations may not be perfectly formatted for every line in gff file (due to custom annotations). We have a script that usually accounts for this in NCBI/ENSEMBL in "setup". For a custom reference I would load the bed12 and isoforms.tsv file you make into R/python and make sure that all the transcript IDs match.
+  2) TOGA can get a bit finickey with chromosome and transcript names. It doesn't like certain special characters (e.g., "|") and spaces. This should probably be accounted for while making the reference species' directory.
+  3) Nextflow config. Running TOGA is cluster-specific as it interacts with an internal job scheduler: nextflow. The TOGA github and our setup markdown both provides instructions on how to edit the nextflow config files to work with your scheduler.
+  4) Intermediate files: Some clusters (e.g., compute Canada) have a limit on the number of files that can be generated. CACTUS (through the toil workflow) and toga (through nexflow) keep running small jobs until the project is done, meaning that there can be >100K files that are less than 1Kb in size. We are working on a solution to this.
 
 ### Transcript assembly using RNA-sequencing data
 
