@@ -1,6 +1,6 @@
-# Tutorial: annotation and interpretation of mammalian genomes
+# Tutorial: annotation and interpretation of animal genomes
 
-This is a tutorial on how to annotate a newly sequenced mammalian genome. This takes the user from their FASTA sequence to a high-quality GFF file annotated with gene symbols. We break the process into five main steps:
+This is a tutorial on how to annotate a newly sequenced animal genome. This takes the user from their FASTA sequence to a high-quality GFF file annotated with gene symbols. We break the process into five main steps:
 
 1. Repeat masking
 2. Generating protein-coding RNA (mRNA) gene models
@@ -102,7 +102,7 @@ The most time-consuming steps are EarlGrey and Braker (short read)/TOGA/Braker (
 
 Assuming the tutorial and reference directories are properly put together, executing each script on your own should only take a few hours of hands-on human time (e.g., setup, submitting groups of scripts that should be run in parallel, making sure that each step has the expected output). 
 
-`Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full mammalian genome. For example, Braker (short read), TOGA, and Braker (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
+`Execute_GAT_in_serial.sh` also tells you which scripts can be run in parallel if you'd rather run these scripts manually with your own data. We do not recommend running each tool serially once moving to a full animal genome. For example, BRAKER (short read), TOGA, and BRAKER (long read) could each take ~150h for the 2.6Gb naked mole-rat genome with 5-10 tissues of RNA-seq or ISO-seq. These steps can be run in parallel, saving 300 hours (~12 days) of runtime.
 
    
 #### 3. A Snakemake pipeline
