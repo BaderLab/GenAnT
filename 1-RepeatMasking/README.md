@@ -30,20 +30,39 @@ scripts/run_earl_grey.sh
 ```
 
 The main part of the script looks as follows
+
 ```
 outDir=/path-to-output-directory/
 species="heterocephalus_glaber"
 
-	earlGrey \
+earlGrey \
 -g $outDir/assembly/assembly.fa \
  -s $species \
 -o . \
 -t 50 \
 -r rodentia \
 -d yes
+```
 
+Earl Grey is a wrapper of many repeat annotation tools, resulting in many directories. Below is the output directory of Earl Grey when run on the example:
+
+![earlgrey_output](https://github.com/user-attachments/assets/614231d2-5b03-485a-a73b-b9b3183849fb)
+
+As expected, everything needed for downstream genome annotation is in the “heterocephalus_glaber_summaryFiles” directory, shown below:
+
+![earlgrey_summaryFiles](https://github.com/user-attachments/assets/ef2e997d-5ce8-4035-bbd0-6eaf3194cc9b)
+
+The files needed for the rest of the pipeline are “heterocephalus_glaber.filteredRepeats.bed”, which contains the curated set of repeats, and “heterocephalus_glaber.softmasked.fasta”, which is the fasta file used in Braker and TOGA annotations. “heterocephalus_glaber.filteredRepeats.bed” is used in non-coding RNA seeding, as scRNA, srpRNA, and “SINE/tRNA-RTE”  are called as part of repeat elements in earl grey. The other files are useful for summarizing and analyzing repeats.
+
+EarlGrey 5.1.0 (the version at the time of GenAnT’s release) recomputes TE divergence after finalizing TE libraries. This step is very time-consuming, and we have experienced instances on a slow node where this step alone can run for 200 hours. You do not need to wait for these divergences to be recalculated if you don’t want to. If you navigate to the directory below, you can extract the “heterocephalus_glaber.filteredRepeats.bed” and then mask your assembly with `bedtools maskfasta`. 
 
 ```
+ls earl_grey/heterocephalus_glaber_EarlGrey/heterocephalus_glaber_mergedRepeats/looseMerge/
+```
+
+Below is the `species_mergedRepeats/looseMerge` directory in EarlGrey where repeat annotations are stored:
+
+![earlgrey_annotationDirectory](https://github.com/user-attachments/assets/09285585-7d7e-436f-9013-f47c5794ebb2)
 
 #### Earl Grey: installing/running/troubleshooting
 
