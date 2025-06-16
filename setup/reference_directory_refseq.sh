@@ -31,11 +31,9 @@ $GAT/external/kent/gff3ToGenePred $prefix".gffread.gff" $prefix".genePred"
 
 $GAT/external/kent/genePredToBed $prefix".genePred" $prefix".bed"
 
-
-
 echo "Make gene tables for TOGA, Orthofinder, and gene symbol mapping"
 
 Rscript --vanilla $GAT/setup/ncbi_gene_key.R -g $gff
 
-# Ensure that toga.bed matches isoforms.tsv
 awk 'FNR==NR { if (NR > 1) keep[$2]; next } $4 in keep' $prefix".isoforms.tsv" $prefix".bed" > $prefix".toga.bed"
+

@@ -33,3 +33,4 @@ $GAT/external/kent/genePredToBed $prefix".genePred" $prefix".bed"
 Rscript --vanilla $GAT/setup/ensembl_gene_key.R -g $gff
 
 awk 'FNR==NR { if (NR > 1) keep[$2]; next } $4 in keep' $prefix".isoforms.tsv" $prefix".bed" > $prefix".toga.bed"
+
