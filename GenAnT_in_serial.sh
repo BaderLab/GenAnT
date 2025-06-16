@@ -141,7 +141,8 @@ bash $scriptsDir/scripts/ncRNA_postprocess.sh
 
 bash $scriptsDir/scripts/run_orthofinder.sh
 
-bash $scriptsDir/scripts/gene_symbol_tables.sh
+# We currently commented out line 42 "cp $refTogaIsoform2 ./reference.toga.r2.table.txt". Uncomment this line if you did two rounds of TOGA
+bash $scriptsDir/scripts/aggregate_symbols.sh
 
 
 # Step 6: additional annotations
