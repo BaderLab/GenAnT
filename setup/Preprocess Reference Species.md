@@ -200,3 +200,5 @@ This script and workflow is nearly identical to ncbi. The few differences are.
 * Ensembl uses `Name` to denote gene symbol, while ncbi uses `gene`
 * Ensembl tags gene and transcript with `gene:` and `transcript:` while Refseq uses `gene-` and `rna-`.
 * Ensembl includes transcript number in gene symbol, NCBI does not.
+* This script will end up transferring gene IDs and not gene symbols which is inconvenient. We added a `ShiftNamesToIDs.R` script to `reference_directory_ensembl.sh` so that TOGA/LiftOff will automatically transfer gene symbols to your reference instead of IDs, meaning you wont have to map gene symbols manually later. 
+
