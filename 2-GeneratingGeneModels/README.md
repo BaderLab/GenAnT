@@ -252,10 +252,10 @@ hisat2-build \
  base_name_of_genome_index
 ```
 
-Now you can run HISAT2 to align the RNA-seq reads to the genome you are annotating. The input required is the genome index created by `hisat2-build` and the input RNA-seq files in FASTQ format (or FASTA format if specified with `-f`). The `--dta` flag reports alignments tailored for transcript assemblers (as in this case). The `-1` and `-2` indicate the mates for paired-end RNA-seq. HISAT2 outputs a SAM alignment file.
+Now you can run HISAT2 to align the RNA-seq reads to the genome you are annotating. The input required is the genome index created by `hisat2-build` and the input RNA-seq files in FASTQ format (or FASTA format if specified with `-f`). The `--dta` flag reports alignments tailored for transcript assemblers (as in this case). The `-1` and `-2` indicate the mates for paired-end RNA-seq. The command is either `hisat2-align-s` if the genome is small and the index ends in `.ht2`, or `hisat2-align-l` if the genome is large (> 4 billion bases) and the index ends in `.ht2l`. HISAT2 outputs a SAM alignment file, and the following pseudocode is for a small genome.
 
 ```
-hisat2-align \
+hisat2-align-s \
  -p number_of_threads \
  --dta \
  -x base_name_of_genome_index \
