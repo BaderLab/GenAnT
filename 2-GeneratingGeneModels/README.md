@@ -30,6 +30,11 @@ and can be executed with it's paired script `reference_directory_refseq.sh`
 
 LiftOff is a gene liftover tool that aligns gene sequences from the reference genome to the target genome using a single line of Unix code, making it quick and easy to use. It uses minimap2 to align the genes to the genome with high accuracy and with relatively low computational resources, so the tool can be run on a desktop computer. LiftOff is a command-line tool that takes a FASTA file and GFF/GTF file from a reference species, and the FASTA file from the target species, and creates a GFF/GTF output file for your species based on the reference annotations. It also provides the user with a list of unmapped genes ("unmapped_features.txt"), which may indicate alignment challenges. The "-copies" flag indicates that LiftOff will look for additional gene copies in the new genome. Because LiftOff is so quick and easy to use, the user can easily use LiftOff to generate annotations from multiple reference species and compare the resulting annotation quality.
 
+Lastly, liftOff is able of transferring non-coding gene models. The parameters in `liftOff` let you use `-f` to list the "types" of features in your GFF. However, we find that this parameter often fails in the "Polishing" step of LiftOff. Instead, we reccommend ensuring that the non-coding genes you are lifting over are annotated with "gene" "transcript" and "exon". An clear example of this is format is in ENSEMBL annotations. See a table of the gff "type" and the ENSEMBL derived "biotype".
+
+![image](https://github.com/user-attachments/assets/7932d6fa-0c1b-41d4-b265-180135a30a92)
+
+
 ```
 liftoff \
  -g annotation_of_related_species.gff \
