@@ -57,11 +57,13 @@ module load singularity # replace with however you activate singulairty on your 
 
 # run install and download script. This requires the internet.
 
-bash GAT-InstallAndDownload.sh /path-to-GenomeAnnotationTutorial 
+cd setup
+
+bash GAT-InstallAndDownload.sh .. # or /path-to-GenomeAnnotationTutorial 
 
 # build blastDBs
 
-bash GAT-MakeBlastDB.sh /path-to-GenomeAnnotationTutorial
+bash GAT-MakeBlastDB.sh .. # or /path-to-GenomeAnnotationTutorial
 ```
 
 You will also use the preprocess reference species script to build genome directories for species that you want to use to transfer gene models to the target species (e.g., mouse, human). This is fully documented in `setup/Preprocess Reference Species.md`. Briefly, using mouse as an example, this process is done with. the `preprocess_reference_from_refseq.sh` (or `preprocess_reference_from_embl.sh` script in `/setup`
