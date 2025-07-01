@@ -2,7 +2,7 @@
 
 inDir=$1 # path to "GenomeAnnotationTutorial"
 
-cd $inDir/data/data/uniprot_sprot
+cd $inDir/data/uniprot_sprot
 
 seqkit rmdup -s < uniprot_sprot.fasta > uniprot_sprot_nodup.fasta
 
