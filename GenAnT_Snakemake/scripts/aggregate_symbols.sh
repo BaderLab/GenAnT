@@ -3,8 +3,6 @@
 outDir=$1
 orthofinderTab=$2
 snakeDir=$3
-refTogaIsoform=$4
-refTogaIsoform2=$5
 
 
 cd $outDir
@@ -76,10 +74,6 @@ cut -f10-18 mikado.toga.r2.mRNA.lncRNA.txt > toga_overlap.r2.togaInfo.gff
 
 cp $outDir/orthofinder/orthofinder_protein.tsv ./
 cp $orthofinderTab ./reference.table.txt
-
-cp $refTogaIsoform ./reference.toga.r1.table.txt
-cp $refTogaIsoform2 ./reference.toga.r2.table.txt
-
 
 # Start the gene symbol table and add in results from LiftOff and TOGA
 

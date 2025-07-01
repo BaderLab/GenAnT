@@ -3,16 +3,43 @@ library(dplyr)
 
 mikado <- as.data.frame(readGFF("full_annotation.gff"))
 
-mikado <- mikado[mikado$type %in% c("gene", "lncRNA_gene"),]
+mikado <- mikado[mikado$type %in% c("exon"),]
 
-mikado_df <- data.frame(mikado_id = mikado$ID, ncRNA_gene = mikado$predicted_gene_symbol)
 
+# load overlapping genes
 liftoff_mikadoInfo <- as.data.frame(readGFF("liftoff_overlap.mikadoInfo.gff"))
+
+# gene models from exon models
+liftoff_mikadoInfo$mikadoGene <- unlist(liftoff_mikadoInfo$Parent)
+liftoff_mikadoInfo$mikadoGene <- sub("\\.[^\\.]*$", "", liftoff_mikadoInfo$mikadoGene)
+
+# get transcripts that overlap
 liftoff_liftoffInfo <- as.data.frame(readGFF("liftoff_overlap.liftoffInfo.gff"))
 
-liftoff_liftoffInfo$gene <- unlist(liftoff_liftoffInfo$Parent)
+# Lmao ensembl
+liftoff_liftoffInfo$liftOffGene <- gsub("transcript:","",unlist(liftoff_liftoffInfo$Parent))
 
-liftoff_df <- data.frame(mikado_id = liftoff_mikadoInfo$ID, liftoff_gene = liftoff_liftoffInfo$gene)
+# pair matching exons into matrix
+liftOffGene <- as.data.frame(cbind(liftoff_mikadoInfo$mikadoGene,liftoff_liftoffInfo$liftOffGene),stringsAsFactors=FALSE)
+
+# make them one element
+combo <- paste0(liftOffGene$V1,":",liftOffGene$V2)
+liftOffGene$combo <- combo
+
+# how many exons overlap per gene pair from mikado and liftoff
+db1 <- as.data.frame(table(combo),stringsAsFactors=FALSE)
+db_genes <- as.data.frame(do.call("rbind",strsplit(db1$combo,":")), stringsAsFactors=FALSE)
+db_genes$combo <- db1$combo
+db_genes$Frequency <- db1$Freq
+
+# extract the mikado-liftoff pair with the highest number of exons overlapping
+db_genes <- db_genes[order(db_genes$Frequency,decreasing = TRUE),]
+db_genes_noDup <- db_genes[!duplicated(db_genes$V1),]
+
+liftoff_df <- as.data.frame(db_genes_noDup[,1:2])
+colanmes(liftoff_df) <- colnames("ID", "gene")
+
+#liftoff_df <- data.frame(mikado_id = liftoff_mikadoInfo$ID, liftoff_gene = liftoff_liftoffInfo$gene)
 
 liftoff_df$mikado_id <- gsub("\\.[^.]*$", "", liftoff_df$mikado_id)
 
@@ -38,28 +65,46 @@ toga_dfs <- list()
 for(i in c("r1","r2")) {
 
 toga_mikadoInfo <- as.data.frame(readGFF(paste0("toga_overlap.",i,".mikadoInfo.gff")))
+
+toga_mikadoInfo$mikadoGene <- unlist(toga_mikadoInfo$Parent)
+toga_mikadoInfo$mikadoGene <- sub("\\.[^\\.]*$", "", toga_mikadoInfo$mikadoGene)
+
 toga_togaInfo <- as.data.frame(readGFF(paste0("toga_overlap.",i,".togaInfo.gff")))
+toga_togaInfo$togaGene <- gsub("transcript:","",unlist(toga_togaInfo$Parent))
 
 if(nrow(toga_togaInfo) < 5) next
 
-toga_df <- data.frame(mikado_id = toga_mikadoInfo$ID, toga_gene = toga_togaInfo$ID)
+togaGene <- as.data.frame(cbind(toga_mikadoInfo$mikadoGene,toga_togaInfo$togaGene),stringsAsFactors=FALSE)
+
+combo <- paste0(togaGene$V1,":",togaGene$V2)
+togaGene$combo <- combo
+
+toga_db1 <- as.data.frame(table(combo),stringsAsFactors=FALSE)
+toga_db_genes <- as.data.frame(do.call("rbind",strsplit(toga_db1$combo,":")), stringsAsFactors=FALSE)
+toga_db_genes$combo <- toga_db1$combo
+toga_db_genes$Frequency <- toga_db1$Freq
+
+toga_db_genes <- toga_db_genes[order(toga_db_genes$Frequency,decreasing = TRUE),]
+
+toga_db_genes_noDup <- toga_db_genes[!duplicated(toga_db_genes$V1),]
+
+toga_mikadoInfo <- as.data.frame(toga_mikadoInfo[,1:2])
+
+colnames(toga_mikadoInfo) <- c("ID", "gene")
+##
+###
+##
+
+##
+###
+##
+
+toga_df <- data.frame(mikado_id = toga_mikadoInfo$ID, toga_gene = toga_togaInfo$gene)
 
 toga_df$toga_gene <- gsub("\\.[^.]*$", "", toga_df$toga_gene)
 
 toga_df$mikado_id <- gsub("\\.[^.]*$", "", toga_df$mikado_id)
 
-#
-# reference.toga.r1.table.txt
-reference <- read.delim(paste0("reference.toga.",i,".table.txt"), header = TRUE, sep = "\t")
-
-colnames(reference) <- c("geneSymbol", "transcriptID")
-rownames(reference) <- reference$transcriptID
-
-toga_ids <- toga_df$toga_gene
-
-toga_gene <- unlist(lapply(toga_ids,function(x) reference[x,"geneSymbol"]))
-
-toga_df$toga_gene <- toga_gene
 
 
 ##
