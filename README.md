@@ -66,7 +66,7 @@ bash GAT-InstallAndDownload.sh .. # or /path-to-GenomeAnnotationTutorial
 bash GAT-MakeBlastDB.sh .. # or /path-to-GenomeAnnotationTutorial
 ```
 
-You will also use the preprocess reference species script to build genome directories for species that you want to use to transfer gene models to the target species (e.g., mouse, human). This is fully documented in `setup/Preprocess Reference Species.md`. Briefly, using mouse as an example, this process is done with. the `preprocess_reference_from_refseq.sh` (or `preprocess_reference_from_embl.sh` script in `/setup`
+You will also use the preprocess reference species script to build genome directories for species that you want to use to transfer gene models to the target species (e.g., mouse, human). This is fully documented in `setup/Preprocess Reference Species.md`. Briefly, using mouse as an example, this process is done with. the `reference_directory_refseq.sh` (or `reference_directory_ensembl.sh`) script in `/setup`. The following code is commented to help explain what each part of the code is doing, but the copied and pasted code may not work unless you remove the comment lines.
 
 In `/path-to-GenomeAnnotationTutorial/GenomeAnnotationTutorial/data/references`:
 
@@ -76,9 +76,9 @@ mkdir -p mmus_GRC39 ; cd mmus_GRC39
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.fna.gz
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/635/GCF_000001635.27_GRCm39/GCF_000001635.27_GRCm39_genomic.gff.gz
 for i in *.gz ; do gunzip $i ; echo $i ; done
-  bash preprocess_reference_from_refseq.sh \
-  ~/data/references/human_T2T_NCBI \ # path to the reference genome directory
-  ~ \ #  path to GenomeAnnotationTutorial ( `GenomeAnnotationTutorial` included)
+  bash ../../../setup/reference_directory_refseq.sh \
+  . \ # path to the reference genome directory
+  ~/GenomeAnnotationTutorial \ #  path to GenomeAnnotationTutorial ( `GenomeAnnotationTutorial` included)
   GCF_000001635.27_GRCm39_genomic.fna \
   GCF_000001635.27_GRCm39_genomic.gff
 ```
