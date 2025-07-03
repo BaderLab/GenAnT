@@ -19,3 +19,4 @@ dependencies:         # List of packages and their versions
   - nextflow=24.10.4
   - regtools=1.0.0
   - seqkit=2.9.0
+  - bioconductor-rtracklayer=1.68.0
