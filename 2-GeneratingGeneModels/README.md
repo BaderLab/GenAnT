@@ -309,11 +309,11 @@ i=isoseq.tissue.fastq.gz
 
 b=`basename $i .fastq.gz`
 
-minimap2 -ax splice:hq -uf $outDir/assembly/assembly.fa $i > $b".sam" 
+minimap2 -@ number_of_threads -ax splice:hq -uf $outDir/assembly/assembly.fa $i -o $b".sam" 
 
-samtools view -bSq 1 $b".sam" > $b".bam"
+samtools view -@ number_of_threads -bSq 1 -o $b".bam" $b".sam"
 
-samtools sort -o $b".sorted.bam" $b".bam"
+samtools sort -@ number_of_threads -o $b".sorted.bam" $b".bam"
 ```
 
 Running `--stringtie` with ISO-seq data instead of RNA-seq requires in `-L` parameter
