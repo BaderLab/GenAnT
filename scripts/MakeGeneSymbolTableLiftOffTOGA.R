@@ -3,8 +3,9 @@ library(dplyr)
 
 mikado <- as.data.frame(readGFF("full_annotation.gff"))
 
-mikado <- mikado[mikado$type %in% c("exon"),]
+mikado <- mikado[mikado$type %in% c("gene", "lncRNA_gene"),]
 
+mikado_df <- data.frame(mikado_id = mikado$ID, ncRNA_gene = mikado$predicted_gene_symbol)
 
 # load overlapping genes
 liftoff_mikadoInfo <- as.data.frame(readGFF("liftoff_overlap.mikadoInfo.gff"))
@@ -18,6 +19,7 @@ liftoff_liftoffInfo <- as.data.frame(readGFF("liftoff_overlap.liftoffInfo.gff"))
 
 # Lmao ensembl
 liftoff_liftoffInfo$liftOffGene <- gsub("transcript:","",unlist(liftoff_liftoffInfo$Parent))
+liftoff_liftoffInfo$liftOffGene <- sub("\\.[^\\.]*$", "",liftoff_liftoffInfo$liftOffGene)
 
 # pair matching exons into matrix
 liftOffGene <- as.data.frame(cbind(liftoff_mikadoInfo$mikadoGene,liftoff_liftoffInfo$liftOffGene),stringsAsFactors=FALSE)
@@ -37,16 +39,19 @@ db_genes <- db_genes[order(db_genes$Frequency,decreasing = TRUE),]
 db_genes_noDup <- db_genes[!duplicated(db_genes$V1),]
 
 liftoff_df <- as.data.frame(db_genes_noDup[,1:2])
-colanmes(liftoff_df) <- colnames("ID", "gene")
+colnames(liftoff_df) <- c("mikado_id", "liftoff_gene")
 
 #liftoff_df <- data.frame(mikado_id = liftoff_mikadoInfo$ID, liftoff_gene = liftoff_liftoffInfo$gene)
 
-liftoff_df$mikado_id <- gsub("\\.[^.]*$", "", liftoff_df$mikado_id)
+#liftoff_df$mikado_id <- gsub("\\.[^.]*$", "", liftoff_df$mikado_id)
+
 
 liftoff_df <- dplyr::distinct(liftoff_df)
 
-liftoff_df <- liftoff_df[order(liftoff_df$mikado_id,
-                               liftoff_df$liftoff_gene),]
+#liftoff_df <- liftoff_df[order(liftoff_df$mikado_id,
+#                               liftoff_df$liftoff_gene),]
+
+
 
 liftoff_df <- plyr::ddply(liftoff_df,
                           "mikado_id",
@@ -71,6 +76,9 @@ toga_mikadoInfo$mikadoGene <- sub("\\.[^\\.]*$", "", toga_mikadoInfo$mikadoGene)
 
 toga_togaInfo <- as.data.frame(readGFF(paste0("toga_overlap.",i,".togaInfo.gff")))
 toga_togaInfo$togaGene <- gsub("transcript:","",unlist(toga_togaInfo$Parent))
+toga_togaInfo$togaGene <- sub("\\.[^\\.]*$", "", toga_togaInfo$togaGene)
+
+
 
 if(nrow(toga_togaInfo) < 5) next
 
@@ -88,7 +96,7 @@ toga_db_genes <- toga_db_genes[order(toga_db_genes$Frequency,decreasing = TRUE),
 
 toga_db_genes_noDup <- toga_db_genes[!duplicated(toga_db_genes$V1),]
 
-toga_mikadoInfo <- as.data.frame(toga_mikadoInfo[,1:2])
+toga_mikadoInfo <- as.data.frame(toga_db_genes_noDup[,1:2])
 
 colnames(toga_mikadoInfo) <- c("ID", "gene")
 ##
@@ -99,11 +107,11 @@ colnames(toga_mikadoInfo) <- c("ID", "gene")
 ###
 ##
 
-toga_df <- data.frame(mikado_id = toga_mikadoInfo$ID, toga_gene = toga_togaInfo$gene)
+toga_df <- data.frame(mikado_id = toga_mikadoInfo$ID, toga_gene = toga_mikadoInfo$gene)
 
-toga_df$toga_gene <- gsub("\\.[^.]*$", "", toga_df$toga_gene)
+# toga_df$toga_gene <- gsub("\\.[^.]*$", "", toga_df$toga_gene)
 
-toga_df$mikado_id <- gsub("\\.[^.]*$", "", toga_df$mikado_id)
+# toga_df$mikado_id <- gsub("\\.[^.]*$", "", toga_df$mikado_id)
 
 
 
