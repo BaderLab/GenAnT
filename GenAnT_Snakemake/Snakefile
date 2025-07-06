@@ -73,7 +73,7 @@ rule mask_assembly:
     output:
         config["outDir"]+"/assembly/assembly.softmasked.fa"
     threads:
-        36  # Request 16 threads for this rule
+        16  # Request 16 threads for this rule
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
@@ -301,7 +301,7 @@ rule mikado_prepare:
         walltime="2:00:00"
     shell: 
         """
-            scripts/12_mikado_configure_and_prepare.sh {config[outDir]} {config[externalDir]} {config[customRef]} {config[liftoffRef]} {workflow.basedir} {[mikadoScore]}
+            scripts/12_mikado_configure_and_prepare.sh {config[outDir]} {config[externalDir]} {config[customRef]} {config[liftoffRef]} {workflow.basedir} {config[mikadoScore]}
         """
 
 rule transdecoder:
