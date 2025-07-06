@@ -1,12 +1,5 @@
 #!/bin/bash
 
-outDir=$1
-orthofinderTab=$2
-snakeDir=$3
-refTogaIsoform=$4
-refTogaIsoform2=$5
-
-
 cd $outDir
 
 mkdir -p gene_symbol ; cd gene_symbol
