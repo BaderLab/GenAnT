@@ -17,7 +17,7 @@ prefix=`basename $gff .gff3`
 
 gffread --keep-genes -F $gff -o $prefix.full.gffread.gff
 
-Rscript --vanilla ShiftNamesToIDs.R -g $prefix.full.gffread.gff
+Rscript --vanilla $GAT/setup/ShiftNamesToIDs.R -g $prefix.full.gffread.gff
 
 gffread $prefix.gffread.F.nameIDs.gff3 --keep-genes -o $prefix.gffread.gff
 
