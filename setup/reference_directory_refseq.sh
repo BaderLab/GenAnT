@@ -9,13 +9,25 @@ gff=$4 # GCF_000001635.27_GRCm39_genomic.gff
 
 cd $wd
 
-echo "Clean gff file for reference"
-
-prefix=`basename $gff .gff`
 
 # clean GFF
 
-gffread $gff --keep-genes -o $prefix".gffread.gff"
+# clean GFF1 for moving gene ID to gene symbol
+
+gffread $gff --keep-genes -o $prefix.gffread.gff
+
+sed '/^>/ s/ .*//' $fa | sed 's/[ryswkmbdhv]/N/gi' > $prefix.cleanhead.fa
+
+# Index FASTA file
+samtools faidx $prefix.cleanhead.fa
+
+# Extract unique contig names from GFF
+awk '$1 !~ /^#/ {print $1}' $prefix.gffread.gff | sort -u > contigs_with_gene.txt
+
+# Extract contigs
+xargs samtools faidx $prefix.cleanhead.fa < contigs_with_gene.txt > $prefix.clean.fa
+
+rm $prefix.cleanhead.fa
 
 echo "make protein faa for orthofinder"
 
