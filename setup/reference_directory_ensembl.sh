@@ -7,7 +7,14 @@ GAT=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/annotation_pipeline
 fa=$3 # Mus_musculus.GRCm39.dna_sm.primary_assembly.fa
 gff=$4 # Mus_musculus.GRCm39.113.gff3
 
-echo "Clean reference fasta file"
+prefix=`basename $gff .gff3`
+
+# clean GFF
+
+# clean GFF1 for moving gene ID to gene symbol
+
+gffread $gff --keep-genes -o $prefix.gffread.gff
+
 sed '/^>/ s/ .*//' $fa | sed 's/[ryswkmbdhv]/N/gi' > $prefix.cleanhead.fa
 
 # Index FASTA file
@@ -17,19 +24,11 @@ samtools faidx $prefix.cleanhead.fa
 awk '$1 !~ /^#/ {print $1}' $prefix.gffread.gff | sort -u > contigs_with_gene.txt
 
 # Extract contigs
-xargs samtools faidx $prefix.cleanhead.fa < contigs_with_gene.txt > prefix.clean.fa
+xargs samtools faidx $prefix.cleanhead.fa < contigs_with_gene.txt > $prefix.clean.fa
 
 rm $prefix.cleanhead.fa
 
 echo "Clean gff file for reference"
-
-prefix=`basename $gff .gff3`
-
-# clean GFF
-
-# clean GFF1 for moving gene ID to gene symbol
-
-gffread $gff --keep-genes -o $prefix.gffread.gff
 
 # make protein faa for orthofinder
 
