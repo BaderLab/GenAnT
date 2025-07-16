@@ -240,13 +240,13 @@ rule braker_lr:
         fi
         """
 
-rule toga_anno:
+rule cactus_anno:
     input:
         config["outDir"]+"/assembly/assembly.softmasked.fa"
     output:
-        config["outDir"]+"/transcript_selection/toga.r1.gffread.gff"
+        config["outDir"]+"/cactus_alnr1/target-to-ref.chain"
     threads:
-        32
+        28
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -255,16 +255,32 @@ rule toga_anno:
         """
             scripts/make_cactus_tree.sh {config[outDir]} {config[target]} {config[refToga]} {config[refTogaFa]} "r1"
             scripts/cactus_align_and_chain_sif.sh {config[outDir]} {config[externalDir]} {config[TogaDir]} {config[target]} {config[refToga]} "r1"
+        """
+
+rule toga_anno:
+    input:
+        config["outDir"]+"/cactus_alnr1/target-to-ref.chain"
+    output:
+        config["outDir"]+"/transcript_selection/toga.r1.gffread.gff"
+    threads:
+        28
+    params:
+        memory_per_thread="12G",
+        extra_cluster_opt="",
+        walltime="72:00:00"
+    shell: 
+        """
             scripts/run_toga.sh {config[outDir]} {config[externalDir]} {config[target]} {config[refToga]} {config[refTogaBed]} {config[refTogaIsoform]} "r1"
         """
 
-rule toga_anno2:
+
+rule cactus_anno2:
     input:
         config["outDir"]+"/assembly/assembly.softmasked.fa"
     output:
-        config["outDir"]+"/transcript_selection/toga.r2.gffread.gff"
+        config["outDir"]+"/cactus_alnr2/target-to-ref.chain"
     threads:
-        32
+        28
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -274,6 +290,25 @@ rule toga_anno2:
         if [ "{config[refToga2]}" != "none" ] ; then
             scripts/make_cactus_tree.sh {config[outDir]} {config[target]} {config[refToga2]} {config[refTogaFa2]} "r2"
             scripts/cactus_align_and_chain_sif.sh {config[outDir]} {config[externalDir]} {config[TogaDir2]} {config[target]} {config[refToga2]} "r2"
+        else
+            touch {output}
+        fi
+        """
+
+rule toga_anno2:
+    input:
+        config["outDir"]+"/cactus_alnr2/target-to-ref.chain"
+    output:
+        config["outDir"]+"/transcript_selection/toga.r2.gffread.gff"
+    threads:
+        28
+    params:
+        memory_per_thread="12G",
+        extra_cluster_opt="",
+        walltime="72:00:00"
+    shell: 
+        """
+        if [ "{config[refToga2]}" != "none" ] ; then
             scripts/run_toga.sh {config[outDir]} {config[externalDir]} {config[target]} {config[refToga2]} {config[refTogaBed2]} {config[refTogaIsoform2]} "r2"
         else
             touch {output}
