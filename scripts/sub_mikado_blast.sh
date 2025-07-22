@@ -1,5 +1,4 @@
 #!/bin/bash
-#$ -l h_vmem=14G,h_rt=10:00:00,h_stack=32M
 
 cd $outDir/transcript_selection
 
