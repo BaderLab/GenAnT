@@ -1,6 +1,5 @@
 #!/bin/bash
-#$ -l h_vmem=24G,h_rt=200:00:00,h_stack=32M
-#$ -pe smp 16
+
 
 
 # singularity build cactus.v2.9.3.sif docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.3
