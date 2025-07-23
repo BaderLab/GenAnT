@@ -157,6 +157,24 @@ Micro RNAs (miRNAs) are not found with Infernal using the above steps, but can i
 MirMachine.py -n Mammalia -s name_of_species --genome genome.softmasked.fasta -m deutero --cpu number_of_threads
 ```
 
+If you are not sure what clade your assembly should be annotated with, you can check the available clades with:
+```
+MirMachine.py -p
+```
+
+As of version 0.2.13, the available clades are listed below.
+
+```
+Acanthomorpha    Ambulacraria     Amniota           Amphibia         Annelida          Archelosauria   Archosauria       Arthropoda         Bilateria    
+Boreoeutheria    Branchiostoma    Caenorhabditis    Catarrhini       Cephalopoda       Chelicerata     Chondrichthyes    Chordata           Chromadorea  
+Clupeocephala    Cnidaria         Coleoidea         Cyclostomata     Daphnia           Demospongiae    Deuterostomia     Diapsida           Diptera      
+Diptera          Drosophila       Ecdysozoa         Echinodermata    Eleutherozoa      Endopterygota   Enteropneusta     Euarchontoglires   Eumetazoa    
+Eutheria         Glires           Gnathostomata     Gymnophiona      Laurasiatheria    Lepidoptera     Lepidosauria      Lophotrochozoa     Mammalia     
+Marsupialia      Metazoa          Mollusca          Muridae          Neoaves           Neognathae      Neoptera          Neopterygii        Neotrochozoa 
+Octopus          Olfactores       Osteichthyes      Pancrustacea     Platytrochozoa    Protostomia     Sarcopterygii     Silicispongia      Tetrapoda    
+Theria           Vertebrata       Xenopus
+```
+
 MirMachine outputs a GFF file with high confidence results found in `results/predictions/filtered_gff/name_of_species.PRE.gff`.
 
 The GFF file that MirMachine is a little funky, as it has `gene_id=` instead of `ID=` which is expected for GFF3 files. We can use sed to replace `gene_id` with `ID`.
