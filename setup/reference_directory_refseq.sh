@@ -16,18 +16,10 @@ cd $wd
 
 gffread $gff --keep-genes -o $prefix.gffread.gff
 
-sed '/^>/ s/ .*//' $fa | sed 's/[ryswkmbdhv]/N/gi' > $prefix.cleanhead.fa
+sed '/^>/ s/ .*//' $fa | sed 's/[ryswkmbdhv]/N/gi' > $prefix.clean.fa
 
 # Index FASTA file
 samtools faidx $prefix.cleanhead.fa
-
-# Extract unique contig names from GFF
-awk '$1 !~ /^#/ {print $1}' $prefix.gffread.gff | sort -u > contigs_with_gene.txt
-
-# Extract contigs
-xargs samtools faidx $prefix.cleanhead.fa < contigs_with_gene.txt > $prefix.clean.fa
-
-rm $prefix.cleanhead.fa
 
 echo "make protein faa for orthofinder"
 
