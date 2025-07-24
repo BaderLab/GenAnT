@@ -26,7 +26,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 			echo "$line"
 			i=$line
 			b=`basename $i .bam`
-			$externalDir/stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p 8 --conservative
+			$externalDir/stringtie stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p 8 --conservative
 
 		done < mixed.txt
 
@@ -40,7 +40,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
    		 	i=$line
    			b=`basename $i .bam`
 
-   			$externalDir/stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p 8 --conservative
+   			$externalDir/stringtie stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p 8 --conservative
 
 		done < isoseq_only.txt
 
@@ -55,7 +55,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 			b=`basename $i .bam`
 
-			$externalDir/stringtie $outDir/RNAseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".sr.gtf" -p 8 --conservative
+			$externalDir/stringtie stringtie $outDir/RNAseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".sr.gtf" -p 8 --conservative
 
 		done < rnaseq_only.txt
 
@@ -63,7 +63,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 	cd $outDir
 
-	$externalDir/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+	$externalDir/stringtie stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff # make compatible with downstreat steps
 
@@ -79,9 +79,9 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do stringtie stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
 
-	$externalDir/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+	$externalDir/stringtie stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 
@@ -95,9 +95,9 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie stringtie  $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
 
-	$externalDir/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+	$externalDir/stringtie stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 
