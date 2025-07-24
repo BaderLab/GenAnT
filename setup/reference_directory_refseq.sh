@@ -16,10 +16,16 @@ cd $wd
 
 gffread $gff --keep-genes -o $prefix.gffread.gff
 
-sed '/^>/ s/ .*//' $fa | sed 's/[ryswkmbdhv]/N/gi' > $prefix.clean.fa
+sed '/^>/ s/ .*//' $fa > $prefix.cleanname.fa
 
 # Index FASTA file
-samtools faidx $prefix.cleanhead.fa
+samtools faidx $prefix.cleanname.fa
+
+cut -f1 $prefix.gffread.gff | grep -v "^#" | sort | uniq > $prefix.gff.chroms.txt
+
+samtools faidx $prefix.cleanname.fa $(cat ${prefix}.gff.chroms.txt) > $prefix.clean.fa
+
+rm $prefix.cleanname.fa
 
 echo "make protein faa for orthofinder"
 
