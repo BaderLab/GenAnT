@@ -15,18 +15,19 @@ prefix=`basename $gff .gff3`
 
 gffread $gff --keep-genes -o $prefix.gffread.gff
 
-sed '/^>/ s/ .*//' $fa | sed 's/[ryswkmbdhv]/N/gi' > $prefix.cleanhead.fa
+sed '/^>/ s/ .*//' $fa > $prefix.cleanname.fa
 
 # Index FASTA file
-samtools faidx $prefix.cleanhead.fa
+samtools faidx $prefix.cleanname.fa
 
-# Extract unique contig names from GFF
-awk '$1 !~ /^#/ {print $1}' $prefix.gffread.gff | sort -u > contigs_with_gene.txt
+cut -f1 $prefix.gffread.gff | grep -v "^#" | sort | uniq > $prefix.gff.chroms.txt
 
-# Extract contigs
-xargs samtools faidx $prefix.cleanhead.fa < contigs_with_gene.txt > $prefix.clean.fa
+samtools faidx $prefix.cleanname.fa $(cat ${prefix}.gff.chroms.txt) > $prefix.clean.fa
 
-rm $prefix.cleanhead.fa
+rm $prefix.cleanname.fa
+
+# Index FASTA file
+samtools faidx $prefix.clean.fa
 
 echo "Clean gff file for reference"
 
@@ -34,7 +35,7 @@ echo "Clean gff file for reference"
 
 gffread -y $prefix".protein.faa" -g $fa $prefix".gffread.gff"
 
-# filters for gff's with pseudogenes containing premature stop codons. 
+# filters for gffs with pseudogenes containing premature stop codons. 
 sed  '/^>/!s/[.*]//g'  $prefix".protein.faa" > $prefix".nostop.protein.faa" 
 
 # make bed12 for TOGA
