@@ -138,15 +138,15 @@ Looking at `infernal.gff`, you will see that the type of ncRNA that Infernal has
 
 The easiest way to use this table is to read it into R, in addition to the GFF file from Infernal, and use pattern matching to assign the different feature types to the ncRNAs output by Infernal. We have provided an R notebook that performs these modifications called `rfamConversion.Rmd` which can be found in this folder. The notebook outputs a reformatted GFF called `infernal.types.gff`.
 
+### Our scripts
+Everything in section 4 up to this point is performed with `scripts/ncRNA_analysis.sh`
 
-In our scripts, ncRNA annotation from blast seeding to infernal is performed with `ncRNA_analysis.sh`, which is essentially a wrapper of the code above. Given the directory strucure generated with our pipeline, this is executed with:
+This script has positional arguments that can be added by removing the comment "#"
 
 ```
-tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
-dataDir=$tutorialDir/data
-outDir=/path-to-output-dir/
-scriptsDir=$tutorialDir/scripts
-scripts/ncRNA_analysis.sh
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# species=$3 # "heterocephalus_glaber"
 ```
 
 ### Identifying miRNAs with MirMachine
@@ -190,15 +190,14 @@ Now to clearly have these features labeled as ncRNAs when they are combined into
 sed -i 's/sequence_with_30nt.*/gbkey=ncRNA/g' name_of_species.PRE.id.gff
 ```
 
-In our pipelines, these miRMachine scripts are performed with `run_mirmachine.sh`
+### Our scripts
+
+These miRMachine analysis are performed with `run_mirmachine.sh`
 
 ```
-outDir=outDir=/path-to-output-dir/
-species="heterocephalus_glaber"
-scriptsDir=$tutorialDir/scripts
-
-scripts/run_mirmachine.sh # note, this is actually run within other scripts so you may need to add outDir=$1 and species=$2 to the top of run_mirmachine.sh if you want to do it on your own and use positional arguments.
-
+# outDir=$1 # /scratch/example_isoseq
+# mirmachineClade=$2 # "Mammalia"
+# species=$3 # "heterocephalus_glaber"
 ```
 
 ### Combining ncRNA gene models
@@ -306,15 +305,15 @@ Finally, we can sort this file by coordinate using BEDTools.
 bedtools sort -i full_annotation.type_final.gff > full_annotation.gff
 ```
 
-Assuming Infernal and miRmachine are run, the `scripts/ncRNA_postprocess.sh` script runs the above instructions as a liner. 
-```
-outDir=/path-to-output-dir/
-tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
-dataDir=$tutorialDir/data
-externalDir=$tutorialDir/external
-scriptsDir=$tutorialDir/scripts
+### Our scripts
 
-scripts/ncRNA_postprocess.sh
+Assuming Infernal and miRmachine are run, our scripts use `scripts/ncRNA_postprocess.sh` to finish the ncRNA analysis. 
+This script has positional arguments that can be added by removing the comment "#"
+
+```
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# species=$3 # "heterocephalus_glaber"
 ```
 
 
