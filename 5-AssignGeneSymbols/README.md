@@ -36,11 +36,16 @@ orthofinder -t number_of_threads -a number_of_threads -o orthofinder -f protein_
 
 The OrthoFinder results we are interested in are pairwise protein-protein relationships between the reference and target species. They can be found in `./orthofinder/Results_date_of_run/Orthologues/Orthologues_target_proteins/target_proteins__v__reference_proteins.tsv`. These can be read into an R notebook called `AddOrthoFinderGenes.Rmd` which will take the results from OrthoFinder and add a column to `gene_symbols.tsv` and `gene_symbols_noCopies.tsv` with the OrthoFinder gene symbols.
 
+### Our scripts
+Our scripts performs this analysis with `scripts/run_orthofinder.sh`
+
+This script has positional arguments that can be added by removing the comment "#"
 We run `scripts/run_orthofinder.sh` in our pipeline.
 
 ```
-outDir=/path-to-output-dir/
-scripts/run_orthofinder.sh
+# outDir=$1 # /scratch/example_isoseq
+# orthofinderTab=$2 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.table.txt # directory name in ~/data
+# orthofinderFA=$3 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.nostop.protein.faa # directory name in ~/data
 ```
 
 ### LiftOff and TOGA
@@ -101,20 +106,19 @@ gffread full_annotation.geneSymbols.gff -F -T -o full_annotation.geneSymbols.gtf
 
 If you find specific issues regarding how a GFF file you've made works with a bioinformatics tool, please post an issue! It's likely that some file manipulation with `rtracklayer` or GFFRead will do the trick.
 
-Combining the output of LiftOff and TOGA and orthofinder is run with `scripts/gene_symbol_tables.sh` 
 
-It would be run with
+### Our scripts
+Our scripts performs this analysis with `scripts/aggregate_symbols.sh`
+
+This script has positional arguments that can be added by removing the comment "#"
+
 ```
-tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
-dataDir=$tutorialDir/data
-externalDir=$tutorialDir/external
-scriptsDir=$tutorialDir/scripts
-outDir=/path-to-output-dir/
-
-bash scripts/gene_symbol_tables.sh
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# orthofinderTab=$3 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.table.txt 
+# refTogaIsoform=$4 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.toga.tsv
+# refTogaIsoform2=$5 # "none"
 ```
-
-
 
 ### Functional prediction with InterProScan
 
@@ -126,3 +130,13 @@ interproscan.sh -i target_proteins.faa -f tsv -dp -o output.iprscan.tsv
 
 
 At this point, you will hopefully have an informative, labeled genome annotation that works well for your purposes. We are always striving to make this tutorial more comprehensive and generalizable, so please reach out with your feedback!
+
+### Our scripts
+Our scripts performs this analysis with `scripts/run_interproscan.sh`
+
+This script has positional arguments that can be added by removing the comment "#"
+
+```
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+```
