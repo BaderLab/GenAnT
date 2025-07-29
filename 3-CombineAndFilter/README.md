@@ -62,16 +62,15 @@ Our scripts perform these analyses with `12_mikado_configure_and_prepare.sh`. Fi
 
 This script scans through the `transcript_selection` directory for non-empty gff files. It then runs our `scripts/make_mikado_input.R` script to generate the `mikado_input_sheet.txt` described above before running `mikado configure` and `mikado prepare`
 
+### Our scripts
+Our scripts performs these two steps with `scripts/12_mikado_configure_and_prepare.sh`. You can add positional arguments by removing the comment "#"
+
 ```
-tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
-externalDir=$tutorialDir/external
-outDir=/path-to-output/
-customRef="none" # if you're building on a reference annotation
-liftoffRef="none" # if the liftoff annotation should consider a reference genome (e.g., you are doing an assembly/annotation upgrade for a species with an existing assembly/annotation)
-scriptsDir=$tutorialDir/scripts
-
-scripts/12_mikado_configure_and_prepare.sh 
-
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# customRef=$4 # "FALSE"
+# liftoffRef=$5 # "FALSE"
+# mikadoScore=$6 # "mammalian.yaml"
 ```
 
 ### Building transcript feature table
@@ -133,16 +132,15 @@ Assuming you have short and long read RNA-seq data, concatenate the junctions fr
 cat 3-filt/portcullis_filtered.pass.junctions.bed lr_junctions.bed > junctions.final.us.bed
 ```
 
+### Our scripts
+
 Using our scripts, junctions are computed with `scripts/get_junctions.sh`
 
+This script has positional arguments that can be added by removing the comment "#"
 
-Assuming the directory structure built in our pipeline/snakemake, getting junctions is performed with:
 ```
-outDir=/path-to-output/
-scriptsDir=$tutorialDir/scripts
-scripts/get_junctions.sh
+outDir=$1 # /scratch/example_isoseq
 ```
-
 
 
 #### BLAST+
@@ -188,6 +186,15 @@ E.g. (on our SGE).
 for i in *fasta ; do qsub -N $i -P simpsonlab -cwd -V -v I=$i scripts/run_looped_mikado_blast.sh ; done
 ```
 
+### Our scripts
+In our scripts performs this analysis with `sub_mikado_blast.sh`
+
+This script has positional arguments that can be added by removing the comment "#"
+
+```
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+```
 
 #### TransDecoder
 
@@ -211,12 +218,12 @@ If there is an error in the second step, it may be fixed by adding the flag `--n
 
 TransDecoder outputs valid ORFs in a BED file (e.g. `mikado_prepared.fasta.transdecoder.bed`) that can now be used for Mikado serialise.
 
-Using our pipeline, TransDecoder is run with `scripts/run_transdecoder.sh`
+### Our scripts
+
+In our scripts performs this analysis with `scripts/run_transdecoder.sh`
 
 ```
-outDir=/path-to-output/
-bash scripts/run_transdecoder.sh
-
+# outDir=$1 # /scratch/example_isoseq
 ```
 
 #### 3. Mikado serialise
@@ -270,16 +277,15 @@ mikado pick \
 
 The output of `mikado pick` is a GFF file containing the gene models selected based on the parameters in the scoring file and the information in `mikado_serialise.db`. At this point, the gene models can be analysed and visualised (if desired) for quality purposes. `mikado pick` is fairly quick to run, so it may be a good idea to run it a few times using different stringency levels on when to split chimeras, to see which setting results in the most expected gene model statistics (e.g. the highest BUSCO scores).
 
-In our scripts, serialize and pick are run using th `scripts/45_mikado_serialize_pick.sh` command.
+### Our scripts
+
+In our scripts performs this analysis with `scripts/45_mikado_serialize_pick.sh` command.
+This script has positional arguments that can be added by removing the comment "#"
+
 
 ```
-tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
-externalDir=$tutorialDir/external
-datalDir=$tutorialDir/data
-outDir=/path-to-output/
-scriptsDir=$tutorialDir/scripts
-
-scripts/45_mikado_serialize_pick.sh
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
 ```
 
 
