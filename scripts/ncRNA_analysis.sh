@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# species=$3 # "heterocephalus_glaber"
+
+dataDir=$tutorialDir/data
+externalDir=$tutorialDir/external
+
+
 cd $outDir
 
 mkdir -p ncRNA_analysis ; cd ncRNA_analysis

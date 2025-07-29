@@ -1,10 +1,10 @@
 #!/bin/bash
 
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# TogaDir=$3 # $tutorialDir/data/references/mmus_GRC39
 
-
-# singularity build cactus.v2.9.3.sif docker://quay.io/comparative-genomics-toolkit/cactus:v2.9.3
-
-# singularity exec cactus.v2.9.3.sif hal2fasta halLiftover
+externalDir=$tutorialDir/external
 
 CACTUS_SIF=$externalDir/singularity_images/cactus.v2.9.3.sif
 

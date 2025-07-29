@@ -1,12 +1,18 @@
 #!/bin/bash
 
+# outDir=$1 # /scratch/example_isoseq
+# MaskedAssemblyFile=$2 # "none"
+# MaskedAssemblyAnnotation=$3 # "none"
+# species=$4 # "heterocephalus_glaber"
+# dfamDB=$5 # "rodentia"
+
 cd $outDir
 
 if [[ $MaskedAssemblyFile = "none" ]] ; then
 
 	mkdir -p earl_grey ; cd earl_grey
 
-	earlGrey -g $outDir/assembly/assembly.fa -s $species -o . -t 50 -r $dfamDB -d yes
+	earlGrey -g $outDir/assembly/assembly.fa -s $species -o . -t 16 -r $dfamDB -d yes
 
 	cd $outDir
 

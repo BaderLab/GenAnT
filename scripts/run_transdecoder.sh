@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# outDir=$1 # /scratch/example_isoseq
+
 mkdir -p $outDir/transcript_selection/transdecoder
 
 cd $outDir/transcript_selection/transdecoder

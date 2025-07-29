@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+
+externalDir=$tutorialDir/external
+
 mkdir -p $outDir/stringtie_out
 
 # No RNA-seq data
@@ -79,7 +84,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
 
 	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
 
@@ -95,7 +100,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do $externalDir/stringtie/stringtie  $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
 
 	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
 
