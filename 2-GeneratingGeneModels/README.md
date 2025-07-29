@@ -45,6 +45,16 @@ liftoff \
  -copies \
  -p number_of_threads
 ```
+### Our scripts
+In our scripts performs this analysis with `scripts/run_liftOff.sh`
+
+This script has positional arguments that can be added by removing the comment "#"
+```
+# outDir=$1 # /scratch/example_isoseq
+# refLiftOffGff=$2 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.gffread.gff # directory in /data -- adding species can be done with scripts in /utils
+# refLiftOffFa=$3 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna # directory in /data -- adding species can be done with scripts in /utils
+
+```
 
 Using the example data in our tutorial (`run_liftoff.sh`), the liftoff command looks like this:
 
@@ -217,6 +227,39 @@ outDir=/path-to-output-dir/
 scripts/run_stringtie_flexible.sh
 ```
 
+### Our scripts
+Our scripts performs this analysis with three scripts:
+
+```
+scripts/make_cactus_tree.sh
+scripts/cactus_align_and_chain_sif.sh
+scripts/run_toga.sh
+```
+Each of these scripts have positional arguments that can be added by removing the comment "#"
+`scripts/make_cactus_tree.sh`
+```
+# outDir=$1 # /scratch/example_isoseq
+# refTogaFa=$2 $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna # directory in /data -- adding species can be done with scripts in /utils
+# refToga=$3 # mouse
+# target=$4 # "example"
+```
+`scripts/cactus_align_and_chain_sif.sh`
+```
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# TogaDir=$3 # $tutorialDir/data/references/mmus_GRC39
+```
+`scripts/run_toga.sh`
+```
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# sourceDir=$3 # /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/bin/activate
+# refToga=$4 # "mouse"
+# target=$5 # "example"
+# refTogaBed=$6 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed
+# refTogaIsoform=$7 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.toga.tsv
+# togaDir=$8 # $tutorialDir/data/references/mmus_GRC39
+```
 
 #### TOGA and associated tools: installing/running/troubleshooting
 
@@ -348,16 +391,15 @@ stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringti
 Our script assumes that the RNAseq data lives in $outDir/RNAseq_alignment and the ISOseq data lives in $outDir/ISOseq_alignment, and that experiments of the same tissue have the same bam file name. For example your `kidney` experiments would live in:
 * RNA-seq: `$outDir/RNAseq_alignment/kidney.bam`
 * ISO-seq: `$outDir/ISOseq_alignment/kidney.bam`
+
+### Our scripts
 `run_stringtie_flexible.sh` also deals with merging and directory structure.
 
+This script has positional arguments that can be added by removing the comment "#"
 ```
-outDir=/path-to-output-dir/
-tutorialDir=/path-to-GAT/GenomeAnnotationTutorial
-externalDir=$tutorialDir/external
-scriptsDir=$tutorialDir/scripts
-scripts/run_stringtie_flexible.sh
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
 ```
-
 
 
 The only features in the output GTF file are transcripts and exons, with no prediction of coding sequences (typically indicated by "CDS" in the third column of the GTF file). Because of this, the output cannot be easily converted into a protein sequence and tested with BUSCO. Although this is not ideal, testing the quality and completeness of a genome annotation with BUSCO is not necessary if it will be combined with additional annotation sets and filtered using [Mikado](https://mikado.readthedocs.io/en/stable/) (explained later). If you used poor-quality or very short RNA-seq data, however (not recommended), there is a risk of generating short, fragmented, monoexonic transcripts. You can check to see if your annotation has many short, monoexonic transcripts using a summary statistics calculator provided by Mikado, `mikado util stats annotation.gff output_summary.tsv`, where `annotation.gff` is replaced by whatever annotation you want the summary statistics for, and `output_summary.tsv` is whatever you name the output summary statistics file. You can compare your summary statistics to those of another mammalian genome annotated by RefSeq or Ensembl. If the statistics are similar, this indicates an annotation that is likely of higher quality. However, if you notice that the average number of exons per transcript is very low and the number of monoexonic transcripts is very high in the genome you are annotating, this indicates that many of the gene models may be short or fragmented, and should potentially be excluded from the final annotation set or run through a pass of very stringent filtering with Mikado (tool explained later, noisy RNA-seq e.g. https://mikado.readthedocs.io/en/stable/Tutorial/Adapting/#case-study-2-noisy-rna-seq-data).
@@ -399,7 +441,22 @@ singularity exec braker3_lr.sif braker.pl \
 ```
 In step 3, braker.gff and braker_lr.gff are separate gff files input into `mikado`. In our testing, merging braker and braker_lr with mikado provides a nearly identical GFF file to if you integrate the same files with TSEBRA.
 
+### Our scripts
+
 Running braker through our tutorial is performed with the `scripts/run_braker*.sh` scripts.
+Which scripts you use depends on your input data
+* no RNAseq
+* you have short read RNAseq
+* you have long read RNA seq
+
+All of these scripts use the same positional arguments, which can be added to the script by removing the coments
+```
+# outDir=$1 # /scratch/example_isoseq
+# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
+# target=$3 # "example"
+# brakerOdbFaa=$4 # "Vertebrata.fa"
+```
+
 
 #### BRAKER3: installing/running/troubleshooting
 
