@@ -21,12 +21,23 @@ earlGrey \
  -d yes \
  -t number_of_threads
 ```
+
+#### Our scripts
 In our pipeline using the example data (a small chromosome from the naked molerat, this command looks as follows:
 
 ```
 outDir=/path-to-output-directory/
 species="heterocephalus_glaber"
 scripts/run_earl_grey.sh
+```
+
+This script has positional arguments that can be added by removing the comment "#"
+```
+# outDir=$1 # /scratch/example_isoseq
+# MaskedAssemblyFile=$2 # "none"
+# MaskedAssemblyAnnotation=$3 # "none"
+# species=$4 # "heterocephalus_glaber"
+# dfamDB=$5 # "rodentia"
 ```
 
 The main part of the script looks as follows
@@ -73,3 +84,4 @@ Below is the `species_mergedRepeats/looseMerge` directory in EarlGrey where repe
 - If Earl Grey runs out of time, you can rerun it with the same command and directories and it picks up (more-or-less) where it left off.
 - Earl Grey does not like spaces in any directory names
 - In our testing `forksys:  Program terminated by a signal 9.` usually means an out of RAM issue
+
