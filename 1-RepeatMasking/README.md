@@ -23,13 +23,7 @@ earlGrey \
 ```
 
 ### Our scripts
-In our pipeline using the example data (a small chromosome from the naked molerat, this command looks as follows:
-
-```
-outDir=/path-to-output-directory/
-species="heterocephalus_glaber"
-scripts/run_earl_grey.sh
-```
+In our scripts performs this analysis with `scripts/run_earl_grey.sh`
 
 This script has positional arguments that can be added by removing the comment "#"
 ```
