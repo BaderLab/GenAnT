@@ -22,7 +22,7 @@ earlGrey \
  -t number_of_threads
 ```
 
-#### Our scripts
+### Our scripts
 In our pipeline using the example data (a small chromosome from the naked molerat, this command looks as follows:
 
 ```
