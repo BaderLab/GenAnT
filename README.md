@@ -13,8 +13,8 @@ We recommend tools and best practices for each step, providing code to help the 
 Generally, genome annotation does not have a comparable ground truth, so we use different sources of evidence to annotate the most likely gene models. These gene models are considered hypotheses for where the genes are located on the genome, but false positives and false negatives will always exist. This pipeline uses existing tools and quality-checking software to try to minimise both of these error rates to create a high-quality annotation.
 
 We are building an additional stage:
-6. After Annotation
-Briefly, this folder includes documentation on how to:
+
+6. After Annotation. this folder includes documentation to:
 * Ensure that the annotation tutorial completed correctly (assuming you used the Snakemake or internal directory structure)
 * Assess annotation quality
 * Improve gene models through situiational post-doc analyses
