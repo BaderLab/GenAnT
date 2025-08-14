@@ -146,7 +146,8 @@ for(i in 1:length(toga_dfs)) {
                                by = "mikado_id")
 }
 
-
+# Remove redundant toga columns from merge functions
+mikado_df <- mikado_df[,!(colnames(mikado_df) %in% c("toga_gene.x", "toga_gene.y"))]
 
 write.table(mikado_df, file = "gene_symbols.tsv",
             quote = FALSE, sep = "\t",
