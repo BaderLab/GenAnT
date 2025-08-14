@@ -137,6 +137,9 @@ toga_dfs[[i]] <- toga_df
 
 }
 
+# Remove redundant toga columns from merge functions
+mikado_df <- mikado_df[,!(colnames(mikado_df) %in% c("toga_gene.x", "toga_gene.y"))]
+
 ##
 
 for(i in 1:length(toga_dfs)) {
