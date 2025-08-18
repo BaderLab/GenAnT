@@ -39,27 +39,17 @@ symbols <- read.table("gene_symbols_noCopies.tsv", sep = "\t", header = TRUE)
 
 # The first step to this will be to create...
 
+rank_vector <- c("orthofinder_gene","togar1_gene","togar2_gene",
+                 "liftoff_gene","ncRNA_gene")
+rank_vector <- rank_vector[rank_vector %in% symbols]
 
 symbols$hierarchical_gene <- rep(NA, nrow(symbols))
-for (j in 1:nrow(symbols)) {
-  # First: if there is an OrthoFinder gene in table, use it
-  if (!is.na(symbols$orthofinder_gene[j])) {
-    symbols$hierarchical_gene[j] <- as.character(symbols$orthofinder_gene[j])
-  }
-  # If no OrthoFinder gene, use TOGA gene
-  else if (!is.na(symbols$togar1_gene[j])) {
-    symbols$hierarchical_gene[j] <- as.character(symbols$togar1_gene[j])
-  }
-  else if (!is.null(symbols$togar2_gene[j])) { # make sure that the column exists.
-    if(!is.na(symbols$togar2_gene[j]))  symbols$hierarchical_gene[j] <- as.character(symbols$togar2_gene[j])
-  }
-  # If no TOGA gene, use LiftOff gene
-  else if (!is.na(symbols$liftoff_gene[j])) {
-    symbols$hierarchical_gene[j] <- as.character(symbols$liftoff_gene[j])
-  }
-  # If no LiftOff gene, use ncRNA gene
-  else if (!is.na(symbols$ncRNA_gene[j])) {
-    symbols$hierarchical_gene[j] <- as.character(symbols$ncRNA_gene[j])
+
+for(j in 1:nrow(symbols)) { # for each gene
+  for(i in length(rank_vector):1) { # going in the reverse order of the hiherarchy. if the value is not NULL, replace it
+    if (!is.na(symbols[j,rank_vector[i]])) {
+      symbols$hierarchical_gene[j] <- as.character(symbols[j,rank_vector[i]])
+    }
   }
 }
 
@@ -77,56 +67,71 @@ ortho_copies <- grep(";",symbols$hierarchical_gene)
 
 symbols_simplify <- symbols[ortho_copies,]
 
-liftoff_simple <- strsplit(symbols_simplify$liftoff_gene,";")
-toga_simple <- strsplit(symbols_simplify$togar1_gene,";")
-if("togar2_gene" %in% colnames(symbols)) {
-  togar2_simple <- strsplit(symbols_simplify$togar1_gene,";")
-}
 hier_simple <- strsplit(symbols_simplify$hierarchical_gene,";")
 
+each_simple <- list()
+
+for(i in rank_vector[2:length(rank_vector)]) {
+  each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
+}
+
 simple <- c()
-
-for(i in 1:length(liftoff_simple)) {
-  # Get all potential gene names from each method
-  hier <- hier_simple[[i]]
-  lift <- liftoff_simple[[i]]
-  tog <- toga_simple[[i]]
-  genes <- list(lift=lift,tog=tog)
-  if("togar2_gene" %in% colnames(symbols)) {
-    tog2 <- togar2_simple[[i]]
-    genes[["tog2"]] <- tog2
-  }
+for(i in 1:length(hier_simple)) {
+  print(i)
+  print(length(simple))
+  # Get all of the potential names from each method
+  get_ith <- function(x) sapply(x, `[`, i)
   
-
-  # get number of times each gene shows up
-  all_elements <- unique(unlist(genes))
+  get_each <- get_ith(each_simple)
   
-  # Count in how many vectors each element appears
+  get_hier <- hier_simple[[i]]
+  
+  all_elements <- unique(unlist(get_each))
+  all_elements <- all_elements[!is.na(all_elements)]
   element_counts <- sapply(all_elements, function(x) {
-    sum(sapply(genes, function(v) x %in% v))
+    sum(sapply(each_simple, function(v) x %in% v))
   })
+  element_counts <- element_counts[element_counts > 0]
   
-  
-  if(!any(hier %in% all_elements)) {
+  if(!any(get_hier %in% all_elements)) {
     # If the Orthofinder output never shows up then tough luck
     simple[i] <- symbols_simplify$hierarchical_gene[i]
   } else {
     # if it does, then we reduce the orthofinder genes symbols to those that have the greatest overlap with the other methods.
-    for(i in sort(unique(element_counts),decreasing = FALSE)) {
-     inter <- intersect(hier,names(element_counts)[element_counts == i])
-     if(length(inter) > 0) {
-       out1 <- hier[hier %in% tog]
-       simple[i] <- paste(out1, collapse = ";")
-     }
+    for(j in sort(unique(element_counts),decreasing = FALSE)) {
+      inter <- intersect(get_hier,names(element_counts)[element_counts == j])
+      if(length(inter) > 0) {
+        out1 <- get_hier[get_hier %in% inter]
+        simple[i] <- paste(out1, collapse = ";")
+      }
     }
   }
-}
   
+  
+}
 
 symbols$hierarchical_gene[ortho_copies] <- simple
 
+
+
+### Replace lncRNA genes symbols with lncRNA symbols
+gff_gene <- gff[gff$ID %in% symbols$mikado_id,]
+
+# table(gff_gene$ID == symbols$mikado_id)
+symbols$gene_biotype <- gff_gene$gene_biotype
+symbols$hierarchical_gene[which(symbols$gene_biotype == "lncRNA")] <- symbols$ncRNA_gene[which(symbols$gene_biotype == "lncRNA")]
+#
+
 symbols$unique_gene <- symbols$hierarchical_gene
 non_na_indices <- !is.na(symbols$hierarchical_gene)
+
+##
+### If the gene is a lncRNA and there is a ncRNA label, that symbol wins
+##
+
+ncRNA_gene_calls <- which(!is.na(symbols$ncRNA_gene))
+symbols$mikado_id[ncRNA_gene_calls]
+gff_ncRNAcall <- gff[gff$ID %in% symbols$mikado_id[ncRNA_gene_calls],]
 symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non_na_indices], sep = "-copy")
 
 
@@ -135,6 +140,8 @@ symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non
 
 
 symbols$unique_gene[is.na(symbols$unique_gene)] <- symbols$mikado_id[is.na(symbols$unique_gene)]
+
+symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 
 # Once we have these unique values, we can assign them as names to the GFF file. For simplicity, we're going to assign them to the "Name" slot for both RNA and gene features. In e.g. a RefSeq GFF file, this would be similar to the "gene" slot which is the same for mRNA and gene features, whereas the actual name of the feature changes depending on its "Type". Right now, our focus is on simplicity and interpretability which is why we're going for the first option, which should be effective for most downstream purposes.
 
