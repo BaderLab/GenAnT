@@ -419,12 +419,42 @@ singularity exec braker3.sif braker.pl \
  --threads=number_of_threads \
  --species=name_of_your_species \
  --genome=your_genome.fasta \
- --bam=rna1.bam,rna2.bam \
- --prot_seq=~/GenomeAnnotationTutorial/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
+ --bam=rna1.bam,rna2.bam \ # as many bam files as needed
+ --prot_seq=~/GenAnT/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
  --gff3
 ```
 
 If you do not have RNA-seq data and wish to run BRAKER3 in "protein mode", simply remove the `--bam` flag specifying the RNA-seq data.
+
+##### Braker3 with stranded RNA-seq
+
+Stranded RNA-seq is a subclass of short read paired-end RNA sequencing where the strand of the molecule being sequenced is experimentally determined during sequencing. As such, stranded RNA-seq allows for improved delineation of genes where there is strand and opposite strand expression. It also has improved UTR assignment. StringTie automatically detects strandedness in the bam file headers while braker3 does not. 
+
+Braker expects stranded RNA-seq data to be separated from the main bam file with the script found here: https://www.biostars.org/p/92935/ (evidence: https://github.com/Gaius-Augustus/BRAKER/issues/7).
+
+When we used this script to split and merge bam files, braker stranded worked well. We have a slightly more generalized version of this script in scripts. It's basically the same code but assumes our directory structure (i.e., RNA-seq data is stored in `$outDir/RNAseq_alignment`) and makes output bam files called plus.bam and minus.bam. These files will live in the `braker_sr` as to not have to bind extra directories to the braker singularity.
+
+In the context of our directory structure, the script would look something like this.
+
+```
+bash make_RNAseq_stranded.sh $outDir
+```
+
+Then, braker3 is run in a similar manner, but with some parameter changes:
+
+```
+singularity exec braker3.sif braker.pl \
+ --threads=number_of_threads \
+ --species=name_of_your_species \
+ --genome=your_genome.fasta \
+ --bam=plus.bam,minus.bam --stranded=+,- \ # as many bam files as needed
+ --prot_seq=~/GenAnT/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
+ --gff3
+```
+
+The output files will look the same as a normal braker run.
+
+##### Braker3 with long-read RNA-seq
 
 Running Braker3 with ISO-seq data uses the same syntax as with traditional RNA-seq data, but it uses a different singularity image. Namely, you use `braker3_lr.sif` from  `docker://teambraker/braker3:isoseq` instead of `braker3.sif` from `docker://teambraker/braker3:latest`
 
@@ -435,11 +465,13 @@ singularity exec braker3_lr.sif braker.pl \
  --threads=number_of_threads \
  --species=name_of_your_species \
  --genome=your_genome.fasta \
- --bam=iso1.bam,iso2.bam \
- --prot_seq=~/GenomeAnnotationTutorial/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
+ --bam=iso1.bam,iso2.bam \ # as many bam files as needed
+ --prot_seq=~/GenAnT/data/braker_protein/Vertebrata.fa \ # use different odb fasta if neccessary.
  --gff3
 ```
 In step 3, braker.gff and braker_lr.gff are separate gff files input into `mikado`. In our testing, merging braker and braker_lr with mikado provides a nearly identical GFF file to if you integrate the same files with TSEBRA.
+
+
 
 ### Our scripts
 
@@ -462,5 +494,5 @@ All of these scripts use the same positional arguments, which can be added to th
 
 - In our experience, BRAKER is most easily installed and implemented using the Singularity container that the BRAKER authors maintain: `singularity build braker3.sif docker://teambraker/braker3:latest`
 - If installing Braker through other methods (e.g. a conda environment) then the `singularity exec braker3.sif` in the command is unnecessary
-- You likely need to specify where the `augustus config directory` is. Installing the tutorial with `setup` would have this directory in `~/GenomeAnnotationTutorial/external/Augustus/config`. 
+- You likely need to specify where the `augustus config directory` is. Installing the tutorial with `setup` would have this directory in `~/GenAnT/external/Augustus/config`. 
 - We have found that the GFF file output by BRAKER3 has some formatting issues that can be fixed by running GFFRead, e.g. `gffread braker.gtf --keep-genes -o braker.gffread.gff`
