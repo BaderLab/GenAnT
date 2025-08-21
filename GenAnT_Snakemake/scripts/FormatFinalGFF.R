@@ -41,7 +41,7 @@ symbols <- read.table("gene_symbols_noCopies.tsv", sep = "\t", header = TRUE)
 
 rank_vector <- c("orthofinder_gene","togar1_gene","togar2_gene",
                  "liftoff_gene","ncRNA_gene")
-rank_vector <- rank_vector[rank_vector %in% symbols]
+rank_vector <- rank_vector[rank_vector %in% colnames(symbols)]
 
 symbols$hierarchical_gene <- rep(NA, nrow(symbols))
 
