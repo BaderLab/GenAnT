@@ -5,31 +5,114 @@ rule all:
     input:
         config["outDir"]+"/full_annotation.geneSymbols.gff"
 
+
+
 rule preprocess_data:
     input:
-        config["assemblyFile"]
+        assembly=config["assemblyFile"]
     output:
-        config["outDir"]+"/assembly/assembly.fa"
-    threads:
-        1  # Request 16 threads for this rule
+        assembly_out=config["outDir"] + "/assembly/assembly.fa"
+    threads: 
+        1
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="2:00:00"
+        walltime="2:00:00",
+
+        source=config["sourceDir"],
+        external=config["externalDir"],
+        data=config["dataDir"],
+        rnaseq=config["rnaseqDir"],
+        isoseq=config["isoseqDir"],
+        toga=config["TogaDir"],
+        refTogaFa=config["refTogaFa"],
+        refTogaBed=config["refTogaBed"],
+        refTogaIsoform=config["refTogaIsoform"],
+        refLiftOffFa=config["refLiftOffFa"],
+        refLiftOffGff=config["refLiftOffGff"],
+        orthofinderFA=config["orthofinderFA"],
+        orthofinderTab=config["orthofinderTab"],
+        brakerOdbFaa=config["brakerOdbFaa"],
+        outDir=config["outDir"]
     shell:
         """
-        # Make starting directory structure
+        echo "Running preflight check: "
+        fail=0
 
-        cp {input} {output}
-        samtools faidx {output}
+        check_file() {{
+            local file=$1
+            local minsize=${{2:-0}}
+            if [[ ! -f "$file" ]]; then
+                echo "File not found: $file"
+                fail=1
+            elif [[ $minsize -gt 0 ]]; then
+                size=$(stat -c%s "$file")
+                if [[ $size -lt $minsize ]]; then
+                    echo "File too small (<$minsize bytes): $file"
+                    fail=1
+                else
+                    echo "File OK: $file"
+                fi
+            else
+                echo "File OK: $file"
+            fi
+        }}
 
-        mkdir -p {config[outDir]}/transcript_selection
+        check_dir() {{
+            local dir=$1
+            shift
+            local required=("$@")
+            if [[ ! -d "$dir" ]]; then
+                echo "Directory not found: $dir"
+                fail=1
+                return
+            fi
+            echo "Directory OK: $dir"
+            for r in "${{required[@]}}"; do
+                if [[ ! -e "$dir/$r" ]]; then
+                    echo "Missing: $dir/$r"
+                    fail=1
+                else
+                    echo "Found: $dir/$r"
+                fi
+            done
+        }}
 
+        # Preflight checks
+        check_file "{params.source}"
+        check_dir "{params.external}" stringtie kent Augustus singularity_images TOGA infernal-tblout2gff.pl
+        check_dir "{params.data}" braker_protein Rfam uniprot_sprot
+        check_file "{input.assembly}" 1000000
+        check_dir "{params.rnaseq}"
+        check_dir "{params.isoseq}"
+        check_dir "{params.toga}"
+        check_file "{params.refTogaFa}" 1000000
+        check_file "{params.refTogaBed}" 500000
+        check_file "{params.refTogaIsoform}"
+        check_file "{params.refLiftOffFa}" 1000000
+        check_file "{params.refLiftOffGff}" 500000
+        check_file "{params.orthofinderFA}" 500000
+        check_file "{params.orthofinderTab}"
+        check_file "{params.data}/braker_protein/{params.brakerOdbFaa}" 1000000
+
+        echo "==============================="
+        if [[ $fail -ne 0 ]]; then
+            echo "Preflight check FAILED"
+            exit 1
+        else
+            echo "Preflight check PASSED"
+        fi
+
+        echo "Make starting directory structure"
+        cp {input.assembly} {output.assembly_out}
+        samtools faidx {output.assembly_out}
+        mkdir -p "{params.outDir}/transcript_selection"
         """
 
 rule copy_RNAseq: 
     input:
-        config["rnaseqDir"]
+        assembly=config["outDir"]+"/assembly/assembly.fa",
+        rnaseqDir=config["rnaseqDir"]
     output:
         directory(config["outDir"]+"/RNAseq_alignment")
     threads:
@@ -41,14 +124,15 @@ rule copy_RNAseq:
     shell:
         """
 
-        cp -r {input} {output}
+        cp -r {input.rnaseqDir} {output}
 
 
         """
 
 rule copy_ISOseq: 
     input:
-        config["isoseqDir"]
+        assembly=config["outDir"]+"/assembly/assembly.fa",
+        isoseqDir=config["isoseqDir"]
     output:
         directory(config["outDir"]+"/ISOseq_alignment")
     threads:
@@ -60,7 +144,7 @@ rule copy_ISOseq:
     shell:
         """
 
-        cp -r {input} {output}
+        cp -r {input.isoseqDir} {output}
 
 
         """
@@ -73,14 +157,22 @@ rule mask_assembly:
     output:
         config["outDir"]+"/assembly/assembly.softmasked.fa"
     threads:
-        16  # Request 16 threads for this rule
+        28  
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="150:00:00"
+        walltime="150:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        species=config["species"],
+        MaskedAssemblyFile=config["MaskedAssemblyFile"],
+        MaskedAssemblyAnnotation=config["MaskedAssemblyAnnotation"],
+        dfamDB=config["dfamDB"]
+
     shell:
         """
-        scripts/run_earl_grey.sh {config[outDir]} {config[externalDir]} {config[species]} {config[MaskedAssemblyFile]} {config[MaskedAssemblyAnnotation]} {config[dfamDB]}
+        scripts/run_earl_grey.sh {params.outDir} {params.externalDir} {params.species} {params.MaskedAssemblyFile} {params.MaskedAssemblyAnnotation} {params.dfamDB} {threads}
 
         """
 
@@ -100,13 +192,15 @@ rule process_custom_gff: # question: do we need the params in params if we go st
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="2:00:00"
+        walltime="2:00:00",
+
+        customGFF=config["customGFF"]
     shell:
         """
-        if [[ {config[customGFF]} != "none" ]] ; then 
+        if [[ {params.customGFF} != "none" ]] ; then 
             echo "We detected a custom gff file"
 
-            gffread {config[customGFF]} --keep-genes -o {output}
+            gffread {params.customGFF} --keep-genes -o {output}
         else
 
             echo "We did not detect a custom gff"
@@ -127,10 +221,14 @@ rule transcript_asm_stringtie:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="100:00:00"
+        walltime="100:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"]
+
     shell: 
         """
-        scripts/run_stringtie_flexible.sh {config[outDir]} {config[externalDir]} {workflow.basedir}
+        scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads}
         """
 
 # liftOff
@@ -145,18 +243,23 @@ rule liftoff_asm:
     params:
         memory_per_thread="4G",
         extra_cluster_opt="",
-        walltime="60:00:00"
+        walltime="60:00:00",
+
+        outDir=config["outDir"],
+        refLiftOffGff=config["refLiftOffGff"],
+        refLiftOffFa=config["refLiftOffFa"]
+
     shell: 
         """
-        cd {config[outDir]}
+        cd {params.outDir}
 
         mkdir -p liftoff
 
         cd liftoff
 
-        gffutils-cli create {config[refLiftOffGff]} -o referencegff_db
+        gffutils-cli create {params.refLiftOffGff} -o referencegff_db
 
-        liftoff -db referencegff_db {input} {config[refLiftOffFa]} -o ./liftoff.gff -u ./unmapped.liftoff.txt -copies
+        liftoff -db referencegff_db {input} {params.refLiftOffFa} -o ./liftoff.gff -u ./unmapped.liftoff.txt -copies
 
         gffread ./liftoff.gff --keep-genes -o {output}
         """
@@ -169,21 +272,28 @@ rule braker_noRNA:
     output:
         config["outDir"]+"/transcript_selection/braker.noRNA.gffread.gff"
     threads:
-        32
+        28
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="200:00:00"
+        walltime="200:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        target=config["target"],
+        dataDir=config["dataDir"],
+        brakerOdbFaa=config["brakerOdbFaa"]
+
     shell: 
         """
-        if [[ $(ls {config[outDir]}/RNAseq_alignment | wc -l) -eq 0 && $(ls {config[outDir]}/ISOseq_alignment | wc -l) -eq 0 ]] ; then
+        if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -eq 0 && $(ls {params.outDir}/ISOseq_alignment | wc -l) -eq 0 ]] ; then
 
             echo "We did not find short read or long read RNA-seq data (aligned bam files)"
 
-            scripts/run_braker_noRNAseq.sh {config[outDir]} {config[externalDir]} {config[target]} {config[dataDir]} {config[brakerOdbFaa]}
+            scripts/run_braker_noRNAseq.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
 
-            touch {config[outDir]}/transcript_selection/braker.sr.gffread.gff # dummy variable for later
-            touch {config[outDir]}/transcript_selection/braker.lr.gffread.gff # dummy variable for later
+            touch {params.outDir}/transcript_selection/braker.sr.gffread.gff # dummy variable for later
+            touch {params.outDir}/transcript_selection/braker.lr.gffread.gff # dummy variable for later
         else
 
             touch {output}
@@ -201,16 +311,30 @@ rule braker_sr:
     output:
         config["outDir"]+"/transcript_selection/braker.sr.gffread.gff"
     threads:
-        32
+        28
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="200:00:00"
+        walltime="200:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        target=config["target"],
+        dataDir=config["dataDir"],
+        brakerOdbFaa=config["brakerOdbFaa"],
+        stranded=config["stranded"]
+
     shell: 
         """
-        if [[ $(ls {config[outDir]}/RNAseq_alignment | wc -l) -gt 0 ]] ; then
+        if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -gt 0 ]] ; then
             echo "We detected short read RNAseq"
-            scripts/run_braker_sr.sh {config[outDir]} {config[externalDir]} {config[target]} {config[dataDir]} {config[brakerOdbFaa]}
+            if [[ {params.stranded} = "TRUE" ]] ; then 
+                echo "You reported that RNAseq is stranded"
+                scripts/make_RNAseq_stranded.sh {params.outDir} {threads} 
+                scripts/run_braker_stranded.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+            else
+                scripts/run_braker_sr.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+	    fi
         else
             touch {output}
 
@@ -225,16 +349,22 @@ rule braker_lr:
     output:
         config["outDir"]+"/transcript_selection/braker.lr.gffread.gff"
     threads:
-        32
+        28
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="200:00:00"
+        walltime="200:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        target=config["target"],
+        dataDir=config["dataDir"],
+        brakerOdbFaa=config["brakerOdbFaa"]
     shell: 
         """
-        if [[ $(ls {config[outDir]}/ISOseq_alignment | wc -l) -gt 0 ]] ; then
+        if [[ $(ls {params.outDir}/ISOseq_alignment | wc -l) -gt 0 ]] ; then
             echo "We detected ISOseq"
-            scripts/run_braker_lr.sh {config[outDir]} {config[externalDir]} {config[target]} {config[dataDir]} {config[brakerOdbFaa]}
+            scripts/run_braker_lr.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
         else
             touch {output}
         fi
@@ -250,11 +380,18 @@ rule cactus_anno:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="200:00:00"
+        walltime="200:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        target=config["target"],
+        TogaDir=config["TogaDir"],
+        refToga=config["refToga"],
+        refTogaFa=config["refTogaFa"]
     shell: 
         """
-            scripts/make_cactus_tree.sh {config[outDir]} {config[target]} {config[refToga]} {config[refTogaFa]} "r1"
-            scripts/cactus_align_and_chain_sif.sh {config[outDir]} {config[externalDir]} {config[TogaDir]} {config[target]} {config[refToga]} "r1"
+            scripts/make_cactus_tree.sh {params.outDir} {params.target} {params.refToga} {params.refTogaFa} "r1"
+            scripts/cactus_align_and_chain_sif.sh {params.outDir} {params.externalDir} {params.TogaDir} {params.target} {params.refToga} "r1"
         """
 
 rule toga_anno:
@@ -267,10 +404,17 @@ rule toga_anno:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="72:00:00"
+        walltime="72:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],       
+        target=config["target"], 
+        refToga=config["refToga"],
+        refTogaBed=config["refTogaBed"],
+        refTogaIsoform=config["refTogaIsoform"]
     shell: 
         """
-            scripts/run_toga.sh {config[outDir]} {config[externalDir]} {config[target]} {config[refToga]} {config[refTogaBed]} {config[refTogaIsoform]} "r1"
+            scripts/run_toga.sh {params.outDir} {params.externalDir} {params.target} {params.refToga} {params.refTogaBed} {params.refTogaIsoform} "r1"
         """
 
 
@@ -284,12 +428,19 @@ rule cactus_anno2:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="200:00:00"
+        walltime="200:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        target=config["target"],
+        TogaDir2=config["TogaDir2"],
+        refToga2=config["refToga2"],
+        refTogaFa2=config["refTogaFa2"]
     shell: 
         """
-        if [ "{config[refToga2]}" != "none" ] ; then
-            scripts/make_cactus_tree.sh {config[outDir]} {config[target]} {config[refToga2]} {config[refTogaFa2]} "r2"
-            scripts/cactus_align_and_chain_sif.sh {config[outDir]} {config[externalDir]} {config[TogaDir2]} {config[target]} {config[refToga2]} "r2"
+        if [ "{params.refToga2}" != "none" ] ; then
+            scripts/make_cactus_tree.sh {params.outDir} {params.target} {params.refToga2} {params.refTogaFa2} "r2"
+            scripts/cactus_align_and_chain_sif.sh {params.outDir} {params.externalDir} {params.TogaDir2} {params.target} {params.refToga2} "r2"
         else
             touch {output}
         fi
@@ -305,11 +456,18 @@ rule toga_anno2:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="72:00:00"
+        walltime="72:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],       
+        target=config["target"], 
+        refToga2=config["refToga2"],
+        refTogaBed2=config["refTogaBed2"],
+        refTogaIsoform2=config["refTogaIsoform2"]
     shell: 
         """
-        if [ "{config[refToga2]}" != "none" ] ; then
-            scripts/run_toga.sh {config[outDir]} {config[externalDir]} {config[target]} {config[refToga2]} {config[refTogaBed2]} {config[refTogaIsoform2]} "r2"
+        if [ "{params.refToga2}" != "none" ] ; then
+            scripts/run_toga.sh {params.outDir} {params.externalDir} {params.target} {params.refToga2} {params.refTogaBed2} {params.refTogaIsoform2} "r2"
         else
             touch {output}
         fi
@@ -333,10 +491,16 @@ rule mikado_prepare:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="2:00:00"
+        walltime="2:00:00",
+
+        outDir=config["outDir"],
+        externalDir=config["externalDir"],
+        customRef=config["customRef"],
+        liftoffRef=config["liftoffRef"],
+        mikadoScore=config["mikadoScore"]
     shell: 
         """
-            scripts/12_mikado_configure_and_prepare.sh {config[outDir]} {config[externalDir]} {config[customRef]} {config[liftoffRef]} {workflow.basedir} {config[mikadoScore]}
+            scripts/12_mikado_configure_and_prepare.sh {params.outDir} {params.externalDir} {params.customRef} {params.liftoffRef} {workflow.basedir} {params.mikadoScore} {threads}
         """
 
 rule transdecoder:
@@ -349,15 +513,17 @@ rule transdecoder:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="48:00:00"
+        walltime="48:00:00",
+
+        outDir=config["outDir"]
     shell: 
         """
-            mkdir -p {config[outDir]}/transcript_selection/transdecoder
+            mkdir -p {params.outDir}/transcript_selection/transdecoder
 
-            cd {config[outDir]}/transcript_selection/transdecoder
+            cd {params.outDir}/transcript_selection/transdecoder
 
-            TransDecoder.LongOrfs -t {config[outDir]}/transcript_selection/mikado_prepared.fasta -m 100 -O "transdecoder"
-            TransDecoder.Predict -t {config[outDir]}/transcript_selection/mikado_prepared.fasta --retain_long_orfs_length 100 -O "transdecoder"
+            TransDecoder.LongOrfs -t {params.outDir}/transcript_selection/mikado_prepared.fasta -m 100 -O "transdecoder"
+            TransDecoder.Predict -t {params.outDir}/transcript_selection/mikado_prepared.fasta --retain_long_orfs_length 100 -O "transdecoder"
         """
 
 
@@ -371,10 +537,12 @@ rule junctions:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="48:00:00"
+        walltime="48:00:00",
+
+        outDir=config["outDir"]
     shell: 
         """
-            scripts/get_junctions.sh {config[outDir]}
+            scripts/get_junctions.sh {params.outDir} {threads}
         """
 
 rule split_fasta:
@@ -387,17 +555,19 @@ rule split_fasta:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="48:00:00"
+        walltime="48:00:00",
+
+        outDir=config["outDir"]
     shell:
         """
 
-        mkdir -p {config[outDir]}/transcript_selection/blast
+        mkdir -p {params.outDir}/transcript_selection/blast
 
-        cp {config[outDir]}/transcript_selection/mikado_prepared.fasta {config[outDir]}/transcript_selection/blast
+        cp {params.outDir}/transcript_selection/mikado_prepared.fasta {params.outDir}/transcript_selection/blast
 
-        scripts/splitfa.sh mikado_prepared.fasta 100 {config[outDir]}
+        scripts/splitfa.sh mikado_prepared.fasta 100 {params.outDir}
         
-        rm {config[outDir]}/transcript_selection/blast/mikado_prepared.fasta
+        rm {params.outDir}/transcript_selection/blast/mikado_prepared.fasta
 
         """
 
@@ -412,16 +582,19 @@ rule blastp_run:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="24:00:00"
+        walltime="24:00:00",
+
+        outDir=config["outDir"],
+        dataDir=config["dataDir"]
     shell: 
         """
 
-        cd {config[dataDir]}/uniprot_sprot
+        cd {params.dataDir}/uniprot_sprot
         
         blastx -max_target_seqs 5 -num_threads {threads} -query {input} \
         -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop" \
-        -db {config[dataDir]}/uniprot_sprot/uniprot_sprot_nodup.fasta -evalue 0.000001 \
-        -out {config[outDir]}/transcript_selection/blast/output_{wildcards.split_id}/blast_results.tsv
+        -db {params.dataDir}/uniprot_sprot/uniprot_sprot_nodup.fasta -evalue 0.000001 \
+        -out {params.outDir}/transcript_selection/blast/output_{wildcards.split_id}/blast_results.tsv
         
 
         touch {output}
@@ -442,10 +615,14 @@ rule serialize_pick:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="48:00:00"
+        walltime="48:00:00",
+
+        outDir=config["outDir"],
+        dataDir=config["dataDir"],
+        externalDir=config["externalDir"]
     shell:
         """
-        scripts/45_mikado_serialize_pick.sh {config[outDir]} {config[dataDir]} {config[externalDir]}
+        scripts/45_mikado_serialize_pick.sh {params.outDir} {params.dataDir} {params.externalDir} {threads}
         """
 
 rule run_orthofinder:
@@ -458,17 +635,22 @@ rule run_orthofinder:
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
-        walltime="64:00:00"
+        walltime="64:00:00",
+
+        outDir=config["outDir"],
+        orthofinderTab=config["orthofinderTab"],
+        orthofinderFA=config["orthofinderFA"],
+        target=config["target"]
     shell:
         """
         
-        cd {config[outDir]}
+        cd {params.outDir}
 
         mkdir -p orthofinder
 
         cd orthofinder
 
-        ln -s {config[outDir]}/transcript_selection/mikado_lenient.gff ./
+        ln -s {params.outDir}/transcript_selection/mikado_lenient.gff ./
 
         echo "GFF3 file: mikado_lenient.gff"
         echo "Name of gene list out: mikado_lenient.txt"
@@ -476,26 +658,26 @@ rule run_orthofinder:
         grep -P "\tgene\t" mikado_lenient.gff > mikado_lenient.txt
         sed -i 's/.*ID=\(.*\);Name.*/\1/' mikado_lenient.txt
 
-        ln -s {config[orthofinderTab]} ./
+        ln -s {params.orthofinderTab} ./
 
         mkdir -p protein_seqs
 
         cd protein_seqs 
         
-        ln -s {config[orthofinderFA]} ./
+        ln -s {params.orthofinderFA} ./
         ln -s {input} ./
 
         cd ../
 
         date_orthofinder=$(date +"%b%d")
-        filename=$(basename -- {config[orthofinderFA]})
+        filename=$(basename -- {params.orthofinderFA})
         noExtension=`basename $filename .faa`
 
         echo $date_orthofinder
 
-        orthofinder -t 20 -a 20 -o {config[target]}"_orthofinder" -f protein_seqs
+        orthofinder -t {threads} -a {threads} -o {params.target}"_orthofinder" -f protein_seqs
 
-        cp {config[outDir]}/orthofinder/{config[target]}"_orthofinder"/Results_$date_orthofinder/Orthologues/Orthologues_mikado_lenient/mikado_lenient__v__$noExtension.tsv orthofinder_protein.tsv
+        cp {params.outDir}/orthofinder/{params.target}"_orthofinder"/Results_$date_orthofinder/Orthologues/Orthologues_mikado_lenient/mikado_lenient__v__$noExtension.tsv orthofinder_protein.tsv
 
         """
 
@@ -510,21 +692,32 @@ rule mirmachine:
     params:
         memory_per_thread="10G",
         extra_cluster_opt="",
-        walltime="48:00:00"
+        walltime="48:00:00",
+
+        outDir=config["outDir"],
+        mirmachineClade=config["mirmachineClade"],
+        species=config["species"]
+
     shell:
         """
 
-        cd {config[outDir]}
+        cd {params.outDir}
 
         mkdir -p mirmachine ; cd mirmachine
 
-        ASSEMBLY={config[outDir]}/assembly/assembly.softmasked.fa
+	if [ "{params.mirmachineClade}" != "Skip" ] ; then
+
+        ASSEMBLY={params.outDir}/assembly/assembly.softmasked.fa
 
         samtools faidx $ASSEMBLY
 
-        MirMachine.py -n {config[mirmachineClade]} -s {config[species]} --genome $ASSEMBLY -m deutero --cpu 20
+        MirMachine.py -n {params.mirmachineClade} -s {params.species} --genome $ASSEMBLY -m deutero --cpu {threads}
         
-        cp {config[outDir]}/mirmachine/results/predictions/filtered_gff/{config[species]}.PRE.gff mirna.filtered.gff
+        cp {params.outDir}/mirmachine/results/predictions/filtered_gff/{params.species}.PRE.gff mirna.filtered.gff
+
+	else
+            touch {output}
+        fi
 
         """
 
@@ -539,11 +732,14 @@ rule ncRNA_covariance:
     params:
         memory_per_thread="10G",
         extra_cluster_opt="",
-        walltime="48:00:00"
+        walltime="48:00:00",
+
+        outDir=config["outDir"],
+        dataDir=config["dataDir"]
     shell:
         """
 
-        scripts/ncRNA_analysis.sh {config[outDir]} {config[dataDir]}
+        scripts/ncRNA_analysis.sh {params.outDir} {params.dataDir} {threads}
 
 
         """
@@ -558,11 +754,15 @@ rule full_annotation:
     params:
         memory_per_thread="10G",
         extra_cluster_opt="",
-        walltime="24:00:00"
+        walltime="24:00:00",
+
+        outDir=config["outDir"],
+        dataDir=config["dataDir"],
+        externalDir=config["externalDir"]
     shell:
         """
 
-        scripts/ncRNA_postprocess.sh {config[outDir]} {config[dataDir]} {config[externalDir]} {workflow.basedir}
+        scripts/ncRNA_postprocess.sh {params.outDir} {params.dataDir} {params.externalDir} {workflow.basedir}
 
         """
     
@@ -577,11 +777,16 @@ rule aggregate_symbols:
     params:
         memory_per_thread="10G",
         extra_cluster_opt="",
-        walltime="24:00:00"
+        walltime="24:00:00",
+        outDir=config["outDir"],
+        orthofinderTab=config["orthofinderTab"],
+        refTogaIsoform=config["refTogaIsoform"],
+        refTogaIsoform2=config["refTogaIsoform2"],
+        refToga2=config["refToga2"]
     shell:
         """
 
-        scripts/aggregate_symbols.sh {config[outDir]} {config[orthofinderTab]} {workflow.basedir} {config[refTogaIsoform]} {config[refTogaIsoform2]} {config[refToga2]}
+        scripts/aggregate_symbols.sh {params.outDir} {params.orthofinderTab} {workflow.basedir} {params.refTogaIsoform} {params.refTogaIsoform2} {params.refToga2}
 
 
         """

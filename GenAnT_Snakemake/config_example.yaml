@@ -1,0 +1,47 @@
+sourceDir: "/path-to/miniconda3/bin/activate" # "/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/bin/activate" 
+externalDir: "/path-to/GenAnT/external" # "/path-to/GenomeAnnotationTutorial/external"
+dataDir: "/path-to/GenAnT/data" # "/path-to/GenomeAnnotationTutorial/data"
+
+
+# Parameters describing your assembly + annotation
+outDir: "/scratch2/GenAnT_Example_stranded" # "/path-to/AMR_genome_assembly/annotations_masSpec/NMR/Pup3/annotation"
+target: "example" # "Pup3"
+species: "heterocephalus_glaber" # "heterocephalus_glaber"
+
+assemblyFile: "/path-to/GenAnT/data/example_data/NMRchr28.fa" # "/path-to/NMR_genome_assembly/T2T_March_2025/Pup3/Pup3-NMR.curated.reordered.mt.fa"
+MaskedAssemblyFile: "none" # or masked directory to skip earlgrey "/path-to/NMR_genome_assembly/T2T_March_2025/Pup3/Pup3.softmasked.fa"
+MaskedAssemblyAnnotation: "none" # or repeat bed to skip earlgrey"/path-to/NMR_genome_assembly/T2T_March_2025/Pup3/heterocephalus_glaber.filteredRepeats.bed"
+rnaseqDir: "/path-to/GenAnT/data/example_data/RNAseq_alignment" # or an empty directory if no RNAseq
+isoseqDir: "/path-to/GenAnT/data/example_data/ISOseq_alignment" # or an empty directory if no ISOseq
+customGFF: "none" # if not none, then it should be the path to your gff file
+customRef: "FALSE" # is the custom gff a reference to be upgraded. Switch to "TRUE" if it is a reference.
+liftoffRef: "FALSE" # is the gff file from liftOff a reference assembly. Switch to "TRUE" if it is a reference. Note, if you have a custom reference gff then this will be over-written.
+
+# Parameters describing your reference assemblies + annotation
+
+refToga: "mouse"
+TogaDir: "/path-to/GenAnT/data/references/mmus_GRC39" # required to bind to singularity image
+refTogaFa: "/path-to/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna" # directory in /data -- adding species can be done with scripts in /utils
+refTogaBed: "/path-to/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed"
+refTogaIsoform: "/path-to/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.tsv"
+
+refToga2: "NMR"
+TogaDir2: "/path-to/GenAnT/data/references/HetGlaV2_female" # required to bind to singularity image
+refTogaFa2: "/path-to/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.clean.fa" # directory in /data -- adding species can be done with scripts in /utils
+refTogaBed2: "/path-to/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.clean.bed"
+refTogaIsoform2: "/path-to/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.clean.isoforms.tsv"
+
+
+refLiftOff: "NMR"
+refLiftOffFa: "/path-to/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.clean.fa" # directory in /data -- adding species can be done with scripts in /utils
+refLiftOffGff: "/path-to/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.gffread.gff" # directory in /data -- adding species can be done with scripts in /utils
+
+orthofinderFA: "/path-to/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.nostop.protein.faa" # directory name in ~/data
+orthofinderTab: "/path-to/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.table.txt" # directory name in ~/data
+
+# Tool specific parameters
+dfamDB: "rodentia" # change to a different repeatmasker class if desired, e.g., "arthropoda" for insects
+brakerOdbFaa: "Vertebrata.fa" # change to a different odb12 protein set. e.g.,  "Arthropoda.fa" # https://bioinf.uni-greifswald.de/bioinf/partitioned_odb12/Arthropoda.fa.gz to get arthopods
+mikadoScore: "mammalian.yaml" # Use a different scoring file for a different clade "HISTORIC/dmelanogaster_scoring.yaml"
+mirmachineClade: "Mammalia" # "mirmachine-clade" # "Glires" 
+stranded: "TRUE" # for braker V3. Set to "TRUE" if you have stranded RNA-seq aligned by Hisat2
