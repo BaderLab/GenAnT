@@ -6,6 +6,7 @@ species=$3
 MaskedAssemblyFile=$4
 MaskedAssemblyAnnotation=$5
 dfamDB=$6
+threads=$7
 
 cd $outDir
 
@@ -21,7 +22,7 @@ if [[ $MaskedAssemblyFile = "none" ]] ; then
 	mkdir -p $SINGULARITY_CACHEDIR
 	mkdir -p $SINGULARITY_TMPDIR
 
-	singularity exec --bind ${outDir} ${EARLGREY_SIF} earlGrey -g $outDir/assembly/assembly.fa -s $species -o . -t 50 -r $dfamDB -d yes
+	singularity exec --bind ${outDir} ${EARLGREY_SIF} earlGrey -g $outDir/assembly/assembly.fa -s $species -o . -t $threads -r $dfamDB -d yes
 
 	cd $outDir
 

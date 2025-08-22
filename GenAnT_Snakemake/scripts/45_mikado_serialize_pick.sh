@@ -3,6 +3,7 @@
 outDir=$1
 dataDir=$2
 externalDir=$3
+threads=$4
 
 
 wd=$outDir/transcript_selection
@@ -33,7 +34,7 @@ if [[ $(wc -l < junctions.final.bed) -gt 5 ]] ; then
 	echo "We detected processed splice junctions. mikado serialze will be performed with splicing information"
 
 	singularity exec --bind ${outDir},${wd},${ASSEMBLYDIR},${UNIDB} ${MIKADO_SIF} mikado serialise \
-	 -p 20 --start-method spawn \
+	 -p $threads --start-method spawn \
 	 --orfs $outDir"/transcript_selection/transdecoder/transdecoder/mikado_prepared.fasta.transdecoder.bed" \
 	 --transcripts $outDir"/transcript_selection/mikado_prepared.fasta" \
 	 --tsv $outDir"/transcript_selection/blast/blast_results.tsv" \
@@ -49,7 +50,7 @@ else
 
 	echo "We did not detect processed splice junctions, mikado seriealize will be performed without splicing information."
 	singularity exec --bind ${outDir},${wd},${ASSEMBLYDIR},${UNIDB} ${MIKADO_SIF} mikado serialise \
-	 -p 20 --start-method spawn \
+	 -p $threads --start-method spawn \
 	 --orfs $outDir"/transcript_selection/transdecoder/transdecoder/mikado_prepared.fasta.transdecoder.bed" \
 	 --transcripts $outDir"/transcript_selection/mikado_prepared.fasta" \
 	 --tsv $outDir"/transcript_selection/blast/blast_results.tsv" \

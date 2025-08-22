@@ -7,7 +7,7 @@ dataDir=$4
 brakerOdbFaa=$5
 threads=$6
 
-mkdir -p $outDir/braker_sr
+mkdir -p $outDir/braker_sr 
 
 cd $outDir/braker_sr
 
@@ -15,15 +15,14 @@ species_suffix=$RANDOM
 
 prefix=$target
 
-bams=`ls $outDir/RNAseq_alignment/*.merged.bam -m` # get bam files separated by csv
+# bams=`ls $outDir/RNAseq_alignment/*.merged.bam -m` # get bam files separated by csv
 bams2=$(echo $bams | sed 's/ //g')
 
 assembly=$outDir/assembly/assembly.softmasked.fa # /mHetGlaV3.soft.fa
 protDir=$dataDir/braker_protein # /Vertebrata.fa
 configPath=$externalDir/Augustus/config
 
-
-BRAKER_SIF=$externalDir/singularity_images/braker3.sif
+BRAKER_SIF=$externalDir/singularity_images/braker3.sif 
 
 SINGULARITY_CACHEDIR=$outDir/braker_sr/cachedir
 SINGULARITY_TMPDIR=$outDir/braker_sr/tmpdir
@@ -35,6 +34,6 @@ wd=$outDir/braker_sr
 
 bamDir=$outDir/RNAseq_alignment
 
-singularity exec --bind ${bamDir},${wd},${PWD},${assembly},${protDir},${configPath} ${BRAKER_SIF} braker.pl --AUGUSTUS_CONFIG_PATH=$configPath --genome=$assembly --prot_seq=$protDir/$brakerOdbFaa --bam=$bams2 --workingdir=${wd} --species=$prefix$species_suffix --threads $threads  &> $wd/brakerlog.log
+singularity exec --bind ${bamDir},${wd},${PWD},${assembly},${protDir},${configPath} ${BRAKER_SIF} braker.pl --AUGUSTUS_CONFIG_PATH=$configPath --genome=$assembly --prot_seq=$protDir/$brakerOdbFaa --bam=fwd.bam,rev.bam --stranded=+,- --workingdir=${wd} --species=$prefix$species_suffix --threads $threads  &> $wd/brakerlog.log
 
 gffread $wd/braker.gtf --keep-genes -o $outDir/transcript_selection/braker.sr.gffread.gff

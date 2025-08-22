@@ -6,6 +6,7 @@ customRef=$3
 liftoffRef=$4
 snakeDir=$5
 mikadoScore=$6 
+threads=$7
 
 wd=$outDir/transcript_selection
 
@@ -54,7 +55,7 @@ singularity exec --bind ${outDir},${wd},${ASSEMBLYDIR} ${MIKADO_SIF} mikado conf
 
  singularity exec --bind ${outDir},${wd},${ASSEMBLYDIR} ${MIKADO_SIF} mikado prepare \
  --json-conf config.yaml \
- --start-method spawn -p 20 \
+ --start-method spawn -p $threads \
  -od $outDir/transcript_selection
 
 samtools faidx $outDir/transcript_selection/mikado_prepared.fasta

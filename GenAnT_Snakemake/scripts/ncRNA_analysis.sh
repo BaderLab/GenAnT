@@ -2,6 +2,7 @@
 
 outDir=$1
 dataDir=$2
+threads=$3
 
 cd $outDir
 
@@ -13,7 +14,7 @@ rfamDir=$dataDir/Rfam
 blastn -db $rfamDir/Rfam_nodup \
 -query $outDir/assembly/assembly.fa \
 -evalue 1e-2 -max_hsps 6 -outfmt 6 \
--num_threads 16 \
+-num_threads $threads \
 -out assembly.rfam.blastn
 
 awk -F "\t" '{print $1 "\t" $7 "\t" $8 "\t" $2}' assembly.rfam.blastn > assembly.rfam.bed
@@ -45,7 +46,7 @@ bedtools merge -i assembly_ncRNA_seed.s.bed > assembly_ncRNA_seed.m.bed
 
 bedtools getfasta -fi $outDir/assembly/assembly.fa -bed assembly_ncRNA_seed.m.bed -fo assembly_ncRNA_seed.m.fasta
 
-cmscan --cpu 16 -Z 1 --cut_ga --rfam --nohmmonly --tblout assembly1.tblout \
+cmscan --cpu $threads -Z 1 --cut_ga --rfam --nohmmonly --tblout assembly1.tblout \
 -o assembly.cmscan --verbose --fmt 2 \
 --clanin $rfamDir/Rfam.clanin $rfamDir/Rfam.cm assembly_ncRNA_seed.m.fasta
 

@@ -68,8 +68,8 @@ sed -i 's/E-value/evalue/g' short_ncRNAs.noOverlap.gff
 Rscript --vanilla $snakeDir/scripts/AddFeaturesNcRNAs.R
 
 if [ ! -s "mikado.lncLabeled.gff" ]; then
-    echo "Your annotation did not have lncRNAs"
-    cat mikado.infernal.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
+	echo "Your annotation did not have lncRNAs"
+	cat mikado.infernal.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
 else 
 	cat mikado.lncLabeled.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
 
