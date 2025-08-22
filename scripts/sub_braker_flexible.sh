@@ -1,7 +1,7 @@
 #!/bin/bash
+#$ -l h_vmem=24G,h_rt=20:00:00,h_stack=32M
+#$ -pe smp 8
 
-# outDir=$1 # /scratch/example_isoseq
-# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
 
 # No RNA-seq data
 # No RNA-seq data

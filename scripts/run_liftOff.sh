@@ -1,8 +1,7 @@
 #!/bin/bash
+#$ -l h_vmem=24G,h_rt=200:00:00,h_stack=32M
+#$ -pe smp 16
 
-# outDir=$1 # /scratch/example_isoseq
-# refLiftOffGff=$2 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.gffread.gff # directory in /data -- adding species can be done with scripts in /utils
-# refLiftOffFa=$3 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna # directory in /data -- adding species can be done with scripts in /utils
 cd $outDir
 
 mkdir -p liftoff

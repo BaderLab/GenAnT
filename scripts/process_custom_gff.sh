@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# outDir=$1 # /scratch/example_isoseq
-# customGFF=$2 # "none"
-
-
 $outDir
 
 if [[ "$customGFF" != "none" ]] ; then 

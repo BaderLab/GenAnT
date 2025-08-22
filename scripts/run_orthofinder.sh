@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# outDir=$1 # /scratch/example_isoseq
-# orthofinderTab=$2 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.table.txt # directory name in ~/data
-# orthofinderFA=$3 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.nostop.protein.faa # directory name in ~/data
-
 cd $outDir
 
 mkdir -p orthofinder

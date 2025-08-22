@@ -1,11 +1,6 @@
 #!/bin/bash
-
-# outDir=$1 # /scratch/example_isoseq
-# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
-# species=$3 # "heterocephalus_glaber"
-
-dataDir=$tutorialDir/data
-externalDir=$tutorialDir/external
+#$ -l h_vmem=14G,h_rt=10:00:00,h_stack=32M
+#$ -pe smp 16
 
 cd $outDir
 
@@ -20,7 +15,7 @@ perl $externalDir/infernal-tblout2gff.pl --cmscan --fmt2 assembly.tblout > infer
 cp $dataDir/Rfam/family.txt ./
 
 # reformat the GFF so that the feature types are more recognizable (i.e., add bioid)
-Rscript --vanilla $tutorialDir/scripts/rfamConversion.R
+Rscript --vanilla $scriptsDir/scripts/rfamConversion.R
 
 # isolate the lncRNA features 
 grep -P '\tlncRNA\t' infernal.types.gff > infernal.types.lncRNA.gff
@@ -39,7 +34,7 @@ cut -f1-9 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.mika
 cut -f10-18 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.infernalInfo.gff
 
 
-Rscript --vanilla $tutorialDir/scripts/RenamelncRNAs.R
+Rscript --vanilla $scriptsDir/scripts/RenamelncRNAs.R
 
 # Integrate these newly formatted lncRNAs with the rest of Mikado's gene models by first subtracting the lncRNA features from the original Mikado features. 
 
@@ -67,7 +62,7 @@ bedtools subtract -A -a short_ncRNAs.gff -b mikado.lncLabeled.exons.gff > short_
 
 sed -i 's/E-value/evalue/g' short_ncRNAs.noOverlap.gff
 
-Rscript --vanilla $tutorialDir/scripts/AddFeaturesNcRNAs.R
+Rscript --vanilla $scriptsDir/scripts/AddFeaturesNcRNAs.R
 
 cat mikado.lncLabeled.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
 

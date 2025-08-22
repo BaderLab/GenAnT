@@ -1,15 +1,6 @@
 #!/bin/bash
-
-# outDir=$1 # /scratch/example_isoseq
-# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
-# sourceDir=$3 # /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/bin/activate
-# refToga=$4 # "mouse"
-# target=$5 # "example"
-# refTogaBed=$6 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed
-# refTogaIsoform=$7 # $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.toga.tsv
-# togaDir=$8 # $tutorialDir/data/references/mmus_GRC39
-
-externalDir=$tutorialDir/external
+#$ -l h_vmem=24G,h_rt=60:00:00,h_stack=32M
+#$ -pe smp 8
 
 cd $outDir
 

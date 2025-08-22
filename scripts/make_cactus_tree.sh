@@ -1,9 +1,6 @@
 #!/bin/bash
-
-# outDir=$1 # /scratch/example_isoseq
-# refTogaFa=$2 $tutorialDir/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna # directory in /data -- adding species can be done with scripts in /utils
-# refToga=$3 # mouse
-# target=$4 # "example"
+#$ -l h_vmem=24G,h_rt=20:00:00,h_stack=32M
+#$ -pe smp 8
 
 mkdir -p $outDir/cactus_aln
 

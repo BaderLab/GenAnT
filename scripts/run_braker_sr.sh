@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# outDir=$1 # /scratch/example_isoseq
-# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
-# target=$3 # "example"
-# brakerOdbFaa=$4 # "Vertebrata.fa"
-
-externalDir=$tutorialDir/external
-dataDir=$tutorialDir/data
-
 mkdir -p $outDir/braker_sr
 
 cd $outDir/braker_sr

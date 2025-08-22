@@ -1,12 +1,6 @@
 #!/bin/bash
-
-# outDir=$1 # /scratch/example_isoseq
-# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
-# species=$3 # "heterocephalus_glaber"
-
-dataDir=$tutorialDir/data
-externalDir=$tutorialDir/external
-
+#$ -l h_vmem=14G,h_rt=10:00:00,h_stack=32M
+#$ -pe smp 16
 
 cd $outDir
 

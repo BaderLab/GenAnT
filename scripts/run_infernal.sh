@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# outDir=$1 # /scratch/example_isoseq
-# tutorialDir=$2 # /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT
-dataDir=$tutorialDir/data
-externalDir=$tutorialDir/data
-
-
 rfamDir=$dataDir/Rfam
 
 cd $outDir

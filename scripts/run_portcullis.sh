@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# outDir=$1 # /scratch/example_isoseq
-
 cd $outDir/transcript_selection
 
 ALIGNMENTS=$outDir/RNAseq_alignment
