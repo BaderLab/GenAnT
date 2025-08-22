@@ -44,3 +44,4 @@ dfamDB: "rodentia" # change to a different repeatmasker class if desired, e.g., 
 brakerOdbFaa: "Vertebrata.fa" # change to a different odb12 protein set. e.g.,  "Arthropoda.fa" # https://bioinf.uni-greifswald.de/bioinf/partitioned_odb12/Arthropoda.fa.gz to get arthopods
 mikadoScore: "mammalian.yaml" # Use a different scoring file for a different clade "HISTORIC/dmelanogaster_scoring.yaml"
 mirmachineClade: "Mammalia" # "mirmachine-clade" # "Glires" 
+stranded: "FALSE" # or "TRUE" if you have stranded RNA-seq.
