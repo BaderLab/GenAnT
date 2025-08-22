@@ -1,0 +1,340 @@
+---
+title: "EditGeneSymbolTable"
+author: "Dustin Sokolowski and Zoe Clarke"
+date: "2025-08-21"
+output: html_document
+---
+
+## gene_symbols_noCopies.tsv
+
+The standard GenAnT identifies gene symbols with orthofinder, Liftoff, and TOGA. Rows are GeneIDs provided by mikado and columns are gene nams from different sources. We provided an example of the gene_symbols_noCopies.tsv file from our example dataset on the GitHub in https://github.com/BaderLab/GenAnT/tree/main/6-AfterAnnotation, using input annotations from mouse GRC39 (TOGA-round1 and Orthofinder) and the naked mole-rat genome annotation from ENSEML (liftOff and Toga-round2).
+
+The difference between gene_symbols.tsv and gene_symbols_noCopies.tsv is that we have not yet added a unique identifier to two gene IDs given the same gene symbol (e.g., ABCD1-copy1, ABCD1-copy2).
+
+
+```
+       mikado_id ncRNA_gene       liftoff_gene        togar1_gene        togar2_gene orthofinder_gene
+1 mikado.chr28G2         NA               <NA>               <NA>               <NA>             <NA>
+2 mikado.chr28G4         NA ENSHGLT00000014396 rna-NM_001370813.1 ENSHGLT00000014394              Ak9
+3 mikado.chr28G5         NA               <NA>               <NA> ENSHGLT00000002473             <NA>
+4 mikado.chr28G7         NA ENSHGLT00000015729 rna-NM_001081161.2 ENSHGLT00000015729         Fam171a1
+5 mikado.chr28G8         NA ENSHGLT00000065473               <NA> ENSHGLT00000065473            Habp4
+6 mikado.chr28G9         NA ENSHGLT00000058244 rna-NM_001290984.1 ENSHGLT00000085577           Asnsd1
+```
+
+Looking at this table you'll see some potential issues. The first potential issue that we will address is dealing with the fact that transcript IDs in the liftoff_gene, "togar1_gene", and "togar2_gene" are in transcript_id and not gene symbol format. Assuming that you pre-processed each reference genome and gff file with the scripts in `https://github.com/BaderLab/GenAnT/tree/main/setup`, your reference genome directory will have a file that looks like `$prefix.clean.genekkey.tsv` . This key provides the transcript ID, the gene ID, and the gene symbol for a GFF file generated from RefSeq or Ensembl. An example of a few rows for mouse (GRC39 is below).
+
+### reference genome key of gene IDs and gene symbols (genekey.tsv)
+
+```
+
+     geneID       transcriptID geneSymbol
+1 gene-Xkr4 rna-XM_006495550.5       Xkr4
+2 gene-Xkr4 rna-NM_001011874.1       Xkr4
+3 gene-Xkr4 rna-XM_011238395.4       Xkr4
+4 gene-Xkr4 rna-XM_036152287.1       Xkr4
+5  gene-Rp1 rna-XM_030252325.2        Rp1
+6  gene-Rp1 rna-NM_001370921.1        Rp1
+
+```
+
+To transfer the transcript ID to gene symbols, find the corresponding column in "genekkey.tsv" that matches to the gene_symbols.tsv and swap symbols.
+
+```
+swap_symbols <- function(gene_symbols , symbol_colname, gene_key, matching_column = "transcriptID" ) {
+  
+  # This function swaps the transcript ID with the gene symbol for a specific row of the "gene_symbols" table.
+  
+  # gene_symbols is the "gene_symbols.tsv" file outputted in GenAnT and loaded into R with "gene_symbols <- read.table(gene_symbols.tsv",header=T,as.is=T,sep="\t")
+  
+  # symbol_colname is the name of the column whose gene symbols you're transferring. e.g., "liftoff_gene"
+  
+  # gene_key is the $prefix.clean.genekkey.tsv file read into R. An example of for mouse is below "genekey_mouse <-  read.table("GCF_000001635.27_GRCm39_genomic.genekkey.tsv",header=T,as.is=T,sep="\t")
+  
+  # matching_column is the colname of the genekey file that matches "symbol_colname"
+  
+  transcriptID <- gene_symbols[,symbol_colname]
+  
+  
+  
+  rownames(gene_key) <- gene_key[,matching_column]
+  gene_key$geneSymbol[is.na(gene_key$geneSymbol)] <- gene_key$geneID[is.na(gene_key$geneSymbol)]
+  gene_key$geneSymbol[gene_key$geneSymbol == ""] <- gene_key$geneID[gene_key$geneSymbol == ""]
+  
+  gene_key1 <- gene_key[transcriptID,]
+  
+  return(gene_key1$geneSymbol)
+  
+  
+}
+
+```
+
+In the example data, we used mm39 from RefSeq and HetGlaV2 from "Heterocephalus_glaber_female" from Ensembl.
+
+```
+genekey_nmr <- read.table("Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.clean.genekkey.tsv",header=TRUE,as.is=TRUE,sep="\t")
+genekey_mouse <- read.table("GCF_000001635.27_GRCm39_genomic.clean.genekkey.tsv",header=T,as.is=T,sep="\t")
+```
+
+We can then clean the table with the above function:
+
+```
+
+# fix liftoff_gene
+gene_symbols$liftoff_gene <- swap_symbols(gene_symbols = gene_symbols,symbol_colname = "liftoff_gene",
+             gene_key = genekey_nmr,matching_column = "transcriptID")
+
+# fix togar1_gene
+gene_symbols$togar1_gene <- swap_symbols(gene_symbols = gene_symbols,symbol_colname = "togar1_gene",
+                                          gene_key = genekey_mouse,matching_column = "transcriptID")
+
+# fix togar2_gene
+gene_symbols$togar2_gene <- swap_symbols(gene_symbols = gene_symbols,symbol_colname = "togar2_gene",
+                                         gene_key = genekey_nmr,matching_column = "transcriptID")
+                                         
+                                          
+```
+
+### Clean gene nomeclature
+
+At this stage, the gene symbol  table will have a mixture of gene symbols and gene IDs (when there wasn't a gene symbol). In the example below, the ENSEMBL gene symbols are from the naked mole-rat (ENSEMBL annotations), so these genes may be clade-specific gene IDs that do not have a gene symbol.
+
+
+One inconsistency that you may have to deal with is in the "casing" of gene symbols. In this example, the "orthofinder_gene" and "togar1_gene" are using the mosue (MGI) gene symbol convention (Abc1) while "liftoff_gene" and "togar2_gene" are using the human (HUGO) naming convention (ABC1).
+
+```
+           mikado_id ncRNA_gene       liftoff_gene togar1_gene togar2_gene orthofinder_gene
+157 mikado.chr28G179         NA             GPR171        <NA>        <NA>      L1td1-copy3
+158 mikado.chr28G181         NA              ODAD2       Odad2       ODAD2            Odad2
+159 mikado.chr28G180         NA ENSHGLG00000049940        <NA>        <NA>             <NA>
+160 mikado.chr28G183         NA            BLOC1S6        <NA>        <NA>             <NA>
+161 mikado.chr28G184         NA ENSHGLG00000046271        <NA>        <NA>             <NA>
+162 mikado.chr28G185         NA               MPP7        Mpp7        MPP7             Mpp7
+```
+
+For mammals, gene symbols usually fall into one of these naming conventions. The easiest thing to do would be to pull a key of these gene names from a ortholog mapping repository like Ensembl-Biomart (https://useast.ensembl.org/info/data/biomart/index.html) and switch everything to mouse or human. Since this example annotates a rodent, We will convert "liftoff_gene" and "togar2_gene" to mouse. Below is an extremly simple script that uses a two column table of mouse and human gene symbols to perform this conversion (found online: https://github.com/wilsonlabgroup/scMappR_Data/blob/master/bioMart_ortholog_human_mouse.rda).
+
+This data table looks as such:
+
+```
+head(bioMart_orthologs)
+     human   mouse
+6   MT-ND1  mt-Nd1
+10  MT-ND2  mt-Nd2
+16  MT-CO1  mt-Co1
+19  MT-CO2  mt-Co2
+21 MT-ATP8 mt-Atp8
+22 MT-ATP6 mt-Atp6
+
+```
+
+As an example, here is a very simple script to convert "liftoff_gene" and "togar2_gene" symbols mouse.
+
+```
+
+for(i in c("liftoff_gene","togar2_gene")) {
+  genes <- gene_symbols[,i]
+  gene_symbols[,i] <- ifelse(
+    !is.na(match(genes, bioMart_orthologs$human)), 
+    bioMart_orthologs$mouse[match(genes, bioMart_orthologs$human)], 
+    genes
+  )
+}
+
+```
+
+NOTE. This stage will be quite different outside of mammals but the general principal will follow. Find the most closesly related model organism and have your gene symbols match that. It'll also be helpful for gene-set enrichment later on.
+
+NOTEx2. Some genes have a few symbols (Tp53 = Trp53 ; PHD1 = Egln2 ; Ca1 = Car1 ; Ca2 = Car2 ; FGF2 = FGFR2). Our script to build the gff file is pretty trivial and does not account for these genes with multiple names. As such, you have a few rows where it looks like there is disagreement between gene symbols based ont he methods but they actually all agree. If this becomes a problem for users we can work on a fix for HUGO and MGI symbols.
+
+If you do not need to add gene symbols from another method, the file can be saved and you can move to the `PostprocessReFormatFinalGFF.R` script. Otherwise continue on below.
+
+```
+
+write.table(gene_symbols, file = "postprocess_gene_symbols_noCopies.tsv", quote=FALSE, 
+            row.names=FALSE, col.names=FALSE, sep = "\t")
+
+```
+
+## Adding columns.
+
+Our tutorial provides gene symbols from Liftoff, TOGA, and orthofinder with pairwise alignments. But it is possible that you want to use additional evidence to identify gene symbols, such as OMA or othofinder with additional species to have a more conservative analysis of one-to-one orthologs, or a custom GFF file. There are two potential approaches to add columns. 
+
+The first way is using a method where you input CDS regions derived from this GFF file into the gene symbol caller (e.g., OMA, orthofinder etc.).
+
+
+
+### 1a) Output from Orthofinder/OMA
+
+The output of orthofinder or OMA will look like the "orthofinder_protein.tsv" used in GenAnT and generated from orthofinder.
+
+If you are using an output from orthofinder or OMA directly, you can use the "PostprocessAddOrthofinderOMASymbols.R" script in https://github.com/BaderLab/GenAnT/tree/main/6-AfterAnnotation/PostprocessAddOrthofinderOMASymbols.R. It's just a slightly more flexible version of https://github.com/BaderLab/GenAnT/blob/main/scripts/AddOrthoFinderGenes.R that adds a column called "OrthoOMA_gene" to the table.
+
+The only thing you have to change are lines 6 and 7
+
+```
+ortho_out <- paste0("orthofinder_protein.tsv") # Whatever your output of OrthoFinder/OMA is
+mikado_df <- gene_symbols # whatever object name of the dataframe you were using to update your gene symbols thus far.
+```
+
+### 1b) Custom output
+
+The most simple option, being a post-processed two column table where the first column is the mikado ID and the second column is the gene symbol, can simply be appended to the table.
+
+Example format:
+```
+df <- data.frame(mikado_id=c("g1","g2","g3"), custom_symbol = c("s1","s2","s3"))
+
+  mikado_id custom_symbol
+1        g1            s1
+2        g2            s2
+3        g3            s3
+```
+
+Add to the main table with left_join
+
+```
+gene_symbols <- dplyr::left_join(gene_symbols,
+                              df,
+                              by = "mikado_id")
+```
+
+### 1c) Adding gene symbols from a GFF with different gene models.
+
+This is going to be pretty niche, but it could happen with a custom GFF that's used as a reference.
+
+If you used the custom GFF (which we would strongly reccomend) in GenAnT, the best way to assign gene symbols would be to go into the `$outDir/transcript_selection/"mikado_lenient.metrics.tsv"` file (see post-flight checks) and build a key between the "alias" as your gene symbol.
+
+```
+> head(lenient_metrics[,c("parent","original_source","alias")])
+  parent              original_source   alias
+1 mikado.chr1G1       custom            custom_G.1.1
+2 mikado.chr1G2       braker.lr         braker.lr_g1.t1
+3 mikado.chr1G3       custom            custom_G.2.1
+4 mikado.chr1G4       custom            custom_G.3.1
+5 mikado.chr1G5       custom            custom_G.4.1
+6 mikado.chr1G6       custom            custom_G.5.1
+```
+
+In this toy example, gene 2 was defined by braker, but genes 1,3,4,5,6 were from the custom GFF. Here, you can get a key between the mikado ID and your custom GFF files:
+
+```
+key <- lenient_metrics[lenient_metrics$original_source == "custom",c("parent","alias")]
+key$alias <- gsub("custom_","",key$alias)
+```
+
+Then, switch your custom GFFs gene ID with gene symbols (if apporpriate) and you can now do the simple addition of the column above (i.e., 1b)
+
+### 2) Adding gene symbols from a GFF with different gene models (niche application).
+
+The final approach which is generally not reccomended is to use gene symbols from gene models that were not part of GenAnT. In principle, if you trust the GFF enough to use their gene symbols, then why not also use their gene models to build yours?
+
+One option where this may be helpful is if your custom GFF ended up being the "original_source" for a very proportion of gene models comapred to what is available in the custom GFF. This could happen, in principle, if you had a working GFF that did not have any "Premium evidence" and then got a massive amount of RNAseq/ISOseq data. Here, you may not want to use the custom or working GFF as a reference anymore but still transfer gene models when available.
+
+This being said, these gene symbols can still be added.
+
+First, using bash scripts:
+
+```
+# Grab exons from the custom list
+grep -P "\texon\t" custom.gffread.gff > custom.exon.gff
+
+# Intersect with exons from mikado (you can find this in "$outDir/gene_symbol")
+bedtools intersect -a mikado.exon.gff -b liftoff.exon.gff -wo > mikado.custom.exon.txt
+
+# Parse into two files:
+
+cut -f1-9 mikado.custom.exon.txt > custom_overlap.mikadoInfo.gff
+cut -f10-18 mikado.custom.exon.txt > custom_overlap.liftoffInfo.gff
+```
+
+Once you have these overlapping exons, you can use code derived from 
+https://github.com/BaderLab/GenAnT/blob/main/scripts/MakeGeneSymbolTableLiftOffTOGA.R to add gene symbols to the table. This code will add a column called "custom_gene"
+
+```
+# load overlapping genes
+custom_mikadoInfo <- as.data.frame(readGFF("custom_overlap.mikadoInfo.gff"))
+
+# gene models from exon models
+custom_mikadoInfo$mikadoGene <- unlist(custom_mikadoInfo$Parent)
+custom_mikadoInfo$mikadoGene <- sub("\\.[^\\.]*$", "", custom_mikadoInfo$mikadoGene)
+
+# get transcripts that overlap
+custom_customInfo <- as.data.frame(readGFF("custom_overlap.customInfo.gff"))
+
+# Potentially remove ensembl label 
+custom_customInfo$customGene <- gsub("transcript:","",unlist(custom_customInfo$Parent))
+custom_customInfo$customGene <- sub("\\.[^\\.]*$", "",custom_customInfo$customGene)
+
+# pair matching exons into matrix
+customGene <- as.data.frame(cbind(custom_mikadoInfo$mikadoGene,custom_customInfo$customGene),stringsAsFactors=FALSE)
+
+# make them one element
+combo <- paste0(customGene$V1,":",customGene$V2)
+customGene$combo <- combo
+
+# how many exons overlap per gene pair from mikado and custom
+db1 <- as.data.frame(table(combo),stringsAsFactors=FALSE)
+db_genes <- as.data.frame(do.call("rbind",strsplit(db1$combo,":")), stringsAsFactors=FALSE)
+db_genes$combo <- db1$combo
+db_genes$Frequency <- db1$Freq
+
+# extract the mikado-custom pair with the highest number of exons overlapping
+db_genes <- db_genes[order(db_genes$Frequency,decreasing = TRUE),]
+db_genes_noDup <- db_genes[!duplicated(db_genes$V1),]
+
+custom_df <- as.data.frame(db_genes_noDup[,1:2])
+colnames(custom_df) <- c("mikado_id", "custom_gene")
+
+
+custom_df <- dplyr::distinct(custom_df)
+
+custom_df <- plyr::ddply(custom_df,
+                          "mikado_id",
+                          summarize,
+                          custom_gene = paste(custom_gene, collapse = ";"))
+
+custom_df$custom_gene <- make.unique(custom_df$custom_gene, sep = "-copy")
+
+custom_df$custom_gene <- gsub("gene-","",custom_df$custom_gene)
+
+gene_symbols <- dplyr::left_join(gene_symbols,
+                              custom_df,
+                              by = "mikado_id")
+```
+
+
+## Update final GFF file
+
+With the gene_symbol table homogenized, the final step is regeneratethe final GFF (`full_annotation.geneSymbols.gff`) file with the updated GFF file. This GFF file with updated gene symbols has a few helpful improvements compared to the default GenAnT pipeline:
+
+1. Gene models where the symbol is exclusively from Liftoff or TOGA will have then gene symbol but not the gene ID (when available). If only a gene ID is available, (e.g., a "Cape mole-rat specific" gene model transfers to the Cape-dune mole-rat) that gene ID will still transfer.
+2. We can better use consensus gene models across multiple methods. For example, if Orthofinder is Abc1;Abc2;Abc3, because they couldn't differentiate between paralogs, and TOGA and Liftoff derived models say Abc1 (Rather than ENSMBL-123), then the final gene model will be the consensus Abc1. 
+3. You can change the order of derived gene models based on your preference. For example, we use `orthofinder` as our default GFF model. If you decide to have `liftoff` or your custom `OMA/Orthofinder` run as the top option for a gene symbol, that also works.
+
+We update the GFF file with the `PostprocessReformatFinalGFF.R` script, using the "full_annotation.gff" found in `$outDir/gene_symbol`.
+
+This R script has 4 parameters. 
+
+* `-f` The "full_annotation.gff" found in $outDir/gene_symbol (Default is "full_annotation.gff"). 
+* `-g` The edited gene symbol table found in this markdown (Default is "gene_symbols_edited.tsv").
+* `-r` ranking: the order tools to prioritize in gene symbol assignment. Our default order is: "orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene". 
+* `-o` output file name (Default is full_annotation.edited.geneSymbols.gff")
+* `-wd` working directory (Default is directory where script is ran "pwd")
+
+If R cannot find `-f`, `-g`, or `-wd` it throws an error. 
+If any of the elements in `-r` are not colnames of`gene_symbols_edited.tsv`, it also throws an error.
+Otherwise, PostprocessReformatFinalGFF.R functions the same as `FormatFinalGFF.R`. With a step-by-step markdown here: https://github.com/BaderLab/GenAnT/blob/main/5-AssignGeneSymbols/FormatFinalGFF.rmd
+
+```
+
+Rscript --vanilla PostprocessReformatFinalGFF.R -f full_annotation.gff -g gene_symbols_edited.tsv -r orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene -o full_annotation.edited.geneSymbols.gff -wd ~/Desktop/GenAnT/Example_out
+
+```
+## Saving the output
+
+```
+write.table(gene_symbols, file = "gene_symbols_noCopies.edited.tsv",
+            quote=FALSE,row.names=FALSE,col.names = TRUE,sep="\t")
+```
