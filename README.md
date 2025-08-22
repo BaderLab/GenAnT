@@ -177,6 +177,30 @@ The tools used in this tutorial are listed below:
 
 Instructions on how to install these tools can be found in the `InstallAndDownload.md` script in the set-up directory.
 
+
+## If using our tutorial, we recommend referencing these tools that our used in our Tutorial and Pipeline:
+
+
+Earl Grey (1) (Earlgrey is also a metapipeline. You can find the tools they rely on here under “References and Acknowledgements”: https://github.com/TobyBaril/EarlGrey). 
+Dfam database (2) ; Liftoff (3) ; StringTie3 (4) ; Braker3 (5) ; TOGA: (6) ; Mikado: (7)  ; Blast: (8) ; Portcullis: (9) ; Regtools: (10) ; Transdecoder: Haas, BJ. https://github.com/TransDecoder/TransDecoder ; 
+Infernal (11); Rfam database (12); Orthofinder (13)
+
+References: 
+1. 	Baril T, Galbraith J, Hayward A. Earl Grey: A Fully Automated User-Friendly Transposable Element Annotation and Analysis Pipeline. Mol Biol Evol. 2024 Apr 2;41(4).
+2. 	Hubley R, Finn RD, Clements J, Eddy SR, Jones TA, Bao W, et al. The Dfam database of repetitive DNA families. Nucleic Acids Res. 2016 Jan 4;44(D1):D81-9.
+3. 	Shumate A, Salzberg SL. Liftoff: accurate mapping of gene annotations. Bioinformatics. 2021 Jul 19;37(12):1639–43.
+4. 	Shinder I, Pertea G, Hu R, Rudnick Z, Pertea M. StringTie3 Improves Total RNA-seq Assembly by Resolving Nascent and Mature Transcripts. BioRxiv. 2025 May 26;
+5. 	Gabriel L, Brůna T, Hoff KJ, Ebel M, Lomsadze A, Borodovsky M, et al. BRAKER3: Fully automated genome annotation using RNA-seq and protein evidence with GeneMark-ETP, AUGUSTUS and TSEBRA. BioRxiv. 2024 Feb 29;
+6. 	Kirilenko BM, Munegowda C, Osipova E, Jebb D, Sharma V, Blumer M, et al. Integrating gene annotation with orthology inference at scale. Science. 2023 Apr 28;380(6643):eabn3107.
+7. 	Venturini L, Caim S, Kaithakottil GG, Mapleson DL, Swarbreck D. Leveraging multiple transcriptome assembly methods for improved gene structure annotation. Gigascience. 2018 Aug 1;7(8).
+8. 	Camacho C, Coulouris G, Avagyan V, Ma N, Papadopoulos J, Bealer K, et al. BLAST+: architecture and applications. BMC Bioinformatics. 2009 Dec 15;10:421.
+9. 	Mapleson D, Venturini L, Kaithakottil G, Swarbreck D. Efficient and accurate detection of splice junctions from RNA-seq with Portcullis. Gigascience. 2018 Dec 1;7(12):giy131.
+10. Cotto KC, Feng Y-Y, Ramu A, Richters M, Freshour SL, Skidmore ZL, et al. Integrated analysis of genomic and transcriptomic data for the discovery of splice-associated variants in cancer. Nat Commun. 2023 Mar 22;14(1):1589.
+11. Nawrocki EP. Annotating functional RNAs in genomes using Infernal. Methods Mol Biol. 2014;1097:163–97.
+12. Griffiths-Jones S, Bateman A, Marshall M, Khanna A, Eddy SR. Rfam: an RNA family database. Nucleic Acids Res. 2003 Jan 1;31(1):439–41.
+13. Emms DM, Kelly S. OrthoFinder: phylogenetic orthology inference for comparative genomics. Genome Biol. 2019 Nov 14;20(1):238.
+
+
 ### Notes on computational requirements
 
 We expect the user to be familiar with installing and running command-line tools and using R. Many tools can be run on a desktop, but some are very computationally intensive and require the use of a high-performance compute cluster (e.g. Compute Canada). The speed of many tools will improve if they have access to multiple threads and can therefore run tasks in parallel. To check how many threads you can specify when running tools, check the documentation of your compute cluster or run `nproc` on your local desktop.
