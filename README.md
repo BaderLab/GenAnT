@@ -1,4 +1,8 @@
-# Tutorial: annotation and interpretation of animal genomes
+# Tutorial: Annotation and Interpretation of Animal Genomes
+
+<img width="1158" height="368" alt="GenAnT Symbol" src="https://github.com/user-attachments/assets/74be9aa5-1d33-4702-b23d-c53632b3a350" />
+
+_Woodchuck scientist designed by Sarah Watt_
 
 This is a tutorial on how to annotate a newly sequenced animal genome. This takes the user from their FASTA sequence to a high-quality GFF file annotated with gene symbols. We break the process into five main steps:
 
