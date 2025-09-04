@@ -34,11 +34,11 @@ wd <- opt[[5]]
 
 # Parameters I used to build script. I built with a full run to get a better view on the ncRNAs
 
-annoFile <- "full_annotation.gff"
-symbolFile <- "gene_symbols_noCopies.edited.tsv"
-ranking <- "orthofinder_gene;togar1_gene;liftoff_gene;ncRNA_gene" # We did not run a second round of TOGA
-outputfil <-  "full_annotation.edited.geneSymbol.gff"
-wd <- "pwd"
+# annoFile <- "full_annotation.gff"
+# symbolFile <- "gene_symbols_noCopies.edited.tsv"
+# ranking <- "orthofinder_gene;togar1_gene;liftoff_gene;ncRNA_gene" # We did not run a second round of TOGA
+# outputfile <-  "full_annotation.edited.geneSymbol.gff"
+# wd <- "pwd"
 
 # Set working directory
 if(wd == "pwd") {
