@@ -120,7 +120,7 @@ rule copy_RNAseq:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="2:00:00"
+        walltime="8:00:00"
     shell:
         """
 
@@ -140,7 +140,7 @@ rule copy_ISOseq:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="2:00:00"
+        walltime="8:00:00"
     shell:
         """
 
@@ -224,11 +224,13 @@ rule transcript_asm_stringtie:
         walltime="100:00:00",
 
         outDir=config["outDir"],
-        externalDir=config["externalDir"]
+        externalDir=config["externalDir"],
+	rnaseqCov=config["rnaseqCov"],
+	isoseqCov=config["isoseqCov"]
 
     shell: 
         """
-        scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads}
+        scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads} {params.rnaseqCov} {params.isoseqCov}
         """
 
 # liftOff
