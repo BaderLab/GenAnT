@@ -392,6 +392,15 @@ Our script assumes that the RNAseq data lives in $outDir/RNAseq_alignment and th
 * RNA-seq: `$outDir/RNAseq_alignment/kidney.bam`
 * ISO-seq: `$outDir/ISOseq_alignment/kidney.bam`
 
+StringTie has some relevant parameters when building transcripts. As a default, StringTie is extremely lenient when building transcripts (basicaly any amound of expression means Stringtie will try to build a transcript there. This can be problematic with multiple tissues however because a transcript with 3 reads of evidence from tissue #1 will get the same weight to a transcript with 300 reads from tissue #2. We have found instances where #1 ends up being the final transcript and we lose UTRs. Merging BAM files before running stringtie is technically another option, but it is not reccomended as it makes "frankenstein" transcripts from different tissues that are not real. As such, there is a bit of a balancing act in making these initial transcripts. We found that increasing -c and -f if you have lots of depth and many tissues to reduce the number of transcripts generated from a handful of reads can be helpful.  
+
+* -c minimum read coverage per bp (transcript-level)
+* -f min isoform abundance fraction
+* -j min support for junctions
+* -a min anchor length on each side of junction
+* -m min transcript length
+* -M max fraction of multi-mapping reads to keep
+
 ### Our scripts
 `run_stringtie_flexible.sh` also deals with merging and directory structure.
 
