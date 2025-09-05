@@ -5,6 +5,8 @@ outDir=$1
 externalDir=$2
 snakeDir=$3
 threads=$4
+rnaseqCov=$5
+isoseqCov=$6
 
 
 mkdir -p $outDir/stringtie_out
@@ -33,7 +35,7 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignm
 			echo "$line"
 			i=$line
 			b=`basename $i .bam`
-			$externalDir/stringtie/stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p $threads --conservative
+			$externalDir/stringtie/stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p $threads --conservative -c $isoseqCov
 
 		done < mixed.txt
 
@@ -47,7 +49,7 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignm
    		 	i=$line
    			b=`basename $i .bam`
 
-   			$externalDir/stringtie/stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p $threads --conservative
+   			$externalDir/stringtie/stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p $threads --conservative -c $isoseqCov
 
 		done < isoseq_only.txt
 
@@ -62,7 +64,7 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignm
 
 			b=`basename $i .bam`
 
-			$externalDir/stringtie/stringtie $outDir/RNAseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".sr.gtf" -p $threads --conservative
+			$externalDir/stringtie/stringtie $outDir/RNAseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".sr.gtf" -p $threads --conservative -c $rnaseqCov
 
 		done < rnaseq_only.txt
 
@@ -86,9 +88,9 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignm
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative -c $rnaseqCov ; done
 
-	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf 
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 
@@ -99,10 +101,10 @@ fi
 if [[ $(ls $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls $outDir/ISOseq_alignment | wc -l) -gt 0  ]] ; then
 
 	echo "Only detected long read RNAseq data (ISOseq)."
-	cd $outDir/RNAseq_alignment
+	cd $outDir/ISOseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -L -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative -c $isoseqCov ; done
 
 	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
 
