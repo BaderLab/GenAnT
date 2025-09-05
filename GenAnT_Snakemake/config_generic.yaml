@@ -45,3 +45,5 @@ brakerOdbFaa: "Vertebrata.fa" # change to a different odb12 protein set. e.g.,  
 mikadoScore: "mammalian.yaml" # Use a different scoring file for a different clade "HISTORIC/dmelanogaster_scoring.yaml"
 mirmachineClade: "Mammalia" # "mirmachine-clade" # "Glires" 
 stranded: "FALSE" # or "TRUE" if you have stranded RNA-seq.
+rnaseqCov: 5
+isoseqCov: 1
