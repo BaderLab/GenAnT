@@ -73,7 +73,7 @@ Below is the `species_mergedRepeats/looseMerge` directory in EarlGrey where repe
 
 Automated and semi-automated repeat libraries have a tendency to over-extend consensus repeats. As a somewhat extreme example, we have seen "LINE" elements with a consensus sequence of 30Kbp, when they should be at most, 6Kbp. Similarly, we have identified annotated LTRs that are >1Mbp in length near centromeres and chromosome ends in a rodent genome where the longest LTRs should be around 1-2Kbp. We have also found that some custom repeats can be falsely annotated as a combination of fragments of other "known" TEs. These issues with systematic annotations should not have a major impact on gene finding later on, but is important to consider when using tools like Earl Grey to evaluate the repeat content in your assembly directly. 
 
-This has been addressed as an "issue" on Earl Grey: https://github.com/TobyBaril/EarlGrey/issues/115
+This has been addressed in part as an "issue" on Earl Grey: https://github.com/TobyBaril/EarlGrey/issues/115
 
 More work needs to be done to imrpove TE straining in an automater manner, but overall manual annotations is critical for deep analysis of repeat elements in your genome.
 
