@@ -77,6 +77,8 @@ This has been addressed as an "issue" on Earl Grey: https://github.com/TobyBaril
 
 More work needs to be done to imrpove TE straining in an automater manner, but overall manual annotations is critical for deep analysis of repeat elements in your genome.
 
+- Thank you to Alyssa Fontanilla, Dmitry Prokopov, and Dr. Huayun Hou for the helpful discussions.
+
 
 #### Earl Grey: installing/running/troubleshooting
 
