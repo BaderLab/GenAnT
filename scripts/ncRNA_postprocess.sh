@@ -1,10 +1,5 @@
 #!/bin/bash
 
-outDir=$1
-dataDir=$2
-externalDir=$3
-snakeDir=$4
-
 cd $outDir
 
 mkdir -p ncRNA_analysis ; cd ncRNA_analysis
