@@ -52,6 +52,10 @@ echo "earl grey"
 
 singularity build earlgrey.sif docker://tobybaril/earlgrey_dfam3.7
 
+echo "agat"
+
+singularity build agat.sif docker://quay.io/biocontainers/agat:1.4.2--pl5321hdfd78af_0
+
 cd ../../
 
 echo "Removing cached and temporary space"
