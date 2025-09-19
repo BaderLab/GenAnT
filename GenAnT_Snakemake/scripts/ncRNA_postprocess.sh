@@ -23,29 +23,33 @@ Rscript --vanilla $snakeDir/scripts/rfamConversion.R
 # isolate the lncRNA features 
 grep -P '\tlncRNA\t' infernal.types.gff > infernal.types.lncRNA.gff
 
-bedtools intersect -v -a infernal.types.lncRNA.gff -b $outDir/transcript_selection/mikado_lenient.gff > infernal.lncRNA.notInMikado.gff
+bedtools intersect -v -a infernal.types.lncRNA.gff -b $outDir/transcript_selection/mikado_lenient.gff -s > infernal.lncRNA.notInMikado.gff
 
-# If any gene models have populated infernal.lncRNA.notInMikado.gff, append them to mikado.gff.
+gffread -F infernal.lncRNA.notInMikado.gff -o infernal.lncRNA.New.gff
 
-cat $outDir/transcript_selection/mikado_lenient.gff infernal.lncRNA.notInMikado.gff > mikado.infernal.gff
+bedtools intersect -a infernal.types.lncRNA.gff -b $outDir/transcript_selection/mikado_lenient.gff -wo -s > infernal.lncRNA.InMikado.gff
 
-# label anything in mikado.infernal.gff with information from Infernal.
+cp  $outDir/transcript_selection/mikado_lenient.gff ./
 
-bedtools intersect -a mikado.infernal.gff -b infernal.types.lncRNA.gff -wo > mikado.infernal.lncRNALabeled.txt
+# Extend existing gene models that directly overlap with cmscan ncRNA annoated conserved gene segments
 
-cut -f1-9 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.mikadoInfo.gff
-cut -f10-18 mikado.infernal.lncRNALabeled.txt > mikado.infernal.lncRNALabeled.infernalInfo.gff
+if [ -s "infernal.lncRNA.InMikado.gff" ]; then 
 
+	echo "Infernal found lncRNAs that have some overlap with existing mikado genes."
+	Rscript --vanilla $snakeDir/scripts/ExtendlncRNAs.R
 
-Rscript --vanilla $snakeDir/scripts/RenamelncRNAs.R
+	else
 
-# Integrate these newly formatted lncRNAs with the rest of Mikado's gene models by first subtracting the lncRNA features from the original Mikado features. 
+	echo "Infernal found no lncRNAs with any overlap with existing mikado genes."
 
-bedtools subtract -A -a mikado.infernal.gff -b mikado.infernal.lncRNALabeled.polished.gff > mikado.noLnc.gff
+	cp mikado_lenient.gff mikado.infernal.lncRNALabeled.polished.gff
+fi
 
-cat mikado.noLnc.gff mikado.infernal.lncRNALabeled.polished.gff > mikado.lncLabeled.gff
+# Add in the lncRNAs with no overlap with any existing gene models
 
-grep -P "\texon\t" mikado.lncLabeled.gff > mikado.lncLabeled.exons.gff
+cat mikado.infernal.lncRNALabeled.polished.gff infernal.lncRNA.New.gff > mikado.infernal.gff
+
+grep -P "\texon\t" mikado.infernal.gff> mikado.lncLabeled.exons.gff
 
 grep -v -P "\tlncRNA\t" infernal.types.gff > infernal.types.noLncRNA.gff
 
@@ -57,25 +61,44 @@ sed 's/gene_id/ID/g' mirmachine.gff > mirmachine.id.gff
 sed -i 's/sequence_with_30nt.*/gbkey=ncRNA/g' mirmachine.id.gff
 
 
-bedtools subtract -A -a infernal.types.noLncRNA.gff -b mirmachine.id.gff > infernal.noLnc.noMir.gff
+bedtools subtract -A -a infernal.types.noLncRNA.gff -b mirmachine.id.gff -s > infernal.noLnc.noMir.gff
 
 cat mirmachine.id.gff infernal.noLnc.noMir.gff > short_ncRNAs.gff
 
-bedtools subtract -A -a short_ncRNAs.gff -b mikado.lncLabeled.exons.gff > short_ncRNAs.noOverlap.gff
+bedtools subtract -A -a short_ncRNAs.gff -b mikado.lncLabeled.exons.gff -s > short_ncRNAs.noOverlap.gff
 
 sed -i 's/E-value/evalue/g' short_ncRNAs.noOverlap.gff
 
-Rscript --vanilla $snakeDir/scripts/AddFeaturesNcRNAs.R
+grep -v '^#'  short_ncRNAs.gff short_ncRNAs.nohead.gff
+awk 'BEGIN{OFS="\t"} { # Make consistent and generic names for ncRNA 
+    split($9,a,";");
+    id=a[1]"."NR;
+    $9=id";Name="a[1]";"a[2]";"a[3];
+    print
+}' short_ncRNAs.nohead.gff | \
+awk 'BEGIN{OFS="\t"} {
+    if($0 ~ /^#/){ next }          # skip comments
+    attr=$9; # Remove tabs in 9th column
+    for(i=10;i<=NF;i++){ attr=attr" "$i }
+    $9=attr;
+    NF=9;
+    print
+}' > short_ncRNA.unclean.gff
 
-if [ ! -s "mikado.lncLabeled.gff" ]; then
-	echo "Your annotation did not have lncRNAs"
-	cat mikado.infernal.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
-else 
-	cat mikado.lncLabeled.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
+gffread -F short_ncRNA.unclean.gff -o short_ncRNAs.polished.gff 
 
-fi
+sed -i 's/RFamID=/rfamid=/g; s/E-value=/evalue=/g; s/Name=ID=/Name=/g; s/ID=ID=/ID=/g' short_ncRNAs.polished.gff
+
+
+
+cat mikado.infernal.gff short_ncRNAs.polished.gff > full_annotation.unsorted.gff
+
+
+
+sed -i 's/RFamID=/rfamid=/g;  s/CDS_infernal_product/cds_infernal_product/g' full_annotation.unsorted.gff
 
 bedtools sort -i full_annotation.unsorted.gff > full_annotation1.gff
 
 mv full_annotation1.gff full_annotation.gff
+
 
