@@ -226,11 +226,12 @@ rule transcript_asm_stringtie:
         outDir=config["outDir"],
         externalDir=config["externalDir"],
 	rnaseqCov=config["rnaseqCov"],
-	isoseqCov=config["isoseqCov"]
+	isoseqCov=config["isoseqCov"],
+	stringtieMerge=config["stringtieMerge"]
 
     shell: 
         """
-        scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads} {params.rnaseqCov} {params.isoseqCov}
+        scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads} {params.rnaseqCov} {params.isoseqCov} {params.stringtieMerge}
         """
 
 # liftOff
