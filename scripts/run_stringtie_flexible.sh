@@ -1,26 +1,32 @@
 #!/bin/bash
-#$ -l h_vmem=24G,h_rt=20:00:00,h_stack=32M
-#$ -pe smp 8
 
-export PATH="$externalDir/stringtie:$PATH"
+
+outDir=$1
+externalDir=$2
+snakeDir=$3
+threads=$4
+rnaseqCov=$5
+isoseqCov=$6
+stringtieMerge=$7
+
 
 mkdir -p $outDir/stringtie_out
 
 # No RNA-seq data
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -eq 0 ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls $outDir/ISOseq_alignment | wc -l) -eq 0 ]] ; then
 
 	echo "We did not find short read or long read RNA-seq data (aligned bam files)"
-	echo "" > $outDir/transcript_selection/stringtie.gffread.gff # dummy variable for later
+	touch $outDir/transcript_selection/stringtie.gffread.gff # dummy variable for later
 
 fi
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -gt 0 ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignment | wc -l) -gt 0 ]] ; then
 
 	echo "We detected short read and long read RNAseq data, will perform stringite short, long, and mixed depending on data availability for each tissue"
 
 	cd $outDir
 
-	Rscript --vanilla $tutorialDir/scripts/organize_stringtie_runs.R # find exact matchng bam files in the ISOseq_alignment and RNAseq_alignment directories
+	Rscript --vanilla $snakeDir/scripts/organize_stringtie_runs.R # find exact matchng bam files in the ISOseq_alignment and RNAseq_alignment directories
 
 	cd $outDir/stringtie_out
 
@@ -30,7 +36,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 			echo "$line"
 			i=$line
 			b=`basename $i .bam`
-			stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p 8 --conservative
+			$externalDir/stringtie/stringtie --mix $outDir/RNAseq_alignment/$i $outDir/ISOseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".mix.gtf" -p $threads --conservative -c $isoseqCov
 
 		done < mixed.txt
 
@@ -44,7 +50,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
    		 	i=$line
    			b=`basename $i .bam`
 
-   			stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p 8 --conservative
+   			$externalDir/stringtie/stringtie $outDir/ISOseq_alignment/$i -l $b -L -o $outDir/stringtie_out/$i".lr.gtf" -p $threads --conservative -c $isoseqCov
 
 		done < isoseq_only.txt
 
@@ -59,7 +65,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 			b=`basename $i .bam`
 
-			stringtie $outDir/RNAseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".sr.gtf" -p 8 --conservative
+			$externalDir/stringtie/stringtie $outDir/RNAseq_alignment/$i -l $b -o $outDir/stringtie_out/$i".sr.gtf" -p $threads --conservative -c $rnaseqCov
 
 		done < rnaseq_only.txt
 
@@ -67,7 +73,30 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 	cd $outDir
 
-	stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+	if [  "$stringtieMerge" = "TRUE"  ]; then
+  		echo "Merging RNA-seq derived transcripts with stringtie --merge (conservative)."
+
+  			$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+
+  	else
+  		
+  		echo "Merging RNA-seq derived transcripts with AGAT (more lenient, reccomended for multiple ISO-seq tissues)"
+
+  		AGAT_SIF=$externalDir/singularity_images/agat.sif
+
+		SINGULARITY_CACHEDIR=$outDir/agat/cachedir
+		SINGULARITY_TMPDIR=$outDir/agat/tmpdir
+
+		wd=$outDir/stringtie_out
+		mkdir -p $wd/stringtie_gff ; mv $wd/*gtf $wd/stringtie_gff
+
+		cd $wd
+
+		singularity exec --bind ${wd},${PWD},${outDir} ${AGAT_SIF} agat_sp_merge_annotations.pl --gff $wd/stringtie_gff --out $outDir/stringtie_out/stringtie.merged.gtf
+
+		cd $outDir
+
+	fi
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff # make compatible with downstreat steps
 
@@ -76,16 +105,39 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 fi
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -eq 0  ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignment | wc -l) -eq 0  ]] ; then
 
 	echo "Only detected short read RNAseq data." 
 
 	cd $outDir/RNAseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative -c $rnaseqCov ; done
 
-	stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+	if [  "$stringtieMerge" = "TRUE"  ]; then
+  		echo "Merging RNA-seq derived transcripts with stringtie --merge (conservative)."
+
+  			$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+
+  	else
+  		
+  		echo "Merging RNA-seq derived transcripts with AGAT (more lenient, reccomended for multiple ISO-seq tissues)"
+
+  		AGAT_SIF=$externalDir/singularity_images/agat.sif
+
+		SINGULARITY_CACHEDIR=$outDir/agat/cachedir
+		SINGULARITY_TMPDIR=$outDir/agat/tmpdir
+
+		wd=$outDir/stringtie_out
+		mkdir -p $wd/stringtie_gff ; mv $wd/*gtf $wd/stringtie_gff
+
+		cd $wd
+
+		singularity exec --bind ${wd},${PWD},${outDir} ${AGAT_SIF} agat_sp_merge_annotations.pl --gff $wd/stringtie_gff --out $outDir/stringtie_out/stringtie.merged.gtf
+
+		cd $outDir
+
+	fi	
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 
@@ -93,15 +145,38 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 fi
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -gt 0  ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls $outDir/ISOseq_alignment | wc -l) -gt 0  ]] ; then
 
 	echo "Only detected long read RNAseq data (ISOseq)."
-	cd $outDir/RNAseq_alignment
+	cd $outDir/ISOseq_alignment
 	b=`basename $i .bam`
 
-	for i in *.bam ; do stringtie $i -l $b -L -o $outDir/stringtie_out/$i".gtf" -p 8 --conservative ; done
+	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -L -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative -c $isoseqCov ; done
 
-	stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+		if [  "$stringtieMerge" = "TRUE"  ]; then
+  		echo "Merging RNA-seq derived transcripts with stringtie --merge (conservative)."
+
+  			$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+
+  	else
+  		
+  		echo "Merging RNA-seq derived transcripts with AGAT (more lenient, reccomended for multiple ISO-seq tissues)"
+
+  		AGAT_SIF=$externalDir/singularity_images/agat.sif
+
+		SINGULARITY_CACHEDIR=$outDir/agat/cachedir
+		SINGULARITY_TMPDIR=$outDir/agat/tmpdir
+
+		wd=$outDir/stringtie_out
+		mkdir -p $wd/stringtie_gff ; mv $wd/*gtf $wd/stringtie_gff
+
+		cd $wd
+
+		singularity exec --bind ${wd},${PWD},${outDir} ${AGAT_SIF} agat_sp_merge_annotations.pl --gff $wd/stringtie_gff --out $outDir/stringtie_out/stringtie.merged.gtf
+
+		cd $outDir
+
+	fi
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 

@@ -1,14 +1,58 @@
 # This R notebook reads in `full_annotation.gff` and the table of gene symbols, `gene_symbols_noCopies.tsv`, and creates a clean GFF file with gene symbols. Many metadata columns are removed that may have been useful in intermediate steps but that are likely unnecessary going forward.
 
-
+library(optparse)
 library(rtracklayer)
 library(dplyr)
 
+option_list <- list(
+  make_option(c("-f", "--FullAnnotation"), type = "character", default = "full_annotation.gff",
+              help = "Whether the custom gff file should be considered the reference assembly",
+              metavar = "character"),
+  make_option(c("-g", "--GeneSymbolTable"), type = "character", default = "gene_symbols_edited.tsv",
+              help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
+              metavar = "character"),
+  make_option(c("-r", "--ranking"), type = "character", default = "orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene",
+              help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
+              metavar = "character"),
+  make_option(c("-o", "--output"), type = "character", default = "full_annotation.edited.geneSymbols.gff",
+              help = "The name of the final output GFF",
+              metavar = "character"),
+  make_option(c("-w", "--workingdir"), type = "character", default = "pwd",
+              help = "Path to the directory with the input and output files",
+              metavar = "character")
+)
+
+# Parse arguments
+opt_parser <- OptionParser(option_list = option_list)
+opt <- parse_args(opt_parser)
+
+annoFile <- opt[[1]]
+symbolFile <- opt[[2]]
+ranking <- opt[[3]]
+outputfile <- opt[[4]]
+wd <- opt[[5]]
+
+# Parameters I used to build script. I built with a full run to get a better view on the ncRNAs
+
+# annoFile <- "full_annotation.gff"
+# symbolFile <- "gene_symbols_noCopies.edited.tsv"
+# ranking <- "orthofinder_gene;togar1_gene;liftoff_gene;ncRNA_gene" # We did not run a second round of TOGA
+# outputfile <-  "full_annotation.edited.geneSymbol.gff"
+# wd <- "pwd"
+
+# Set working directory
+if(wd == "pwd") {
+  message("Script will be ran in working directory as -wd was set to 'pwd'")
+  thedir <- getwd()
+} else {
+  thedir <- try(setwd(wd))
+  if(class(thedir)[1] == "try-error") {
+    stop(paste0("cannot find directory ",wd, " is there a typo?"))    
+  }
+}
 
 # First, read in the GFF file
-
-
-gff <- as.data.frame(readGFF("full_annotation.gff"))
+gff <- as.data.frame(readGFF(annoFile))
 
 
 # Let's start by only keeping the most important columns. You can add any additional attributes you wish to keep, but much of this information was used to show evidence for the support of each gene model which you likely won't need directly in the GFF (and can instead find this information in some of the intermediate files, like tables output by Mikado). We'll definitely keep columns 1-to-8, in addition to the attributes listed below. The `which` function pulls the column numbers from the GFF file if the column names occur in the vector below. Note that we are choosing not to keep "predicted_gene_symbol" which has the predicted ncRNA genes from Infernal and MirMachine because we're just going to replace those with the same ncRNA gene stored in the ncRNA column of the gene symbol table.
@@ -30,7 +74,17 @@ gff <- gff[!gff$type == "superlocus",]
 # Now let's read in `gene_symbols_noCopies.tsv`, which we will use to add gene symbols to the GFF file. We want the "no copies" file, because we can choose exactly how we want to add the copy numbers when considering all of the different gene symbol sources.
 
 
-symbols <- read.table("gene_symbols_noCopies.tsv", sep = "\t", header = TRUE)
+symbols <- read.table(symbolFile, sep = "\t", header = TRUE)
+
+##
+###
+##
+
+rank_vector <- strsplit(ranking,";")[[1]]
+if(!(all(rank_vector %in% colnames(symbols)))) {
+  stop("Not all of the elements in the 'rank vector' parameter are in the column names of the symbol file.
+       We use ';' as a delimitor. It is also case-sensitive. Please check the `-r` option.")
+}
 
 
 # The goal here is to populate the "Name" slot, as this is what will be recognized by other tools that interpret GFF files as the name of that particular gene. Right now, "Name" is almost always populated with a unique "Mikado" ID, and we want to replace it with a gene symbol.
@@ -39,9 +93,6 @@ symbols <- read.table("gene_symbols_noCopies.tsv", sep = "\t", header = TRUE)
 
 # The first step to this will be to create...
 
-rank_vector <- c("orthofinder_gene","togar1_gene","togar2_gene",
-                 "liftoff_gene","ncRNA_gene")
-rank_vector <- rank_vector[rank_vector %in% colnames(symbols)]
 
 symbols$hierarchical_gene <- rep(NA, nrow(symbols))
 
@@ -53,8 +104,6 @@ for(j in 1:nrow(symbols)) { # for each gene
   }
 }
 
-
-# An alternative to this hierarchical approach is to just pick your favourite column and use the gene names from there.
 
 # Either way, let's assume that you now want to use the `hierarchical_gene` column to populate your gene names in the GFF file. Importantly, this gene name should be unique or else problems may arise in downstream analysis (since many downstream tools expect unique gene symbols, as exist in human or mouse). We can add a column to `symbols` which we'll call "unique_gene", and make the genes unique by adding `-copy#` to repeating gene symbols. We can do this using the `make.unique` function in R. This function sometimes adds unique identifiers to `NA` values, so we'll first grab indices for only non-NA values.
 
@@ -72,7 +121,7 @@ hier_simple <- strsplit(symbols_simplify$hierarchical_gene,";")
 each_simple <- list()
 
 for(i in rank_vector[2:length(rank_vector)]) {
-  each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
+    each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
 }
 
 simple <- c()
@@ -151,7 +200,7 @@ symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 
 
 gff$mikado_id <- NA
-gff$mikado_id[gff$type %in% c("gene","lncRNA_gene","lncRNA")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene","lncRNA")]))
+gff$mikado_id[gff$type %in% c("gene","lncRNA_gene", "lncRNA")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene", "lncRNA")]))
 gff$mikado_id[gff$type %in% c("mRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA")]))
 
 
@@ -179,8 +228,9 @@ gff[gff == "character(0)"] <- NA
 # We can now export the GFF file and the updated gene symbol table.
 
 
-rtracklayer::export.gff3(gff, "full_annotation.geneSymbols.gff", format = "gff3")
+rtracklayer::export.gff3(gff, outputfile, format = "gff3")
 
 write.table(symbols, file = "gene_symbols_full.tsv",
             quote = FALSE, sep = "\t",
             row.names = FALSE, col.names = TRUE)
+
