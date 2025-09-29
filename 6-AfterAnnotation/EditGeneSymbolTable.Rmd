@@ -153,7 +153,7 @@ If you do not need to add gene symbols from another method, the file can be save
 ```
 
 write.table(gene_symbols, file = "postprocess_gene_symbols_noCopies.tsv", quote=FALSE, 
-            row.names=FALSE, col.names=FALSE, sep = "\t")
+            row.names=FALSE, col.names=TRUE, sep = "\t")
 
 ```
 
