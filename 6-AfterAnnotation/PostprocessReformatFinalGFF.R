@@ -14,10 +14,10 @@ option_list <- list(
   make_option(c("-r", "--ranking"), type = "character", default = "orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene",
               help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
               metavar = "character"),
-  make_option(c("-o", "--output"), type = "character", default = "full_annotation.edited.geneSymbols.gf",
+  make_option(c("-o", "--output"), type = "character", default = "full_annotation.edited.geneSymbols.gff",
               help = "The name of the final output GFF",
               metavar = "character"),
-  make_option(c("-wd", "--workingdir"), type = "character", default = "pwd",
+  make_option(c("-w", "--workingdir"), type = "character", default = "pwd",
               help = "Path to the directory with the input and output files",
               metavar = "character")
 )
@@ -200,8 +200,8 @@ symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 
 
 gff$mikado_id <- NA
-gff$mikado_id[gff$type %in% c("gene","lncRNA_gene")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene")]))
-gff$mikado_id[gff$type %in% c("mRNA","lncRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA","lncRNA")]))
+gff$mikado_id[gff$type %in% c("gene","lncRNA_gene", "lncRNA")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene", "lncRNA")]))
+gff$mikado_id[gff$type %in% c("mRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA")]))
 
 
 # Now let's use `dplyr`'s `left_join` function to add the gene symbols data frame to the GFF file.
@@ -233,3 +233,4 @@ rtracklayer::export.gff3(gff, outputfile, format = "gff3")
 write.table(symbols, file = "gene_symbols_full.tsv",
             quote = FALSE, sep = "\t",
             row.names = FALSE, col.names = TRUE)
+
