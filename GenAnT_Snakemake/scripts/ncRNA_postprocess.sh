@@ -45,11 +45,40 @@ if [ -s "infernal.lncRNA.InMikado.gff" ]; then
 	cp mikado_lenient.gff mikado.infernal.lncRNALabeled.polished.gff
 fi
 
+
+# Add exon IDs to lncRNA from cmscan
+
+awk -F'\t' 'BEGIN{OFS="\t"}
+{
+    if ($0 ~ /^#/ || NF != 9) {
+        print $0; next
+    }
+
+    if ($3 == "exon") {
+        # parse attributes
+        n=split($9, a, ";")
+        parent=""
+        for (i=1; i<=n; i++) {
+            split(a[i], kv, "=")
+            if (kv[1] == "Parent") parent=kv[2]
+        }
+
+        if (parent != "") {
+            count[parent]++
+            exon_id = parent ".exon" count[parent]
+            $9 = $9 ";ID=" exon_id
+        }
+        print
+    } else {
+        print
+    }
+}' infernal.lncRNA.New.gff > infernal.lncRNA.New.ExonID.gff
+
 # Add in the lncRNAs with no overlap with any existing gene models
 
-cat mikado.infernal.lncRNALabeled.polished.gff infernal.lncRNA.New.gff > mikado.infernal.gff
+cat mikado.infernal.lncRNALabeled.polished.gff infernal.lncRNA.New.ExonID.gff > mikado.infernal.gff
 
-grep -P "\texon\t" mikado.infernal.gff> mikado.lncLabeled.exons.gff
+grep -P "\texon\t" mikado.infernal.gff > mikado.lncLabeled.exons.gff
 
 grep -v -P "\tlncRNA\t" infernal.types.gff > infernal.types.noLncRNA.gff
 
@@ -69,7 +98,7 @@ bedtools subtract -A -a short_ncRNAs.gff -b mikado.lncLabeled.exons.gff -s > sho
 
 sed -i 's/E-value/evalue/g' short_ncRNAs.noOverlap.gff
 
-grep -v '^#'  short_ncRNAs.gff short_ncRNAs.nohead.gff
+grep -v '^#'  short_ncRNAs.gff > short_ncRNAs.nohead.gff
 awk 'BEGIN{OFS="\t"} { # Make consistent and generic names for ncRNA 
     split($9,a,";");
     id=a[1]"."NR;

@@ -7,6 +7,7 @@ snakeDir=$3
 threads=$4
 rnaseqCov=$5
 isoseqCov=$6
+stringtieMerge=$7
 
 
 mkdir -p $outDir/stringtie_out
@@ -72,7 +73,30 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignm
 
 	cd $outDir
 
-	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+	if [  "$stringtieMerge" = "TRUE"  ]; then
+  		echo "Merging RNA-seq derived transcripts with stringtie --merge (conservative)."
+
+  			$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+
+  	else
+  		
+  		echo "Merging RNA-seq derived transcripts with AGAT (more lenient, reccomended for multiple ISO-seq tissues)"
+
+  		AGAT_SIF=$externalDir/singularity_images/agat.sif
+
+		SINGULARITY_CACHEDIR=$outDir/agat/cachedir
+		SINGULARITY_TMPDIR=$outDir/agat/tmpdir
+
+		wd=$outDir/stringtie_out
+		mkdir -p $wd/stringtie_gff ; mv $wd/*gtf $wd/stringtie_gff
+
+		cd $wd
+
+		singularity exec --bind ${wd},${PWD},${outDir} ${AGAT_SIF} agat_sp_merge_annotations.pl --gff $wd/stringtie_gff --out $outDir/stringtie_out/stringtie.merged.gtf
+
+		cd $outDir
+
+	fi
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff # make compatible with downstreat steps
 
@@ -90,7 +114,30 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignm
 
 	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative -c $rnaseqCov ; done
 
-	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf 
+	if [  "$stringtieMerge" = "TRUE"  ]; then
+  		echo "Merging RNA-seq derived transcripts with stringtie --merge (conservative)."
+
+  			$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+
+  	else
+  		
+  		echo "Merging RNA-seq derived transcripts with AGAT (more lenient, reccomended for multiple ISO-seq tissues)"
+
+  		AGAT_SIF=$externalDir/singularity_images/agat.sif
+
+		SINGULARITY_CACHEDIR=$outDir/agat/cachedir
+		SINGULARITY_TMPDIR=$outDir/agat/tmpdir
+
+		wd=$outDir/stringtie_out
+		mkdir -p $wd/stringtie_gff ; mv $wd/*gtf $wd/stringtie_gff
+
+		cd $wd
+
+		singularity exec --bind ${wd},${PWD},${outDir} ${AGAT_SIF} agat_sp_merge_annotations.pl --gff $wd/stringtie_gff --out $outDir/stringtie_out/stringtie.merged.gtf
+
+		cd $outDir
+
+	fi	
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 
@@ -106,7 +153,30 @@ if [[ $(ls $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls $outDir/ISOseq_alignm
 
 	for i in *.bam ; do $externalDir/stringtie/stringtie $i -l $b -L -o $outDir/stringtie_out/$i".gtf" -p $threads --conservative -c $isoseqCov ; done
 
-	$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf
+		if [  "$stringtieMerge" = "TRUE"  ]; then
+  		echo "Merging RNA-seq derived transcripts with stringtie --merge (conservative)."
+
+  			$externalDir/stringtie/stringtie --merge -o $outDir/stringtie_out/stringtie.merged.gtf $outDir/stringtie_out/*gtf # merge results
+
+  	else
+  		
+  		echo "Merging RNA-seq derived transcripts with AGAT (more lenient, reccomended for multiple ISO-seq tissues)"
+
+  		AGAT_SIF=$externalDir/singularity_images/agat.sif
+
+		SINGULARITY_CACHEDIR=$outDir/agat/cachedir
+		SINGULARITY_TMPDIR=$outDir/agat/tmpdir
+
+		wd=$outDir/stringtie_out
+		mkdir -p $wd/stringtie_gff ; mv $wd/*gtf $wd/stringtie_gff
+
+		cd $wd
+
+		singularity exec --bind ${wd},${PWD},${outDir} ${AGAT_SIF} agat_sp_merge_annotations.pl --gff $wd/stringtie_gff --out $outDir/stringtie_out/stringtie.merged.gtf
+
+		cd $outDir
+
+	fi
 
 	gffread $outDir/stringtie_out/stringtie.merged.gtf --keep-genes -o $outDir/transcript_selection/stringtie.gffread.gff
 

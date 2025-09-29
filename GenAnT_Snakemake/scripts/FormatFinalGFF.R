@@ -151,8 +151,8 @@ symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 
 
 gff$mikado_id <- NA
-gff$mikado_id[gff$type %in% c("gene","lncRNA_gene")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene")]))
-gff$mikado_id[gff$type %in% c("mRNA","lncRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA","lncRNA")]))
+gff$mikado_id[gff$type %in% c("gene","lncRNA_gene","lncRNA")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene","lncRNA")]))
+gff$mikado_id[gff$type %in% c("mRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA")]))
 
 
 # Now let's use `dplyr`'s `left_join` function to add the gene symbols data frame to the GFF file.
