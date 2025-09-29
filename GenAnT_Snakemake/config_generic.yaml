@@ -47,3 +47,4 @@ mirmachineClade: "Mammalia" # "mirmachine-clade" # "Glires"
 stranded: "FALSE" # or "TRUE" if you have stranded RNA-seq.
 rnaseqCov: 5
 isoseqCov: 1
+stringtieMerge: "FALSE" # Merging gtf files from each tissue using stringtie --merge. If "FALSE", we use AGAT_merge. AGAT is more lenient, simply concatenating transcript models for each gene and picking the logest model for the representative "gene". We reccomend this for annotations with multiple tissues of ISO-seq data.
