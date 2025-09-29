@@ -1,14 +1,6 @@
 #!/bin/bash
 
 
-outDir=$1
-externalDir=$2
-snakeDir=$3
-threads=$4
-rnaseqCov=$5
-isoseqCov=$6
-stringtieMerge=$7
-
 
 mkdir -p $outDir/stringtie_out
 
