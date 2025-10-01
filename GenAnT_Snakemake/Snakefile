@@ -667,8 +667,10 @@ rule run_orthofinder:
 
         cd protein_seqs 
         
-        ln -s {params.orthofinderFA} ./
-        ln -s {input} ./
+        cp {params.orthofinderFA} ./
+        cp {input} ./
+
+		sed -i '/^>/! s/\./X/g' mikado_lenient.faa
 
         cd ../
 
