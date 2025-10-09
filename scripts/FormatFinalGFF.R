@@ -116,10 +116,6 @@ symbols$hierarchical_gene[ortho_copies] <- simple
 
 ### Replace lncRNA genes symbols with lncRNA symbols
 gff_gene <- gff[gff$ID %in% symbols$mikado_id,]
-
-# table(gff_gene$ID == symbols$mikado_id)
-symbols$gene_biotype <- gff_gene$gene_biotype
-symbols$hierarchical_gene[which(symbols$gene_biotype == "lncRNA")] <- symbols$ncRNA_gene[which(symbols$gene_biotype == "lncRNA")]
 #
 
 symbols$unique_gene <- symbols$hierarchical_gene
