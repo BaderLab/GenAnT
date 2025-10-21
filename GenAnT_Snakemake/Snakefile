@@ -5,8 +5,6 @@ rule all:
     input:
         config["outDir"]+"/full_annotation.geneSymbols.gff"
 
-
-
 rule preprocess_data:
     input:
         assembly=config["assemblyFile"]
@@ -107,6 +105,7 @@ rule preprocess_data:
         cp {input.assembly} {output.assembly_out}
         samtools faidx {output.assembly_out}
         mkdir -p "{params.outDir}/transcript_selection"
+        mkdir -p "{params.outDir}/logs"
         """
 
 rule copy_RNAseq: 
@@ -157,7 +156,7 @@ rule mask_assembly:
     output:
         config["outDir"]+"/assembly/assembly.softmasked.fa"
     threads:
-        28  
+        28
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
@@ -169,10 +168,9 @@ rule mask_assembly:
         MaskedAssemblyFile=config["MaskedAssemblyFile"],
         MaskedAssemblyAnnotation=config["MaskedAssemblyAnnotation"],
         dfamDB=config["dfamDB"]
-
     shell:
         """
-        scripts/run_earl_grey.sh {params.outDir} {params.externalDir} {params.species} {params.MaskedAssemblyFile} {params.MaskedAssemblyAnnotation} {params.dfamDB} {threads}
+        scripts/run_earl_grey.sh {params.outDir} {params.externalDir} {params.species} {params.MaskedAssemblyFile} {params.MaskedAssemblyAnnotation} {params.dfamDB} {threads} 
 
         """
 
@@ -217,7 +215,7 @@ rule transcript_asm_stringtie:
     output:
         config["outDir"]+"/transcript_selection/stringtie.gffread.gff"
     threads:
-        16  
+        16
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
@@ -225,13 +223,27 @@ rule transcript_asm_stringtie:
 
         outDir=config["outDir"],
         externalDir=config["externalDir"],
-	rnaseqCov=config["rnaseqCov"],
-	isoseqCov=config["isoseqCov"],
-	stringtieMerge=config["stringtieMerge"]
+        rnaseqCov=config["rnaseqCov"],
+        isoseqCov=config["isoseqCov"],
+        stringtieMerge=config["stringtieMerge"],
+        customStringtie=config["customStringtie"]
 
     shell: 
         """
-        scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads} {params.rnaseqCov} {params.isoseqCov} {params.stringtieMerge}
+
+
+       if [[ {params.customStringtie} = "none" ]] ; then 
+            
+            scripts/run_stringtie_flexible.sh {params.outDir} {params.externalDir} {workflow.basedir} {threads} {params.rnaseqCov} {params.isoseqCov} {params.stringtieMerge}
+
+        else
+
+            echo "Converting your custom transcript assembly to input for mikado. Skipping StringTie"
+
+            gffread {params.customStringtie} --keep-genes -o {output}
+
+        fi
+
         """
 
 # liftOff
@@ -242,7 +254,7 @@ rule liftoff_asm:
     output:
         config["outDir"]+"/transcript_selection/liftoff.gffread.gff"
     threads:
-        16  
+        16
     params:
         memory_per_thread="4G",
         extra_cluster_opt="",
@@ -250,21 +262,31 @@ rule liftoff_asm:
 
         outDir=config["outDir"],
         refLiftOffGff=config["refLiftOffGff"],
-        refLiftOffFa=config["refLiftOffFa"]
+        refLiftOffFa=config["refLiftOffFa"],
+        customLiftoff=config["customLiftoff"]
 
     shell: 
         """
-        cd {params.outDir}
+        if [[ {params.customLiftoff} = "none" ]] ; then 
 
-        mkdir -p liftoff
+            cd {params.outDir}
 
-        cd liftoff
+            mkdir -p liftoff
 
-        gffutils-cli create {params.refLiftOffGff} -o referencegff_db
+            cd liftoff
 
-        liftoff -db referencegff_db {input} {params.refLiftOffFa} -o ./liftoff.gff -u ./unmapped.liftoff.txt -copies
+            gffutils-cli create {params.refLiftOffGff} -o referencegff_db
 
-        gffread ./liftoff.gff --keep-genes -o {output}
+            liftoff -db referencegff_db {input} {params.refLiftOffFa} -o ./liftoff.gff -u ./unmapped.liftoff.txt -copies
+
+            gffread ./liftoff.gff --keep-genes -o {output}
+
+        else
+            echo "Converting your custom liftoff/lifton assembly to input for mikado. Skipping liftoff"
+
+            gffread {params.customLiftoff} --keep-genes -o {output}
+
+        fi
         """
 
 rule braker_noRNA: 
@@ -285,23 +307,32 @@ rule braker_noRNA:
         externalDir=config["externalDir"],
         target=config["target"],
         dataDir=config["dataDir"],
-        brakerOdbFaa=config["brakerOdbFaa"]
+        brakerOdbFaa=config["brakerOdbFaa"],
+        customBraker=config["customBraker"]
 
     shell: 
         """
-        if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -eq 0 && $(ls {params.outDir}/ISOseq_alignment | wc -l) -eq 0 ]] ; then
+        if [[ {params.customBraker} = "none" ]] ; then 
+        
+            if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -eq 0 && $(ls {params.outDir}/ISOseq_alignment | wc -l) -eq 0 ]] ; then
 
-            echo "We did not find short read or long read RNA-seq data (aligned bam files)"
+                echo "We did not find short read or long read RNA-seq data (aligned bam files)"
 
-            scripts/run_braker_noRNAseq.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+                scripts/run_braker_noRNAseq.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
 
-            touch {params.outDir}/transcript_selection/braker.sr.gffread.gff # dummy variable for later
-            touch {params.outDir}/transcript_selection/braker.lr.gffread.gff # dummy variable for later
+                touch {params.outDir}/transcript_selection/braker.sr.gffread.gff # dummy variable for later
+                touch {params.outDir}/transcript_selection/braker.lr.gffread.gff # dummy variable for later
+            else
+
+                touch {output}
+
+            fi
+
         else
-
+            echo "You put a custom output for braker. Skipping step"
             touch {output}
-
         fi
+
 
 
         """
@@ -325,22 +356,29 @@ rule braker_sr:
         target=config["target"],
         dataDir=config["dataDir"],
         brakerOdbFaa=config["brakerOdbFaa"],
-        stranded=config["stranded"]
+        stranded=config["stranded"],
+        customBraker=config["customBraker"]
 
     shell: 
         """
-        if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -gt 0 ]] ; then
-            echo "We detected short read RNAseq"
-            if [[ {params.stranded} = "TRUE" ]] ; then 
-                echo "You reported that RNAseq is stranded"
-                scripts/make_RNAseq_stranded.sh {params.outDir} {threads} 
-                scripts/run_braker_stranded.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
-            else
-                scripts/run_braker_sr.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
-	    fi
-        else
-            touch {output}
+        if [[ {params.customBraker} = "none" ]] ; then 
 
+            if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -gt 0 ]] ; then
+                echo "We detected short read RNAseq"
+                if [[ {params.stranded} = "TRUE" ]] ; then 
+                    echo "You reported that RNAseq is stranded"
+                    scripts/make_RNAseq_stranded.sh {params.outDir} {threads} 
+                    scripts/run_braker_stranded.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+                else
+                    scripts/run_braker_sr.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+    	    fi
+            else
+                touch {output}
+
+            fi
+        else
+            echo "You put a custom output for braker. converting custom GFF to input for stringtie"
+            gffread {params.customBraker} --keep-genes -o {output}
         fi
         """
 
@@ -362,12 +400,17 @@ rule braker_lr:
         externalDir=config["externalDir"],
         target=config["target"],
         dataDir=config["dataDir"],
-        brakerOdbFaa=config["brakerOdbFaa"]
+        brakerOdbFaa=config["brakerOdbFaa"],
+        customBraker=config["customBraker"]
     shell: 
         """
-        if [[ $(ls {params.outDir}/ISOseq_alignment | wc -l) -gt 0 ]] ; then
-            echo "We detected ISOseq"
-            scripts/run_braker_lr.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+        if [[ {params.customBraker} = "none" ]] ; then 
+            if [[ $(ls {params.outDir}/ISOseq_alignment | wc -l) -gt 0 ]] ; then
+                echo "We detected ISOseq"
+                scripts/run_braker_lr.sh {params.outDir} {params.externalDir} {params.target} {params.dataDir} {params.brakerOdbFaa} {threads}
+            else
+                touch {output}
+            fi
         else
             touch {output}
         fi
@@ -379,7 +422,7 @@ rule cactus_anno:
     output:
         config["outDir"]+"/cactus_alnr1/target-to-ref.chain"
     threads:
-        28
+        32
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -390,11 +433,17 @@ rule cactus_anno:
         target=config["target"],
         TogaDir=config["TogaDir"],
         refToga=config["refToga"],
-        refTogaFa=config["refTogaFa"]
+        refTogaFa=config["refTogaFa"],
+        customTOGA=config["customTOGA"]
     shell: 
         """
+       if [[ {params.customTOGA} = "none" ]] ; then 
             scripts/make_cactus_tree.sh {params.outDir} {params.target} {params.refToga} {params.refTogaFa} "r1"
             scripts/cactus_align_and_chain_sif.sh {params.outDir} {params.externalDir} {params.TogaDir} {params.target} {params.refToga} "r1"
+        else
+            echo "Skipping cactus for reference species 1 as you provided custom TOGA gff"
+            touch {output}
+        fi
         """
 
 rule toga_anno:
@@ -403,7 +452,7 @@ rule toga_anno:
     output:
         config["outDir"]+"/transcript_selection/toga.r1.gffread.gff"
     threads:
-        28
+        32
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -414,10 +463,18 @@ rule toga_anno:
         target=config["target"], 
         refToga=config["refToga"],
         refTogaBed=config["refTogaBed"],
-        refTogaIsoform=config["refTogaIsoform"]
+        refTogaIsoform=config["refTogaIsoform"],
+        customTOGA=config["customTOGA"]
     shell: 
         """
+        
+        if [[ {params.customTOGA} = "none" ]] ; then 
             scripts/run_toga.sh {params.outDir} {params.externalDir} {params.target} {params.refToga} {params.refTogaBed} {params.refTogaIsoform} "r1"
+        else
+            echo "Converting custom toga GFF into input for mikado"
+            gffread {params.customTOGA} --keep-genes -o {output}
+
+        fi
         """
 
 
@@ -427,7 +484,7 @@ rule cactus_anno2:
     output:
         config["outDir"]+"/cactus_alnr2/target-to-ref.chain"
     threads:
-        28
+        32
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -438,13 +495,19 @@ rule cactus_anno2:
         target=config["target"],
         TogaDir2=config["TogaDir2"],
         refToga2=config["refToga2"],
-        refTogaFa2=config["refTogaFa2"]
+        refTogaFa2=config["refTogaFa2"],
+        customTOGA2=config["customTOGA2"]
     shell: 
         """
-        if [ "{params.refToga2}" != "none" ] ; then
-            scripts/make_cactus_tree.sh {params.outDir} {params.target} {params.refToga2} {params.refTogaFa2} "r2"
-            scripts/cactus_align_and_chain_sif.sh {params.outDir} {params.externalDir} {params.TogaDir2} {params.target} {params.refToga2} "r2"
+        if [[ {params.customTOGA2} = "none" ]] ; then 
+            if [ "{params.refToga2}" != "none" ] ; then
+                scripts/make_cactus_tree.sh {params.outDir} {params.target} {params.refToga2} {params.refTogaFa2} "r2"
+                scripts/cactus_align_and_chain_sif.sh {params.outDir} {params.externalDir} {params.TogaDir2} {params.target} {params.refToga2} "r2"
+            else
+                touch {output}
+            fi
         else
+            echo "Skipping cactus for reference species 2 as you provided custom TOGA (species 2) gff"
             touch {output}
         fi
         """
@@ -455,7 +518,7 @@ rule toga_anno2:
     output:
         config["outDir"]+"/transcript_selection/toga.r2.gffread.gff"
     threads:
-        28
+        32
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -466,13 +529,19 @@ rule toga_anno2:
         target=config["target"], 
         refToga2=config["refToga2"],
         refTogaBed2=config["refTogaBed2"],
-        refTogaIsoform2=config["refTogaIsoform2"]
+        refTogaIsoform2=config["refTogaIsoform2"],
+        customTOGA2=config["customTOGA2"]
     shell: 
         """
-        if [ "{params.refToga2}" != "none" ] ; then
-            scripts/run_toga.sh {params.outDir} {params.externalDir} {params.target} {params.refToga2} {params.refTogaBed2} {params.refTogaIsoform2} "r2"
+        if [[ {params.customTOGA2} = "none" ]] ; then 
+            if [ "{params.refToga2}" != "none" ] ; then
+                scripts/run_toga.sh {params.outDir} {params.externalDir} {params.target} {params.refToga2} {params.refTogaBed2} {params.refTogaIsoform2} "r2"
+            else
+                touch {output}
+            fi
         else
-            touch {output}
+            echo "Converting custom toga (species2) GFF into input for mikado"
+            gffread {params.customTOGA2} --keep-genes -o {output}
         fi
         """
 
@@ -541,7 +610,6 @@ rule junctions:
         memory_per_thread="12G",
         extra_cluster_opt="",
         walltime="48:00:00",
-
         outDir=config["outDir"]
     shell: 
         """
@@ -619,7 +687,6 @@ rule serialize_pick:
         memory_per_thread="12G",
         extra_cluster_opt="",
         walltime="48:00:00",
-
         outDir=config["outDir"],
         dataDir=config["dataDir"],
         externalDir=config["externalDir"]
@@ -634,7 +701,7 @@ rule run_orthofinder:
     output:
         config["outDir"]+"/orthofinder/orthofinder_protein.tsv"
     threads:
-        16
+        12
     params:
         memory_per_thread="12G",
         extra_cluster_opt="",
@@ -670,7 +737,8 @@ rule run_orthofinder:
         cp {params.orthofinderFA} ./
         cp {input} ./
 
-		sed -i '/^>/! s/\./X/g' mikado_lenient.faa
+	sed -i '/^>/! s/\./X/g' mikado_lenient.faa
+
 
         cd ../
 
