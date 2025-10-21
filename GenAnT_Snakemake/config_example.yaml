@@ -13,7 +13,6 @@ MaskedAssemblyFile: "none" # or masked directory to skip earlgrey "/path-to/NMR_
 MaskedAssemblyAnnotation: "none" # or repeat bed to skip earlgrey"/path-to/NMR_genome_assembly/T2T_March_2025/Pup3/heterocephalus_glaber.filteredRepeats.bed"
 rnaseqDir: "/path-to/GenAnT/data/example_data/RNAseq_alignment" # or an empty directory if no RNAseq
 isoseqDir: "/path-to/GenAnT/data/example_data/ISOseq_alignment" # or an empty directory if no ISOseq
-customGFF: "none" # if not none, then it should be the path to your gff file
 customRef: "FALSE" # is the custom gff a reference to be upgraded. Switch to "TRUE" if it is a reference.
 liftoffRef: "FALSE" # is the gff file from liftOff a reference assembly. Switch to "TRUE" if it is a reference. Note, if you have a custom reference gff then this will be over-written.
 
@@ -48,3 +47,12 @@ stranded: "TRUE" # for braker V3. Set to "TRUE" if you have stranded RNA-seq ali
 rnaseqCov: 5
 isoseqCov: 1
 stringtieMerge: "FALSE" # Merging gtf files from each tissue using stringtie --merge. If "FALSE", we use AGAT_merge. AGAT is more lenient, simply concatenating transcript models for each gene and picking the logest model for the representative "gene". We reccomend this for annotations with multiple tissues of ISO-seq data.
+
+
+# Adding GFF files that you have already computed
+customGFF: "none" # if not none, then it should be the path to your gff file
+customLiftoff: "none" # /scratch2/groups/simpsonlab/dsokolowski/BatSui_Oct9/liftoff/liftoff.gff" # If you ran lifton use here. Path to your liftoff/on GFF file
+customTOGA: "none" # /scratch2/groups/simpsonlab/dsokolowski/BatSui_Oct9/toga_outr1/BatSui_toga/query_annotation.gtf" # Path to the output of TOGA/TOGA2. Note, we expect the output to be in GFF/GTF file format, not the bed file that TOGA outputs directly. See tutorial docs for conversion.
+customTOGA2: "none" # "/scratch2/groups/simpsonlab/dsokolowski/BatSui_Oct9/toga_outr2/BatSui_toga/query_annotation.gtf" # Path to the output of TOGA/TOGA2. Note, we expect the output to be in GFF/GTF file format, not the bed file that TOGA outputs directly. See tutorial docs for conversion.
+customBraker: "none" # "/scratch2/groups/simpsonlab/dsokolowski/BatSui_Oct9/braker_sr/braker.gtf" # If you ran EviAnn use here
+customStringtie: "none" # "/scratch2/groups/simpsonlab/dsokolowski/BatSui_Oct9/stringtie_out/stringtie.merged.gtf" # If you used any other transcript assembler (e.g., scallop)
