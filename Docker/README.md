@@ -1,3 +1,5 @@
+### This Docker folder is specific to installing and running mikado with Docker. To install all of GenAnT. Please refer to the /setup directory. It uses this docker image with singularity.
+
 Instance installs all the required tools and programs to easily run the [mikado pipeline](https://github.com/EI-CoreBioinformatics/mikado).
 
 * Python - 3.10
