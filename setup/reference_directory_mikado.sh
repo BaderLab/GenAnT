@@ -17,7 +17,7 @@ prefix=`basename $gff .gff`
 
 # clean GFF1 for moving gene ID to gene symbol
 
-awk '$7 == "+" || $7 == "-" ' $prefix.gffread.gff > $prefix.strand.gff
+awk '$7 == "+" || $7 == "-" ' $prefix.gff > $prefix.strand.gff
 
 gffread $prefix.strand.gff -o $prefix.gffread.gff
 
