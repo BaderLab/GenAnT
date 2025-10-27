@@ -60,7 +60,7 @@ conda env create -f annotation_tutorial.yml
 
 conda activate annotation_tutorial
 
-module load singularity # replace with however you activate singulairty on your system (e.g., module load apptainer etc.)
+module load singularity # replace with however you activate singularity on your system (e.g., module load apptainer etc.)
 
 # make sure that SINGULARITY_CACHEDIR and SINGULARITY_TMPDIR are not attached to root.
 # export SINGULARITY_CACHEDIR=/path-to/singularitycache
