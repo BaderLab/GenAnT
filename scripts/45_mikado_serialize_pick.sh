@@ -66,6 +66,7 @@ $outDir"/transcript_selection/mikado_prepared.gtf" \
  --log $outDir"/transcript_selection/mikado_pick.log"  \
  --loci-out $outDir"/transcript_selection/mikado_lenient.gff" \
  --fasta $outDir"/assembly/assembly.softmasked.fa" \
+ --log-level INFO \
  --no-purge
 
 ASMPATH=$outDir"/assembly/assembly.softmasked.fa"
