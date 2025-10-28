@@ -166,7 +166,7 @@ Lastly, this script has a `module load singularity`. If you access singularity d
 
 Running the example data using the snakemake pipeline takes slightly more work:
 
-For `config.yaml` To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where `annotation_tutorial` lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GAT/" to the path where you cloned "GenomeAnnotationTutorial" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial).
+There is a config file (`config_example.yaml`) located in the `GenAnT_Snakemake` directory which will need to be modified to run the example data. To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where `annotation_tutorial` lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GAT/" to the path where you cloned "GenomeAnnotationTutorial" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial).
 
 Otherwise, follow the steps in "3. A Snakemake pipeline".
 
