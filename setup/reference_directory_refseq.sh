@@ -9,6 +9,7 @@ gff=$4 # GCF_000001635.27_GRCm39_genomic.gff
 
 cd $wd
 
+prefix=`basename $gff .gff`
 
 # clean GFF
 
