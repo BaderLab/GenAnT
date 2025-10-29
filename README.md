@@ -151,6 +151,21 @@ wget https://zenodo.org/records/14962941/files/example_data.tar.gz
 tar -xvzf example_data.tar.gz
 ```
 
+You will also need the reference genome for the naked mole-rat. In `/path-to-GenomeAnnotationTutorial/GenomeAnnotationTutorial/data/references`:
+
+```
+mkdir -p HetGlaV2_female ; cd HetGlaV2_female
+
+wget https://ftp.ensembl.org/pub/release-115/fasta/heterocephalus_glaber_female/dna/Heterocephalus_glaber_female.Naked_mole-rat_maternal.dna_sm.toplevel.fa.gz
+wget https://ftp.ensembl.org/pub/release-115/gff3/heterocephalus_glaber_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.gff3.gz
+for i in *.gz ; do gunzip $i ; echo $i ; done
+  bash ../../../setup/reference_directory_ensembl.sh \
+  . \ # path to the reference genome directory
+  ~/GenomeAnnotationTutorial \ #  path to GenomeAnnotationTutorial ( `GenomeAnnotationTutorial` included)
+  Heterocephalus_glaber_female.Naked_mole-rat_maternal.dna_sm.toplevel.fa \
+  Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.gff3
+```
+
 Assuming everything is properly set up, running the tutorial without flow control involves submitting the execute script with two positional arguments:
 `bash Execute_GAT_in_serial.sh path-to-GAT path-to-Conda`
 For us this looks like
