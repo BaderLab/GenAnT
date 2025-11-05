@@ -55,13 +55,26 @@ swap_symbols <- function(gene_symbols , symbol_colname, gene_key, matching_colum
   
   transcriptID <- gene_symbols[,symbol_colname]
   
+  if(matching_column == "geneID") {
+    
+    gene_key <- gene_key[!duplicated(gene_key$geneID),]
+    rownames(gene_key) <- gene_key[,matching_column]
+    gene_key$geneSymbol[is.na(gene_key$geneSymbol)] <- gene_key$geneID[is.na(gene_key$geneSymbol)]
+    gene_key$geneSymbol[gene_key$geneSymbol == ""] <- gene_key$geneID[gene_key$geneSymbol == ""]
+    
+    gene_key1 <- gene_key[transcriptID,]
+    
+  } else {
+    
+    rownames(gene_key) <- gene_key[,matching_column]
+    gene_key$geneSymbol[is.na(gene_key$geneSymbol)] <- gene_key$geneID[is.na(gene_key$geneSymbol)]
+    gene_key$geneSymbol[gene_key$geneSymbol == ""] <- gene_key$geneID[gene_key$geneSymbol == ""]
+    
+    gene_key1 <- gene_key[transcriptID,]
+    
+  }
   
   
-  rownames(gene_key) <- gene_key[,matching_column]
-  gene_key$geneSymbol[is.na(gene_key$geneSymbol)] <- gene_key$geneID[is.na(gene_key$geneSymbol)]
-  gene_key$geneSymbol[gene_key$geneSymbol == ""] <- gene_key$geneID[gene_key$geneSymbol == ""]
-  
-  gene_key1 <- gene_key[transcriptID,]
   
   return(gene_key1$geneSymbol)
   
