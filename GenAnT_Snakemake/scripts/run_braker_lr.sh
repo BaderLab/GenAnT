@@ -15,7 +15,7 @@ species_suffix=$RANDOM
 
 prefix=$target
 
-bams=`ls $outDir/ISOseq_alignment/*.merged.bam -m` # get bam files separated by csv
+bams=`ls $outDir/ISOseq_alignment/*.bam -m` # get bam files separated by csv
 bams2=$(echo $bams | sed 's/ //g')
 
 assembly=$outDir/assembly/assembly.softmasked.fa # /mHetGlaV3.soft.fa
