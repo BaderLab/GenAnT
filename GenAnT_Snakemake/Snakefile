@@ -105,7 +105,7 @@ rule preprocess_data:
         cp {input.assembly} {output.assembly_out}
         samtools faidx {output.assembly_out}
         mkdir -p "{params.outDir}/transcript_selection"
-        mkdir -p "{params.outDir}/logs"
+        
         """
 
 rule copy_RNAseq: 
@@ -119,7 +119,7 @@ rule copy_RNAseq:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="8:00:00"
+        walltime="20:00:00"
     shell:
         """
 
@@ -139,7 +139,7 @@ rule copy_ISOseq:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="8:00:00"
+        walltime="20:00:00"
     shell:
         """
 
@@ -147,6 +147,60 @@ rule copy_ISOseq:
 
 
         """
+
+rule merge_isoseq: 
+    input:
+        config["outDir"]+"/ISOseq_alignment"
+    output:
+        config["outDir"]+"/transcript_selection/merged.lr.bam.bai"
+    threads:
+        16
+    params:
+        memory_per_thread="8G",
+        extra_cluster_opt="",
+        walltime="100:00:00",
+        outDir=config["outDir"],
+
+    shell: 
+        """
+
+        if [[ $(ls -A {params.outDir}/ISOseq_alignment | wc -l) -gt 0  ]] ; then
+            "echo we detected RNAseq data to merge"
+            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.lr.bam {params.outDir}/*merged.bam
+            samtools index {params.outDir}/transcript_selection/merged.lr.bam
+
+        else
+            echo "No IOSeq data was detected"
+            touch {output}
+        fi
+        """
+
+rule merge_rnaseq: 
+    input:
+        config["outDir"]+"/ISOseq_alignment"
+    output:
+        config["outDir"]+"/transcript_selection/merged.sr.bam.bai"
+    threads:
+        16
+    params:
+        memory_per_thread="8G",
+        extra_cluster_opt="",
+        walltime="100:00:00",
+        outDir=config["outDir"],
+
+    shell: 
+        """
+        if [[ $(ls -A {params.outDir}/RNAseq_alignment | wc -l) -gt 0  ]] ; then
+            "echo we detected RNAseq data to merge"
+            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.sr.bam {params.outDir}/*merged.bam
+            samtools index {params.outDir}/transcript_selection/merged.sr.bam
+
+        else
+            echo "no ISOseq data was detected"
+            touch {output}
+        fi
+        """
+
 
 # run earl grey or copy masked data
 
@@ -601,7 +655,9 @@ rule transdecoder:
 
 rule junctions:
     input:
-        config["outDir"]+"/transcript_selection/mikado_prepared.fasta.fai"
+        config["outDir"]+"/transcript_selection/mikado_prepared.fasta.fai",
+        config["outDir"]+"/transcript_selection/merged.sr.bam.bai",
+        config["outDir"]+"/transcript_selection/merged.lr.bam.bai"
     output:
         config["outDir"]+"/transcript_selection/junctions.final.bed"
     threads:
