@@ -19,14 +19,14 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 	RNA_aln=$outDir/RNAseq_alignment
 	ASSEMBLY=$outDir/assembly/assembly.softmasked.fa
 
-	samtools merge $outDir/transcript_selection/merged.sr.bam $RNA_aln/*merged.bam
+	samtools merge $outDir/transcript_selection/merged.sr.bam $RNA_aln/*.bam
 	samtools index $outDir/transcript_selection/merged.sr.bam
 
 	portcullis full -t 20 $ASSEMBLY $outDir/transcript_selection/merged.sr.bam -o $outDir/transcript_selection
 
 
 	ISO_aln=$outDir/ISOseq_alignment
-	samtools merge $outDir/transcript_selection/merged.lr.bam $ISO_aln/*merged.bam
+	samtools merge $outDir/transcript_selection/merged.lr.bam $ISO_aln/*.bam
 	samtools index $outDir/transcript_selection/merged.lr.bam
 
 	regtools junctions extract -s XS -o $outDir/transcript_selection/lr_junctions.bed $outDir/transcript_selection/merged.lr.bam
@@ -47,7 +47,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 	RNA_aln=$outDir/RNAseq_alignment
 	ASSEMBLY=$outDir/assembly/assembly.softmasked.fa
 
-	samtools merge $outDir/transcript_selection/merged.sr.bam $RNA_aln/*merged.bam
+	samtools merge $outDir/transcript_selection/merged.sr.bam $RNA_aln/*.bam
 
 	portcullis full -t 20 $ASSEMBLY $outDir/transcript_selection/merged.sr.bam -o $outDir/transcript_selection
 
@@ -60,7 +60,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_
 	echo "Only detected ISOseq data." 
 
 	ISO_aln=$outDir/ISOseq_alignment
-	samtools merge $outDir/transcript_selection/merged.lr.bam $ISO_aln/*merged.bam
+	samtools merge $outDir/transcript_selection/merged.lr.bam $ISO_aln/*.bam
 
 	regtools junctions extract -s XS -o $outDir/transcript_selection/junctions.final.bed $outDir/transcript_selection/merged.lr.bam
 fi
