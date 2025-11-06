@@ -166,7 +166,7 @@ rule merge_isoseq:
 
         if [[ $(ls -A {params.outDir}/ISOseq_alignment | wc -l) -gt 0  ]] ; then
             "echo we detected ISOseq data to merge"
-            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.lr.bam {params.outDir}/ISOseq_alignment/*merged.bam
+            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.lr.bam {params.outDir}/ISOseq_alignment/*.bam
             samtools index {params.outDir}/transcript_selection/merged.lr.bam
 
         else
@@ -192,7 +192,7 @@ rule merge_rnaseq:
         """
         if [[ $(ls -A {params.outDir}/RNAseq_alignment | wc -l) -gt 0  ]] ; then
             "echo we detected RNAseq data to merge"
-            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.sr.bam {params.outDir}/RNAseq_alignment/*merged.bam
+            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.sr.bam {params.outDir}/RNAseq_alignment/*.bam
             samtools index {params.outDir}/transcript_selection/merged.sr.bam
 
         else
