@@ -177,7 +177,7 @@ rule merge_isoseq:
 
 rule merge_rnaseq: 
     input:
-        config["outDir"]+"/ISOseq_alignment"
+        config["outDir"]+"/RNAseq_alignment"
     output:
         config["outDir"]+"/transcript_selection/merged.sr.bam.bai"
     threads:
