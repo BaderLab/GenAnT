@@ -21,3 +21,5 @@ dependencies:         # List of packages and their versions
   - seqkit=2.9.0
   - bioconductor-rtracklayer=1.66.0
   - r-optparse=1.3.2
+  - r-plyr=1.8.9
+  - r-dplyr=1.1.4
