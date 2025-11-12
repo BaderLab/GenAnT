@@ -3,6 +3,10 @@ library(dplyr)
 
 mikado <- as.data.frame(readGFF("full_annotation.gff"))
 
+if(!"predicted_gene_symbol" %in% colnames(mikado)) {
+  mikado$predicted_gene_symbol <- NA
+}
+
 mikado <- mikado[mikado$type %in% c("gene", "lncRNA_gene"),]
 
 mikado_df <- data.frame(mikado_id = mikado$ID, ncRNA_gene = mikado$predicted_gene_symbol)
