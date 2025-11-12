@@ -75,7 +75,11 @@ hier_simple <- strsplit(symbols_simplify$hierarchical_gene,";")
 each_simple <- list()
 
 for(i in rank_vector[2:length(rank_vector)]) {
-  each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
+  if(all(is.na(symbols_simplify[[i]]))) {
+    each_simple[[i]] <- as.list(symbols_simplify[[i]])
+  } else {
+    each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
+  }
 }
 
 simple <- c()
