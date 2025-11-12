@@ -33,17 +33,11 @@ cp  $outDir/transcript_selection/mikado_lenient.gff ./
 
 # Extend existing gene models that directly overlap with cmscan ncRNA annoated conserved gene segments
 
-if [ -s "infernal.lncRNA.InMikado.gff" ]; then 
 
-	echo "Infernal found lncRNAs that have some overlap with existing mikado genes."
-	Rscript --vanilla $snakeDir/scripts/ExtendlncRNAs.R
 
-	else
+echo "Infernal found lncRNAs that have some overlap with existing mikado genes."
+Rscript --vanilla $snakeDir/scripts/ExtendlncRNAs.R
 
-	echo "Infernal found no lncRNAs with any overlap with existing mikado genes."
-
-	cp mikado_lenient.gff mikado.infernal.lncRNALabeled.polished.gff
-fi
 
 
 # Add exon IDs to lncRNA from cmscan
