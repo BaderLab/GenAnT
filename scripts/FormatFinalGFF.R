@@ -5,10 +5,15 @@ library(rtracklayer)
 library(dplyr)
 
 
+
 # First, read in the GFF file
 
 
 gff <- as.data.frame(readGFF("full_annotation.gff"))
+
+if(!("gbkey" %in% colnames(gff))) gff$gbkey <- NA
+if(!("infernal_product" %in% colnames(gff))) gff$infernal_product <- NA
+if(!("gene_biotype" %in% colnames(gff))) gff$gene_biotype <- NA
 
 
 # Let's start by only keeping the most important columns. You can add any additional attributes you wish to keep, but much of this information was used to show evidence for the support of each gene model which you likely won't need directly in the GFF (and can instead find this information in some of the intermediate files, like tables output by Mikado). We'll definitely keep columns 1-to-8, in addition to the attributes listed below. The `which` function pulls the column numbers from the GFF file if the column names occur in the vector below. Note that we are choosing not to keep "predicted_gene_symbol" which has the predicted ncRNA genes from Infernal and MirMachine because we're just going to replace those with the same ncRNA gene stored in the ncRNA column of the gene symbol table.
