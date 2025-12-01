@@ -1,8 +1,6 @@
-RNA_aln <- list.files(pattern = "*.bam",path = "RNAseq_alignment")
-RNA_aln <- grep("\\.bam$", RNA_aln, value = TRUE)
+RNA_aln <- list.files(pattern = "\\.bam$",path = "RNAseq_alignment")
 
-iso_aln <- list.files(pattern = "*.bam",path = "ISOseq_alignment")
-iso_aln <- grep("\\.bam$", iso_aln, value = TRUE)
+iso_aln <- list.files(pattern = "\\.bam$",path = "ISOseq_alignment")
 
 inter <- intersect(RNA_aln,iso_aln)
 
