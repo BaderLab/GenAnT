@@ -709,7 +709,7 @@ rule blastp_run:
     params:
         memory_per_thread="8G",
         extra_cluster_opt="",
-        walltime="24:00:00",
+        walltime="48:00:00",
 
         outDir=config["outDir"],
         dataDir=config["dataDir"]
