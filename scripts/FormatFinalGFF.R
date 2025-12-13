@@ -136,14 +136,48 @@ non_na_indices <- !is.na(symbols$hierarchical_gene)
 ncRNA_gene_calls <- which(!is.na(symbols$ncRNA_gene))
 symbols$mikado_id[ncRNA_gene_calls]
 gff_ncRNAcall <- gff[gff$ID %in% symbols$mikado_id[ncRNA_gene_calls],]
-symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non_na_indices], sep = "-copy")
 
+# load in scoring file
+scorefile <- read.table("mikado_lenient.scores.tsv",header=T,as.is=T,sep="\t")
 
+# Take top transcript per gene (total score)
+best_per_parent <- scorefile %>%
+  group_by(parent) %>%
+  slice_max(order_by = score, n = 1, with_ties = FALSE) %>%
+  ungroup()
 
-# If there are any NAs in the "unique" column, replace these values with the gene ID in the "mikado_id" column.
+scorefile_gene <- as.data.frame(best_per_parent)
 
+# make final gene column (without copy)
+unique_gene <- symbols$hierarchical_gene
+unique_gene[is.na(unique_gene)] <- symbols$mikado_id[is.na(unique_gene)]
 
-symbols$unique_gene[is.na(symbols$unique_gene)] <- symbols$mikado_id[is.na(symbols$unique_gene)]
+each_unique <- unique(symbols$hierarchical_gene)
+each_unique <- each_unique[!is.na(each_unique)]
+for(i in each_unique) {
+  # for each gene
+  indecies <- which(i == unique_gene)
+  
+  if(length(indecies) > 1) {
+    # if a "copy" needs to be added
+    
+    # get mikado ID
+    genes <- symbols$mikado_id[indecies]
+    
+    # order genes by aggregate score
+    scorefile_primary <- scorefile_gene[scorefile_gene$parent %in% genes,]
+    scorefile_primary <- scorefile_primary[order(scorefile_primary$score,decreasing = TRUE),]
+    
+    # order the indecies by the top scores
+    names(indecies) <- genes
+    indecies_final <- indecies[scorefile_primary$parent]
+    i
+    # label gene copy in order of these indecies
+    unique_gene[indecies_final] <- make.unique(rep(i,length(indecies_final)),sep="-copy")
+  }
+}
+
+symbols$unique_gene <- unique_gene
 
 symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 
