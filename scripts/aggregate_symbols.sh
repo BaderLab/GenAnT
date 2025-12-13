@@ -14,6 +14,9 @@ cp $outDir/transcript_selection/toga.gffread.gff ./
 
 cp $outDir/transcript_selection/liftoff.gffread.gff ./
 
+# Copy scores over
+cp $outDir/transcript_selection/mikado_lenient.scores.tsv ./
+
 #
 ## preprocess liftoff, TOGA, and mikado
 #
