@@ -21,6 +21,8 @@ cp $outDir/transcript_selection/toga.r1.gffread.gff ./
 
 cp $outDir/transcript_selection/liftoff.gffread.gff ./
 
+cp $outDir/transcript_selection/mikado_lenient.scores.tsv ./
+
 # [ -f source_file ] && cp source_file destination/
 
 if [ -f $outDir/transcript_selection/toga.r2.gffread.gff ]; then
