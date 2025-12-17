@@ -107,8 +107,6 @@ The `Execute_GAT_in_serial.sh` contains the variables required to run the tutori
 bash GAT-InstallAndDownload.sh /path-to/GenomeAnnotationTutorial /path-to/miniconda3/ # The two "/path-to/"'s can be different
 # e.g.. =/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial
 # e.g. /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3
-
-
 ```
 
 The most time-consuming steps are EarlGrey and Braker (short read)/TOGA/Braker (long read), which are each in the 100-200h range. With a 3Gb mammalian genome, the remaining steps may take an additional ~50 hours combined. As such, we'd expect an end-to-end annotation with this tutorial to be performed in 2-3 weeks of runtime.
@@ -137,54 +135,6 @@ Then, run Snakemake using the parameters of your hpc. This is what it looks like
 ```
 snakemake --jobs 750 --latency-wait 60 --cluster "qsub -cwd -V -o snakemake.output.log -e snakemake.error.log -pe smp {threads} -l h_vmem={params.memory_per_thread} {params.extra_cluster_opt} -l h_stack=32M -l h_rt={params.walltime} -P simpsonlab -b y" "$@"
 ```
-
-### Example data
-
-Assuming everything is properly installed and you have adjusted the two variables below. You can run the example data by submitting Execute_GAT_in_serial.sh as a job. We recommend ~72h runtime, 16 cores, and 64Gb of RAM for the tutorial data.
-
-The example data is pulled from zendodo. We assume that this `wget` command will be performed in /path-to-GAT/GenomeAnnotationTutorial (see /setup/GAT-InstallAndDownload.md for details)
-
-We include a chromosome from our naked mole-rat assembly (plus RNA-seq and ISO-seq data) to try this tutorial.
-
-```
-wget https://zenodo.org/records/14962941/files/example_data.tar.gz
-tar -xvzf example_data.tar.gz
-```
-
-You will also need the reference genome for the naked mole-rat. In `/path-to-GenomeAnnotationTutorial/GenomeAnnotationTutorial/data/references`:
-
-```
-mkdir -p HetGlaV2_female ; cd HetGlaV2_female
-
-wget https://ftp.ensembl.org/pub/release-115/fasta/heterocephalus_glaber_female/dna/Heterocephalus_glaber_female.Naked_mole-rat_maternal.dna_sm.toplevel.fa.gz
-wget https://ftp.ensembl.org/pub/release-115/gff3/heterocephalus_glaber_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.gff3.gz
-for i in *.gz ; do gunzip $i ; echo $i ; done
-  bash ../../../setup/reference_directory_ensembl.sh \
-  . \ # path to the reference genome directory
-  ~/GenomeAnnotationTutorial \ #  path to GenomeAnnotationTutorial ( `GenomeAnnotationTutorial` included)
-  Heterocephalus_glaber_female.Naked_mole-rat_maternal.dna_sm.toplevel.fa \
-  Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.gff3
-```
-
-Assuming everything is properly set up, running the tutorial without flow control involves submitting the execute script with two positional arguments:
-`bash Execute_GAT_in_serial.sh path-to-GAT path-to-Conda`
-For us this looks like
-
-```
-bash Execute_GAT_in_serial.sh \
-/.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial \
-/.mounts/labs/simpsonlab/users/dsokolowski/miniconda3
-```
-Even annotating one chromosome is relatively resource intensive, so we reccomend submitting this as a job (Recommended: 64G mem, 16 cores, 72h runtime)
-
-Lastly, this script has a `module load singularity`. If you access singularity differently (e.g., apptainer, conda environment etc.) then replace that line with what you need to have singularity accessible.
-
-Running the example data using the snakemake pipeline takes slightly more work:
-
-There is a config file (`config_example.yaml`) located in the `GenAnT_Snakemake` directory which will need to be modified to run the example data. To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where `annotation_tutorial` lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GAT/" to the path where you cloned "GenomeAnnotationTutorial" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenomeAnnotationTutorial).
-
-Otherwise, follow the steps in "3. A Snakemake pipeline".
-
 
 ### List of tools
 
