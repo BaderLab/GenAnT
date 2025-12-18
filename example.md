@@ -43,15 +43,65 @@ Running the example data using the snakemake pipeline takes slightly more work:
 
 There is a config file (`config_example.yaml`) located in the `GenAnT_Snakemake` directory which will need to be modified to run the example data. To run the tutorial with the example data, you need to change: "/path-to-conda/miniconda3/" to the path to the miniconda directory where the `annotation_tutorial` environment lives (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/miniconda3/) and change "path-to-GenAnT/" to the path where you cloned "GenAnT" (e.g., /.mounts/labs/simpsonlab/users/dsokolowski/projects/GenAnT). This will have to be done for each line in `config_example.yaml` that uses the GenAnT file path. Let's walk through this line by line.
 
-The first few lines simply point to directories in the GitHub. They may look like this:
+Here is what the example configuration file looked like on my computer after I changed all the variables:
 
 ```
 sourceDir: "/opt/miniconda3/bin/activate"
 externalDir: "/home/baderlab/zclarke/GenAnT/external
 dataDir: "/home/baderlab/zclarke/GenAnT/data"
+
+# Parameters describing your assembly + annotation
+outDir: "/scratch8/badertmp/GenAnT_Example_stranded"
+target: "example"
+species: "heterocephalus_glaber"
+
+assemblyFile: "/home/baderlab/zclarke/GenAnT/data/example_data/NMRchr28.fa"
+MaskedAssemblyFile: "none"
+MaskedAssemblyAnnotation: "none"
+rnaseqDir: "/home/baderlab/zclarke/GenAnT/data/example_data/RNAseq_alignment"
+isoseqDir: "/home/baderlab/zclarke/GenAnT/data/example_data/ISOseq_alignment"
+customRef: "FALSE"
+liftoffRef: "FALSE"
+
+# Parameters describing your reference assemblies + annotation
+
+refToga: "mouse"
+TogaDir: "/home/baderlab/zclarke/GenAnT/data/references/mmus_GRC39"
+refTogaFa: "/home/baderlab/zclarke/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.fna"
+refTogaBed: "/home/baderlab/zclarke/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.toga.bed"
+refTogaIsoform: "/home/baderlab/zclarke/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.isoforms.tsv"
+
+refToga2: "NMR"
+TogaDir2: "/home/baderlab/zclarke/GenAnT/data/references/HetGlaV2_female"
+refTogaFa2: "/home/baderlab/zclarke/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.clean.fa"
+refTogaBed2: "/home/baderlab/zclarke/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.clean.bed"
+refTogaIsoform2: "/home/baderlab/zclarke/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.clean.isoforms.tsv"
+
+refLiftOff: "NMR"
+refLiftOffFa: "/home/baderlab/zclarke/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.clean.fa"
+refLiftOffGff: "/home/baderlab/zclarke/GenAnT/data/references/HetGlaV2_female/Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.gffread.gff"
+
+orthofinderFA: "/home/baderlab/zclarke/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.nostop.protein.faa"
+orthofinderTab: "/home/baderlab/zclarke/GenAnT/data/references/mmus_GRC39/GCF_000001635.27_GRCm39_genomic.table.txt"
+
+# Tool specific parameters
+dfamDB: "rodentia"
+brakerOdbFaa: "Vertebrata.fa"
+mikadoScore: "mammalian.yaml"
+mirmachineClade: "Mammalia"
+stranded: "TRUE"
+rnaseqCov: 5
+isoseqCov: 1
+stringtieMerge: "FALSE"
+
+# Adding GFF files that you have already computed
+customGFF: "none"
+customLiftoff: "none"
+customTOGA: "none"
+customTOGA2: "none"
+customBraker: "none"
+customStringtie: "none"
 ```
-
-
 
 Otherwise, follow the steps in "3. A Snakemake pipeline".
 
