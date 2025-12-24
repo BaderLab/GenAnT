@@ -131,3 +131,4 @@ snakemake --configfile config_example.yaml  --jobs 750 --latency-wait 60 \
  --time={params.walltime} --output=logs/{rule}.%j.out --error=logs/{rule}.%j.err"
 ```
 
+Snakemake uses the "Snakefile" that's in the `GenAnT_Snakemake` directory for both the example run and a real run, and this dictates the memory and threading used by Snakemake. If Snakemake fails due to such an issue, the memory and/or threads defined by the rules in the Snakefile may have to be reduced to match your cluster's resources. This will extend the time required to run the example.
