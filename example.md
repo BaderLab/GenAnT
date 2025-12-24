@@ -7,7 +7,7 @@ wget https://zenodo.org/records/14962941/files/example_data.tar.gz
 tar -xvzf example_data.tar.gz
 ```
 
-You will also need the reference genome for the naked mole-rat. In `/path-to-GenomeAnnotationTutorial/GenAnT/data/references`:
+You will also need the reference genome for the naked mole-rat. In `/path-to-GenomeAnnotationTutorial/GenAnT/data/references` (make this directory if it doesn't exist):
 
 ```
 mkdir -p HetGlaV2_female ; cd HetGlaV2_female
@@ -20,6 +20,20 @@ for i in *.gz ; do gunzip $i ; echo $i ; done
   ~/GenAnT \ #  path to GenomeAnnotationTutorial ( `GenAnT` included)
   Heterocephalus_glaber_female.Naked_mole-rat_maternal.dna_sm.toplevel.fa \
   Heterocephalus_glaber_female.Naked_mole-rat_maternal.115.gff3
+cd ..
+```
+
+And then we will need a mouse reference genome, of course, for running TOGA. For this example, we'll use the GRCm39 RefSeq genome. This can also be done in the `references` directory:
+
+```
+mkdir -p mmus_GRC39 ; cd mmus_GRC39
+
+for i in *.gz ; do gunzip $i ; echo $i ; done
+  bash ../../../setup/reference_directory_refseq.sh \
+  . \
+  ~/GenAnT \
+  GCF_000001635.27_GRCm39_genomic.fna \
+  GCF_000001635.27_GRCm39_genomic.gff
 ```
 
 ## Method 2 (script submission)
@@ -103,5 +117,17 @@ customBraker: "none"
 customStringtie: "none"
 ```
 
-Otherwise, follow the steps in "3. A Snakemake pipeline".
+Once the configuration file is made, Snakemake can be run from the `GenAnT_Snakemake` directory according to your scheduler. Here are a couple of examples of the line that can be used to run snakemake:
+
+```
+snakemake --configfile config_example.yaml --jobs 750 --latency-wait 60 --cluster "qsub -cwd -V -o snakemake.output.log \
+ -e snakemake.error.log -pe smp {threads} -l h_vmem={params.memory_per_thread} \
+ {params.extra_cluster_opt} -l h_stack=32M -l h_rt={params.walltime} -P simpsonlab -b y" "$@"
+```
+or the following for a SLURM scheduler
+```
+snakemake --configfile config_example.yaml  --jobs 750 --latency-wait 60 \
+ --cluster "sbatch --cpus-per-task={threads} --mem-per-cpu={params.memory_per_thread} \
+ --time={params.walltime} --output=logs/{rule}.%j.out --error=logs/{rule}.%j.err"
+```
 
