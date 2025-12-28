@@ -32,7 +32,20 @@ rm -r $outDir/orthofinder
 
 ### liftoff
 
+liftoff makes a `db` file called `referencegff_db`. If you try to rerun liftoff (or the snakemake workflow) without deleting this file.
 
+```
+rm $outDir/liftoff/referencegff_db
+```
+
+### braker
+
+I once saw an error where braker died while symbolic links (created by braker) still exists. This happened because our cluster went on maintenance and killed every job. Braker died when trying to re-run while these symbolic links still exist. Braker also starts from the beginning every time regardless.
+
+```
+rm -r $outDir/braker_sr
+rm -r $outDir/braker_lr
+```
 
 # Empty gff files
 
