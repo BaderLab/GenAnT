@@ -2,4 +2,3 @@ This directory contains documentation and scripts to evaluate and improve on a g
 1. Post-flight checks (i.e., did GenAnT work).
 2. Assessing annotation quality.
 3. Finalizing gene symbols depending on input data.
-4. UTR annotations when ISO-seq data are available (In progress).
