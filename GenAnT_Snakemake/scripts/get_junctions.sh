@@ -6,13 +6,13 @@ threads=$2
 cd $outDir/transcript_selection
 
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -eq 0 ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls $outDir/ISOseq_alignment | wc -l) -eq 0 ]] ; then
 
 	echo "We did not find short read or long read RNA-seq data (aligned bam files)"
 	echo "" > junctions.final.bed
 fi
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -gt 0 ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignment | wc -l) -gt 0 ]] ; then
 
 	echo "We detected short read and long read RNAseq data"
 
@@ -40,7 +40,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 fi
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -eq 0  ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls $outDir/ISOseq_alignment | wc -l) -eq 0  ]] ; then
 
 	echo "Only detected short read RNAseq data." 
 
@@ -58,7 +58,7 @@ if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -gt 0 && $(ls -A $outDir/ISOseq_
 
 fi
 
-if [[ $(ls -A $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls -A $outDir/ISOseq_alignment | wc -l) -gt 0  ]] ; then
+if [[ $(ls $outDir/RNAseq_alignment | wc -l) -eq 0 && $(ls $outDir/ISOseq_alignment | wc -l) -gt 0  ]] ; then
 
 	echo "Only detected ISOseq data." 
 
