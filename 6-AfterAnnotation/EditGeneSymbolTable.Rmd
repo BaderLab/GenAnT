@@ -9,7 +9,7 @@ output: html_document
 
 The standard GenAnT identifies gene symbols with orthofinder, Liftoff, and TOGA. Rows are GeneIDs provided by mikado and columns are gene nams from different sources. We provided an example of the gene_symbols_noCopies.tsv file from our example dataset on the GitHub in https://github.com/BaderLab/GenAnT/tree/main/6-AfterAnnotation, using input annotations from mouse GRC39 (TOGA-round1 and Orthofinder) and the naked mole-rat genome annotation from ENSEML (liftOff and Toga-round2).
 
-The difference between gene_symbols.tsv and gene_symbols_noCopies.tsv is that we have not yet added a unique identifier to two gene IDs given the same gene symbol (e.g., ABCD1-copy1, ABCD1-copy2).
+The difference between gene_symbols.tsv and gene_symbols_noCopies.tsv is that with "noCopies" we have not yet added a unique identifier to two gene IDs given the same gene symbol (e.g., ABCD1-copy1, ABCD1-copy2). Let's look at an example gene_symbols_noCopies.tsv table below:
 
 
 ```
@@ -26,6 +26,8 @@ Looking at this table you'll see some potential issues. The first potential issu
 
 ### reference genome key of gene IDs and gene symbols (genekey.tsv)
 
+Here are the first few lines of an example `genekkey.tsv`:
+
 ```
 
      geneID       transcriptID geneSymbol
@@ -38,7 +40,7 @@ Looking at this table you'll see some potential issues. The first potential issu
 
 ```
 
-To transfer the transcript ID to gene symbols, find the corresponding column in "genekkey.tsv" that matches to the gene_symbols.tsv and swap symbols.
+To transfer the transcript ID to gene symbols, find the corresponding column in "genekkey.tsv" that matches to the gene_symbols.tsv and swap symbols. We can make a function that will do this below:
 
 ```
 swap_symbols <- function(gene_symbols , symbol_colname, gene_key, matching_column = "transcriptID" ) {
@@ -74,16 +76,19 @@ swap_symbols <- function(gene_symbols , symbol_colname, gene_key, matching_colum
     
   }
   
-  
-  
   return(gene_key1$geneSymbol)
-  
   
 }
 
 ```
 
-In the example data, we used mm39 from RefSeq and HetGlaV2 from "Heterocephalus_glaber_female" from Ensembl.
+Now let's do this with some real data. First, we have to read in our gene symbol table, assuming we're in the "gene_symbol" directory after having run the example:
+
+```
+gene_symbols <- read.table("gene_symbols_noCopies.tsv",header=TRUE,as.is=TRUE,sep="\t")
+```
+
+In the example data, we used mm39 from RefSeq and HetGlaV2 from "Heterocephalus_glaber_female" from Ensembl. First, let's read in the two different gene keys:
 
 ```
 genekey_nmr <- read.table("Heterocephalus_glaber_female.Naked_mole-rat_maternal.113.clean.genekkey.tsv",header=TRUE,as.is=TRUE,sep="\t")
@@ -105,14 +110,12 @@ gene_symbols$togar1_gene <- swap_symbols(gene_symbols = gene_symbols,symbol_coln
 # fix togar2_gene
 gene_symbols$togar2_gene <- swap_symbols(gene_symbols = gene_symbols,symbol_colname = "togar2_gene",
                                          gene_key = genekey_nmr,matching_column = "transcriptID")
-                                         
-                                          
+                                                                              
 ```
 
 ### Clean gene nomeclature
 
 At this stage, the gene symbol  table will have a mixture of gene symbols and gene IDs (when there wasn't a gene symbol). In the example below, the ENSEMBL gene symbols are from the naked mole-rat (ENSEMBL annotations), so these genes may be clade-specific gene IDs that do not have a gene symbol.
-
 
 One inconsistency that you may have to deal with is in the "casing" of gene symbols. In this example, the "orthofinder_gene" and "togar1_gene" are using the mosue (MGI) gene symbol convention (Abc1) while "liftoff_gene" and "togar2_gene" are using the human (HUGO) naming convention (ABC1).
 
@@ -126,7 +129,13 @@ One inconsistency that you may have to deal with is in the "casing" of gene symb
 162 mikado.chr28G185         NA               MPP7        Mpp7        MPP7             Mpp7
 ```
 
-For mammals, gene symbols usually fall into one of these naming conventions. The easiest thing to do would be to pull a key of these gene names from a ortholog mapping repository like Ensembl-Biomart (https://useast.ensembl.org/info/data/biomart/index.html) and switch everything to mouse or human. Since this example annotates a rodent, We will convert "liftoff_gene" and "togar2_gene" to mouse. Below is an extremly simple script that uses a two column table of mouse and human gene symbols to perform this conversion (found online: https://github.com/wilsonlabgroup/scMappR_Data/blob/master/bioMart_ortholog_human_mouse.rda).
+For mammals, gene symbols usually fall into one of these naming conventions. The easiest thing to do would be to pull a key of these gene names from a ortholog mapping repository like Ensembl-Biomart (https://useast.ensembl.org/info/data/biomart/index.html) and switch everything to mouse or human. Since this example annotates a rodent, We will convert "liftoff_gene" and "togar2_gene" to mouse. Below is an extremly simple script that uses a two column table of mouse and human gene symbols to perform this conversion (found online: https://github.com/wilsonlabgroup/scMappR_Data/blob/master/bioMart_ortholog_human_mouse.rda). Navigate to the link `https://github.com/wilsonlabgroup/scMappR_Data/blob/master/bioMart_ortholog_human_mouse.rda` and download this file in the "gene_symbol" directory. You can read in the file like this:
+
+```
+load("bioMart_ortholog_human_mouse.rda")
+# Look at the table
+head(bioMart_orthologs)
+```
 
 This data table looks as such:
 
