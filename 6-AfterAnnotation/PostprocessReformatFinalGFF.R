@@ -14,7 +14,10 @@ option_list <- list(
   make_option(c("-r", "--ranking"), type = "character", default = "orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene",
               help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
               metavar = "character"),
-  make_option(c("-o", "--output"), type = "character", default = "full_annotation.edited.geneSymbols.gff",
+  make_option(c("-m", "--metrics"), type = "character", default = "mikado_lenient.tsv",
+              help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
+              metavar = "character"),
+  make_option(c("-o", "--output"), type = "character", default = "full_annotation.edited.geneSymbols.gf",
               help = "The name of the final output GFF",
               metavar = "character"),
   make_option(c("-w", "--workingdir"), type = "character", default = "pwd",
@@ -29,17 +32,20 @@ opt <- parse_args(opt_parser)
 annoFile <- opt[[1]]
 symbolFile <- opt[[2]]
 ranking <- opt[[3]]
-outputfile <- opt[[4]]
-wd <- opt[[5]]
+metricsfile <- opt[[4]]
+outputfile <- opt[[5]]
+wd <- opt[[6]]
 
 # Parameters I used to build script. I built with a full run to get a better view on the ncRNAs
 
-# annoFile <- "full_annotation.gff"
-# symbolFile <- "gene_symbols_noCopies.edited.tsv"
-# ranking <- "orthofinder_gene;togar1_gene;liftoff_gene;ncRNA_gene" # We did not run a second round of TOGA
-# outputfile <-  "full_annotation.edited.geneSymbol.gff"
-# wd <- "pwd"
+# annoFile <- "mHetGla1.pri.gff"
+# symbolFile <- "postprocess_gene_symbols_noCopies.tsv"
+# ranking <- "orthofinder_gene;liftoff_gene;togar1_gene;ncRNA_gene" # We did not run a second round of TOGA
+# outputfile <-  "mHetGla1.1.pri.edited.geneSymbol.gff"
+# metricsfile <- "mHetGla1.pri.metrics.tsv" # mikado_lenient.metrics.tsv
 
+wd <- "pwd"
+# setwd("~/Desktop/NMR_multi_assembly/annotation_zoe/")
 # Set working directory
 if(wd == "pwd") {
   message("Script will be ran in working directory as -wd was set to 'pwd'")
@@ -54,10 +60,15 @@ if(wd == "pwd") {
 # First, read in the GFF file
 gff <- as.data.frame(readGFF(annoFile))
 
+metrics <- read.table(metricsfile, header= TRUE, as.is = TRUE, sep="\t")
 
+gff_transcript <- gff[!is.na(gff$primary),]
+gff_primary <- gff_transcript[gff_transcript$primary == "True",]
+gff_primary$Parent <- unlist(gff_primary$Parent)
+rownames(gff_primary) <- gff_primary$Parent
 # Let's start by only keeping the most important columns. You can add any additional attributes you wish to keep, but much of this information was used to show evidence for the support of each gene model which you likely won't need directly in the GFF (and can instead find this information in some of the intermediate files, like tables output by Mikado). We'll definitely keep columns 1-to-8, in addition to the attributes listed below. The `which` function pulls the column numbers from the GFF file if the column names occur in the vector below. Note that we are choosing not to keep "predicted_gene_symbol" which has the predicted ncRNA genes from Infernal and MirMachine because we're just going to replace those with the same ncRNA gene stored in the ncRNA column of the gene symbol table.
 
-
+gff_gene <- gff[grep("gene",gff$type),]
 gff <- gff[,c(1:8, which(colnames(gff) %in%
                            c("ID", "Name", "Parent", "alias", "primary",
                              "evalue","RFamID","product","gbkey",
@@ -75,6 +86,8 @@ gff <- gff[!gff$type == "superlocus",]
 
 
 symbols <- read.table(symbolFile, sep = "\t", header = TRUE)
+
+gff_primary_ordered <- gff_primary[symbols$mikado_id,]
 
 ##
 ###
@@ -167,8 +180,8 @@ symbols$hierarchical_gene[ortho_copies] <- simple
 gff_gene <- gff[gff$ID %in% symbols$mikado_id,]
 
 # table(gff_gene$ID == symbols$mikado_id)
-symbols$gene_biotype <- gff_gene$gene_biotype
-symbols$hierarchical_gene[which(symbols$gene_biotype == "lncRNA")] <- symbols$ncRNA_gene[which(symbols$gene_biotype == "lncRNA")]
+#symbols$gene_biotype <- gff_gene$gene_biotype
+#symbols$hierarchical_gene[which(symbols$gene_biotype == "lncRNA")] <- symbols$ncRNA_gene[which(symbols$gene_biotype == "lncRNA")]
 #
 
 symbols$unique_gene <- symbols$hierarchical_gene
@@ -181,16 +194,61 @@ non_na_indices <- !is.na(symbols$hierarchical_gene)
 ncRNA_gene_calls <- which(!is.na(symbols$ncRNA_gene))
 symbols$mikado_id[ncRNA_gene_calls]
 gff_ncRNAcall <- gff[gff$ID %in% symbols$mikado_id[ncRNA_gene_calls],]
-symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non_na_indices], sep = "-copy")
+
+
+##
+### Make gene "-copy" ranked by mikado score, rather than arbitrary
+##
+
+
+# Take top transcript per gene (total score)
+best_per_parent <- metrics %>%
+  group_by(parent) %>%
+  slice_max(order_by = score, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+metrics_gene <- as.data.frame(best_per_parent)
+
+# make final gene column (without copy)
+unique_gene <- symbols$hierarchical_gene
+unique_gene[is.na(unique_gene)] <- symbols$mikado_id[is.na(unique_gene)]
+
+each_unique <- unique(symbols$hierarchical_gene)
+each_unique <- each_unique[!is.na(each_unique)]
+for(i in each_unique) {
+  # for each gene
+  print(i)
+  indecies <- which(i == unique_gene)
+  
+  if(length(indecies) > 1) {
+    # if a "copy" needs to be added
+    
+    # get mikado ID
+    genes <- symbols$mikado_id[indecies]
+    
+    # order genes by aggregate score
+    metrics_primary <- metrics_gene[metrics_gene$parent %in% genes,]
+    metrics_primary <- metrics_primary[order(metrics_primary$score,decreasing = TRUE),]
+    
+    # order the indecies by the top scores
+    names(indecies) <- genes
+    indecies_final <- indecies[metrics_primary$parent]
+    i
+    # label gene copy in order of these indecies
+    unique_gene[indecies_final] <- make.unique(rep(i,length(indecies_final)),sep="-copy")
+  }
+}
+
+symbols$unique_gene <- unique_gene
+# Add XIST gene
+# symbols[symbols$mikado_id == "mikado.chrXG1522","unique_gene"] <- "Xist"
+
+# symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non_na_indices], sep = "-copy")
 
 
 
 # If there are any NAs in the "unique" column, replace these values with the gene ID in the "mikado_id" column.
 
-
-symbols$unique_gene[is.na(symbols$unique_gene)] <- symbols$mikado_id[is.na(symbols$unique_gene)]
-
-symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 
 # Once we have these unique values, we can assign them as names to the GFF file. For simplicity, we're going to assign them to the "Name" slot for both RNA and gene features. In e.g. a RefSeq GFF file, this would be similar to the "gene" slot which is the same for mRNA and gene features, whereas the actual name of the feature changes depending on its "Type". Right now, our focus is on simplicity and interpretability which is why we're going for the first option, which should be effective for most downstream purposes.
 
@@ -199,10 +257,11 @@ symbols <- symbols[,!(colnames(symbols) %in% c("gene_biotype"))]
 # To do this, let's create a column in the GFF also called "mikado_id". Whenever a feature is a gene, we can add the value from the "ID" column, and whenever a feature is an RNA (mRNA or lncRNA) we can add the value from the "Parent" column.
 
 
-gff$mikado_id <- NA
-gff$mikado_id[gff$type %in% c("gene","lncRNA_gene", "lncRNA")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA_gene", "lncRNA")]))
-gff$mikado_id[gff$type %in% c("mRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA")]))
+# gff$type[gff$type == "lncRNA"] <- "lncRNA_gene"
 
+gff$mikado_id <- NA
+gff$mikado_id[gff$type %in% c("gene","lncRNA", "ncRNA_gene")] <- as.character(unlist(gff$ID[gff$type %in% c("gene","lncRNA","ncRNA_gene")]))
+gff$mikado_id[gff$type %in% c("mRNA")] <- as.character(unlist(gff$Parent[gff$type %in% c("mRNA")]))
 
 # Now let's use `dplyr`'s `left_join` function to add the gene symbols data frame to the GFF file.
 
@@ -234,3 +293,15 @@ write.table(symbols, file = "gene_symbols_full.tsv",
             quote = FALSE, sep = "\t",
             row.names = FALSE, col.names = TRUE)
 
+gff[gff$Name == "Xist",]
+
+#
+## Populate gene symbol table:
+#
+scorefile_gene_merge <- metrics_gene
+colnames(scorefile_gene_merge)[3] <- "mikado_id"
+
+symbols_score <- dplyr::left_join(symbols, scorefile_gene_merge,
+                                         by = "mikado_id")
+
+write.table(symbols_score, file = "mHetGla1.1.pri_gene_symbols_metrics.tsv", row.names = FALSE, col.names = TRUE, sep = "\t")
