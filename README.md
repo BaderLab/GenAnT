@@ -146,8 +146,13 @@ The tools used in this tutorial are listed below:
 
 Instructions on how to install these tools can be found in the `InstallAndDownload.md` script in the set-up directory.
 
+## Reference: 
 
-## If using our tutorial, we recommend referencing these tools that our used in our Tutorial and Pipeline:
+Clarke, Z.A., Sokolowski, D.J., Byles-Ho, C.K. et al. Tutorial: annotation of animal genomes. Nat Protoc (2026). https://doi.org/10.1038/s41596-025-01301-1
+
+Link: https://www.nature.com/articles/s41596-025-01301-1
+
+### Additionally, we recommend referencing these tools that our used in our Tutorial and Pipeline:
 
 
 Earl Grey (1) (Earlgrey is also a metapipeline. You can find the tools they rely on here under “References and Acknowledgements”: https://github.com/TobyBaril/EarlGrey). 
