@@ -39,35 +39,6 @@ echo "Infernal found lncRNAs that have some overlap with existing mikado genes."
 Rscript --vanilla $snakeDir/scripts/ExtendlncRNAs.R
 
 
-
-# Add exon IDs to lncRNA from cmscan
-
-awk -F'\t' 'BEGIN{OFS="\t"}
-{
-    if ($0 ~ /^#/ || NF != 9) {
-        print $0; next
-    }
-
-    if ($3 == "exon") {
-        # parse attributes
-        n=split($9, a, ";")
-        parent=""
-        for (i=1; i<=n; i++) {
-            split(a[i], kv, "=")
-            if (kv[1] == "Parent") parent=kv[2]
-        }
-
-        if (parent != "") {
-            count[parent]++
-            exon_id = parent ".exon" count[parent]
-            $9 = $9 ";ID=" exon_id
-        }
-        print
-    } else {
-        print
-    }
-}' infernal.lncRNA.New.gff > infernal.lncRNA.New.ExonID.gff
-
 # Add in the lncRNAs with no overlap with any existing gene models
 
 cat mikado.infernal.lncRNALabeled.polished.gff infernal.lncRNA.New.ExonID.gff > mikado.infernal.gff
