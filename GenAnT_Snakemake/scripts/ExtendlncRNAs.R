@@ -72,12 +72,47 @@ rtracklayer::export.gff3(mikado, "mikado.infernal.lncRNALabeled.polished.gff", f
 
 ###
 ####
-###
-
-
+###                                            
 mikado <- BiocGenerics::as.data.frame(rtracklayer::readGFF("infernal.lncRNA.notInMikado.gff"))
 
+mikado[]
+
+mikado_df <- mikado[1:2,]
+mikado_df$start <- mikado_df$start - 80*1e6
+mikado_df$end <- mikado_df$end - 80*1e6
+
+mikado_df1 <- mikado[1:2,]
+mikado_df1$seqid <- "scaffold_99"
+
+mikado <- rbind(mikado_df,mikado_df1,mikado)
+
+rtracklayer::export.gff3(mikado, "infernal.setup.toy.gff", format = "gff3")
+
+
+mikado$predicted_gene_symbol <- unlist(lapply(strsplit(mikado$ID,"_"), function(x) return(x[1])))
+
+info <-  mikado[,c("seqid","start","predicted_gene_symbol")]
+
+group <- 1
+for(i in 2:(nrow(info))) {
+  
+  id <- info$seqid[i] == info$seqid[i-1]
+  start <- abs(info$start[i] - info$start[i-1]) < 1e6
+  symbol <- info$predicted_gene_symbol[i] == info$predicted_gene_symbol[i-1]
+  if(all(id,start,symbol)) {
+    group[i] <- group[i-1]
+  } else {
+    group[i] <- group[i-1] + 1
+  }
+  
+}
+
+# for(i in )
+mikado$group <- group
+
 mikado[] <- lapply(mikado, function(x) if (is.factor(x)) as.character(x) else x)
+
+
 
 
 if(nrow(mikado) < 3) {
@@ -105,19 +140,21 @@ if(length(genes) < 1) {
 # Loop through genes
 for(gene in genes) {
   # Gather the different contigs that the gene is on
-  contigs <- unique(mikado$seqid[mikado$predicted_gene_symbol == gene])
+  groups <- unique(mikado$group[mikado$predicted_gene_symbol == gene])
   # If there is more than one contig, loop through the different contigs
-  contigs <- contigs[!is.na(contigs)]
-  if(length(contigs) > 1) {
+  groups <- groups[!is.na(groups)]
+  if(length(groups) > 1) {
     # Start a counter at 0
     i <- 0
-    for(contig in contigs) {
+    for(g in groups) {
       # Only add modifications at the second contig onward
       if(i > 0){
         # Create new unique ID name
         new_id <- paste(gene, "-copy", i, sep = "")
         # Replace the current ID for this gene and contig with new_id
-        mikado$ID[mikado$ID == gene & mikado$seqid == contig] <- rep(new_id, length(mikado$ID[mikado$ID == gene & mikado$seqid == contig]))
+        mikado$ID[mikado$ID == gene & mikado$group == g] <- rep(new_id, length(mikado$ID[mikado$ID == gene & mikado$group == g]))
+        
+
       }
       # Increase counter assuming we are working with the next lncRNA copy
       i <- i + 1
@@ -149,12 +186,12 @@ genes <- genes[!is.na(genes)]
 # Loop through genes
 for(gene in genes) {
   # Gather the different contigs that the gene is on
-  contigs <- unique(mikado$seqid[mikado$predicted_gene_symbol == gene])
-  contigs <- contigs[!is.na(contigs)]
+  groups <- unique(mikado$group[mikado$predicted_gene_symbol == gene])
+  groups <- groups[!is.na(groups)]
   # Loop through contigs
-  for(contig in contigs){
+  for(g in groups){
     # Get indexing in terms of where these occur in the dataframe to reduce code
-    i <- mikado$predicted_gene_symbol == gene & mikado$seqid == contig
+    i <- mikado$predicted_gene_symbol == gene & mikado$group == g
     # First, duplicate one of the "exon" rows - this will become our gene feature
     gene_feat <- mikado[i,][1,]
     # Change type to lncRNA_gene
@@ -201,4 +238,3 @@ for(gene in genes) {
 }
 
 rtracklayer::export.gff3(mikado, "infernal.lncRNA.New.ExonID.gff", format = "gff3")
- 
