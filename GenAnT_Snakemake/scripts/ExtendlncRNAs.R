@@ -77,9 +77,6 @@ rtracklayer::export.gff3(mikado, "mikado.infernal.lncRNALabeled.polished.gff", f
 
 mikado <- BiocGenerics::as.data.frame(rtracklayer::readGFF("infernal.lncRNA.notInMikado.gff"))
 
-
-gene_name <- mikado[]
-
 mikado[] <- lapply(mikado, function(x) if (is.factor(x)) as.character(x) else x)
 
 
