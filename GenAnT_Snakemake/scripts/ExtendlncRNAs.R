@@ -81,13 +81,7 @@ mikado <- BiocGenerics::as.data.frame(rtracklayer::readGFF("infernal.lncRNA.notI
 gene_name <- mikado[]
 
 mikado[] <- lapply(mikado, function(x) if (is.factor(x)) as.character(x) else x)
-mikado_test <- mikado[1:5,]
-mikado_test$seqid <- "scaffold_4"
-mikado <- as.data.frame(rbind(mikado,mikado_test))
 
-for(i in unique(scaffold_id)) {
-  mikado_id <- mikado[scaffold_id == i,]
-}
 
 if(nrow(mikado) < 3) {
   file.create("infernal.lncRNA.New.ExonID.gff")
