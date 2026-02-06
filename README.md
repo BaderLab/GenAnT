@@ -50,9 +50,9 @@ Our programmatic approach to end-to-end genome annotation requires that specific
 ```
 # Clone the tutorial repo.
 
-git clone https://github.com/BaderLab/GenomeAnnotationTutorial.git
+git clone https://github.com/BaderLab/GenAnT.git
 
-cd GenomeAnnotationTutorial
+cd GenAnT
 
 # Create the conda environment from the repo
 
