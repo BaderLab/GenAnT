@@ -44,8 +44,8 @@ brakerOdbFaa: "Vertebrata.fa" # change to a different odb12 protein set. e.g.,  
 mikadoScore: "mammalian.yaml" # Use a different scoring file for a different clade "HISTORIC/dmelanogaster_scoring.yaml"
 mirmachineClade: "Mammalia" # "mirmachine-clade" # "Glires" 
 stranded: "TRUE" # for braker V3. Set to "TRUE" if you have stranded RNA-seq aligned by Hisat2
-rnaseqCov: 5
-isoseqCov: 1
+rnaseqCov: 5 # min number of reads to consider a transcript (StringTie)
+isoseqCov: 1 # min number of reads to consider a transcript (StringTie)
 stringtieMerge: "FALSE" # Merging gtf files from each tissue using stringtie --merge. If "FALSE", we use AGAT_merge. AGAT is more lenient, simply concatenating transcript models for each gene and picking the logest model for the representative "gene". We reccomend this for annotations with multiple tissues of ISO-seq data.
 
 
