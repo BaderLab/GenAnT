@@ -357,7 +357,7 @@ Rscript --vanilla PostprocessReformatFinalGFF.R -f full_annotation.gff -g gene_s
 ### Clean any gene "copy" that could have come from reference:
 
 ```
-for(i in 1:ncol(gene_symbols)) {
+for(i in 2:ncol(gene_symbols)) {
   gene_symbols[,j] <- sub("-copy[0-9]+$", "", gene_symbols[,j])
 }
 ```
