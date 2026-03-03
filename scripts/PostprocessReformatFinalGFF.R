@@ -138,7 +138,7 @@ for(i in 1:length(hier_simple)) {
   all_elements <- unique(unlist(get_each))
   all_elements <- all_elements[!is.na(all_elements)]
   element_counts <- sapply(all_elements, function(x) {
-    sum(sapply(each_simple, function(v) x %in% v))
+    sum(sapply(all_elements, function(v) x %in% v))
   })
   element_counts <- element_counts[element_counts > 0]
   
