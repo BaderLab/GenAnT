@@ -269,7 +269,7 @@ mikado pick \
  -db mikado.db \
  --mode lenient \
  mikado_prepared.gtf \
- --scoring mammalian.yaml
+ --scoring mammalian.yaml \
  --loci-out name_of_final_annotation.gff \
  --log mikado_pick.log \
  --no-purge
