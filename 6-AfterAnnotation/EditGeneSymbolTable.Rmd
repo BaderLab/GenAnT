@@ -337,7 +337,7 @@ for(j in 2:ncol(gene_symbols)) {
 ## Saving the output
 
 ```
-write.table(gene_symbols, file = "gene_symbols_noCopies.edited.tsv",
+write.table(gene_symbols, file = "gene_symbols.edited.tsv",
             quote=FALSE,row.names=FALSE,col.names = TRUE,sep="\t")
 ```
 
