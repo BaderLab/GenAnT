@@ -14,9 +14,6 @@ option_list <- list(
   make_option(c("-r", "--ranking"), type = "character", default = "orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene",
               help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
               metavar = "character"),
-  make_option(c("-m", "--metrics"), type = "character", default = "mikado_lenient.tsv",
-              help = "The edited gene symbol table from EditGeneSymbolTable.Rmd",
-              metavar = "character"),
   make_option(c("-o", "--output"), type = "character", default = "full_annotation.edited.geneSymbols.gf",
               help = "The name of the final output GFF",
               metavar = "character"),
@@ -32,20 +29,18 @@ opt <- parse_args(opt_parser)
 annoFile <- opt[[1]]
 symbolFile <- opt[[2]]
 ranking <- opt[[3]]
-metricsfile <- opt[[4]]
-outputfile <- opt[[5]]
-wd <- opt[[6]]
+outputfile <- opt[[4]]
+wd <- opt[[5]]
 
 # Parameters I used to build script. I built with a full run to get a better view on the ncRNAs
 
-# annoFile <- "mHetGla1.pri.gff"
+# annoFile <- "BatSui.gff"
 # symbolFile <- "postprocess_gene_symbols_noCopies.tsv"
-# ranking <- "orthofinder_gene;liftoff_gene;togar1_gene;ncRNA_gene" # We did not run a second round of TOGA
-# outputfile <-  "mHetGla1.1.pri.edited.geneSymbol.gff"
-# metricsfile <- "mHetGla1.pri.metrics.tsv" # mikado_lenient.metrics.tsv
+# ranking <- "orthofinder_gene;liftoff_gene;togar2_gene;togar1_gene;ncRNA_gene" # We did not run a second round of TOGA
+# outputfile <-  "BatSui.edited.geneSymbol.gff"
+# metricsfile <- "BatSui.metrics.tsv"
+# wd <- "pwd"
 
-wd <- "pwd"
-# setwd("~/Desktop/NMR_multi_assembly/annotation_zoe/")
 # Set working directory
 if(wd == "pwd") {
   message("Script will be ran in working directory as -wd was set to 'pwd'")
@@ -71,10 +66,12 @@ rownames(gff_primary) <- gff_primary$Parent
 gff_gene <- gff[grep("gene",gff$type),]
 gff <- gff[,c(1:8, which(colnames(gff) %in%
                            c("ID", "Name", "Parent", "alias", "primary",
-                             "evalue","RFamID","product","gbkey",
+                             "evalue","RFamID","product",
                              "gene_biotype","infernal_product")))]
 
 
+
+table(gff$type)
 # Mikado also creates a feature called "superlocus" which groups together features based on their location in the genome. "Superlocus" is not a usual feature and may cause issues for you in the future, so you may which to remove superlocus rows from the GFF file. To do this, we can look for any rows where the "type" column matches the word "superlocus", and use the `!` symbol to indicate that we don't want to include rows with that feature.
 
 
@@ -134,7 +131,7 @@ hier_simple <- strsplit(symbols_simplify$hierarchical_gene,";")
 each_simple <- list()
 
 for(i in rank_vector[2:length(rank_vector)]) {
-    each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
+  each_simple[[i]] <- strsplit(symbols_simplify[[i]],";")
 }
 
 simple <- c()
@@ -240,8 +237,6 @@ for(i in each_unique) {
 }
 
 symbols$unique_gene <- unique_gene
-# Add XIST gene
-# symbols[symbols$mikado_id == "mikado.chrXG1522","unique_gene"] <- "Xist"
 
 # symbols$unique_gene[non_na_indices] <- make.unique(symbols$hierarchical_gene[non_na_indices], sep = "-copy")
 
@@ -293,7 +288,6 @@ write.table(symbols, file = "gene_symbols_full.tsv",
             quote = FALSE, sep = "\t",
             row.names = FALSE, col.names = TRUE)
 
-gff[gff$Name == "Xist",]
 
 #
 ## Populate gene symbol table:
@@ -302,6 +296,7 @@ scorefile_gene_merge <- metrics_gene
 colnames(scorefile_gene_merge)[3] <- "mikado_id"
 
 symbols_score <- dplyr::left_join(symbols, scorefile_gene_merge,
-                                         by = "mikado_id")
+                                  by = "mikado_id")
 
-write.table(symbols_score, file = "mHetGla1.1.pri_gene_symbols_metrics.tsv", row.names = FALSE, col.names = TRUE, sep = "\t")
+write.table(symbols_score, file = "gene_symbols_metrics.tsv", row.names = FALSE, col.names = TRUE, sep = "\t")
+
