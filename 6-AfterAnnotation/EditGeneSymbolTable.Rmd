@@ -326,6 +326,21 @@ gene_symbols <- dplyr::left_join(gene_symbols,
                               by = "mikado_id")
 ```
 
+### Clean any gene "copy" that could have come from reference:
+
+```
+for(j in 2:ncol(gene_symbols)) {
+  gene_symbols[,j] <- sub("-copy[0-9]+$", "", gene_symbols[,j])
+}
+```
+
+## Saving the output
+
+```
+write.table(gene_symbols, file = "gene_symbols_noCopies.edited.tsv",
+            quote=FALSE,row.names=FALSE,col.names = TRUE,sep="\t")
+```
+
 
 ## Update final GFF file
 
@@ -354,17 +369,4 @@ Otherwise, PostprocessReformatFinalGFF.R functions the same as `FormatFinalGFF.R
 Rscript --vanilla PostprocessReformatFinalGFF.R -f full_annotation.gff -g gene_symbols_edited.tsv -r orthofinder_gene;togar1_gene;togar2_gene;liftoff_gene;ncRNA_gene -o full_annotation.edited.geneSymbols.gff -wd ~/Desktop/GenAnT/Example_out
 
 ```
-### Clean any gene "copy" that could have come from reference:
 
-```
-for(j in 2:ncol(gene_symbols)) {
-  gene_symbols[,j] <- sub("-copy[0-9]+$", "", gene_symbols[,j])
-}
-```
-
-## Saving the output
-
-```
-write.table(gene_symbols, file = "gene_symbols_noCopies.edited.tsv",
-            quote=FALSE,row.names=FALSE,col.names = TRUE,sep="\t")
-```
