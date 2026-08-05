@@ -21,7 +21,7 @@ Second column: short, unique identifier for the input file
 Third column: True or False indicating whether or not the annotation is strand-specific
 OPTIONAL COLUMNS:
 Fourth column: Assignment of positive or negative weightings (e.g. if you think a particular input file is high quality, you can, say, put a 3 in that colum; a poor-quality dataset may have a -0.5)
-Fifth column: True or False indicating if the annotation is a reference (important if updating an exising annotation, another function of mikado)
+Fifth column: True or False indicating if the annotation is a reference (important if updating an existing annotation, another function of mikado)
 
 The easiest way to run everything is if you have all of these input files should be stored in a working directory that you are using to run Mikado, including the list of inputs. Here is an example of the tab-delimited file indicating the different input GFF files (note if items are separated by spaces instead of tabs, an error will be thrown):
 
