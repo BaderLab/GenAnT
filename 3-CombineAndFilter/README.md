@@ -232,7 +232,7 @@ Now that you have found junctions (if possible), BLAST+, and TransDecoder, `mika
 1. The FASTA output of `mikado prepare` (`mikado_prepared.fasta)
 2. The configuration file (`conf.yaml`)
 3. The genome index file (`name_of_genome.fai`)
-4. The output of Portcullis (`portcullis.pass.junctions.bed`)
+4. The output of Portcullis (`portcullis_filtered.pass.junctions.bed`)
 5. The output of BLAST (`blast_results.tsv`)
 6. The FASTA file used for the BLAST search (`uniprot_sprot.fasta`)
 7. The maximum number of discrete hits that can be assigned to a single sequence (we set this to 5)
@@ -247,7 +247,7 @@ mikado serialise \
  --transcripts mikado_prepared.fasta \
  --json-conf conf.yaml \
  --genome_fai name_of_genome.fai \
- --junctions portcullis.pass.junctions.bed \
+ --junctions portcullis_filtered.pass.junctions.bed \
  --tsv blast_results.tsv \
  --blast-targets uniprot_sprot.fasta \
  --max-target-seqs number_of_targets \
