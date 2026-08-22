@@ -196,7 +196,7 @@ rule merge_rnaseq:
             samtools index {params.outDir}/transcript_selection/merged.sr.bam
 
         else
-            echo "no ISOseq data was detected"
+            echo "no RNAseq data was detected"
             touch {output}
         fi
         """
