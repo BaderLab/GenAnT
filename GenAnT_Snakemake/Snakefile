@@ -166,8 +166,13 @@ rule merge_isoseq:
 
         if [[ $(ls {params.outDir}/ISOseq_alignment | wc -l) -gt 0  ]] ; then
             "echo we detected ISOseq data to merge"
-            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.lr.bam {params.outDir}/ISOseq_alignment/*.bam
+            samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.lr.tmp.bam {params.outDir}/ISOseq_alignment/*.bam
+
+			samtools view -@ {threads} -b merged.lr.tmp.bam $(cut -f1 {params.outDir}/assembly/assembly.fa.fai | tr '\n' ' ') > merged.lr.bam
+
             samtools index {params.outDir}/transcript_selection/merged.lr.bam
+
+			rm merged.lr.tmp.bam
 
         else
             echo "No IOSeq data was detected"
@@ -193,7 +198,12 @@ rule merge_rnaseq:
         if [[ $(ls {params.outDir}/RNAseq_alignment | wc -l) -gt 0  ]] ; then
             "echo we detected RNAseq data to merge"
             samtools merge -@ {threads} {params.outDir}/transcript_selection/merged.sr.bam {params.outDir}/RNAseq_alignment/*.bam
+
+			samtools view -@ {threads} -b merged.sr.tmp.bam $(cut -f1 {params.outDir}/assembly/assembly.fa.fai | tr '\n' ' ') > merged.sr.bam
+
             samtools index {params.outDir}/transcript_selection/merged.sr.bam
+
+			rm merged.sr.tmp.bam
 
         else
             echo "no RNAseq data was detected"
