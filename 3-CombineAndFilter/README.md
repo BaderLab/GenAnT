@@ -239,6 +239,9 @@ Now that you have found junctions (if possible), BLAST+, and TransDecoder, `mika
 8. The output of TransDecoder (`mikado_prepared.fasta.transdecoder.bed`)
 9. The name of the log file to be produced by `mikado serliase` (`mikado_serialise.log`)
 
+##### NOTE. 
+If you do not have any RNA-seq data, remove the --orfs tag. We also recommend removing it if you don't think that your RNA-seq data captures sufficient transcript diversity of the species (e.g.m you only have fibroblast RNA-seq or something). What this step does is that it filters multi-exonic gene models without a single splice junction annotated to it. Therefore, if your RNA-seq data only captures a small proportion of the total transcripts in your data, it will filter many real gene models. With lots of RNA-seq data, dropping a few false-positive transcripts is worth filtering out all of the false-negative transcripts that are not supported with any RNA-seq evidence, but like with many genome annotation steps, it's difficult to filter/include thousands of gene models without a few FP/FN sneaking in. 
+
 Here is an example of a Mikado serialise command:
 
 ```
